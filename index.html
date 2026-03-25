@@ -1533,13 +1533,6 @@ function getWatchlistItems() {
   return items.filter((item) => watchlist[item.url]).slice(0, 12);
 }
 
-function getRecentlyWatchedItems() {
-  const active = getActiveProfile();
-  const history = state.history[active.id] || [];
-  const items = getLibraryItems();
-  return history.map((entry) => items.find((item) => item.url === entry.url)).filter(Boolean).slice(0, 12);
-}
-
 function sortItemsByCover(items) {
   return items.slice().sort((a, b) => {
     const aHasCover = Number(Boolean(a.posterUrl || a.backdropUrl));
@@ -1615,8 +1608,6 @@ function renderRows() {
   if (continueWatching.length) specialRows.push(renderCustomRow("Continue Watching", continueWatching));
   const watchlist = getWatchlistItems();
   if (watchlist.length) specialRows.push(renderCustomRow("My Watchlist", watchlist));
-  const recentlyWatched = getRecentlyWatchedItems();
-  if (recentlyWatched.length) specialRows.push(renderCustomRow("Recently Watched", recentlyWatched));
 
   const heading = state.activeCategory === "All" ? "All titles" : state.activeCategory;
   const suffix = state.activeLetter === "All" ? "" : ` • ${state.activeLetter}`;
