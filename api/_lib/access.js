@@ -3,20 +3,12 @@ const path = require("node:path");
 
 const ROOT = process.cwd();
 const PRIVATE_DIR = path.join(ROOT, "api", "_lib", "private");
+const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
 async function readPrivateJson(fileName) {
   const fullPath = path.join(PRIVATE_DIR, fileName);
   const text = await fs.readFile(fullPath, "utf8");
   return JSON.parse(text);
-}
-
-async function isAllowedEmail(email) {
-  const allowedEmails = String(process.env.ALLOWED_EMAILS || "")
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-  const allowedSet = new Set(allowedEmails.map((entry) => String(entry).trim().toLowerCase()));
-  return allowedSet.has(String(email).trim().toLowerCase());
 }
 
 async function requireAllowedUser(req) {
@@ -28,17 +20,16 @@ async function requireAllowedUser(req) {
     throw error;
   }
 
-  const email = token.trim().toLowerCase();
-  const allowed = await isAllowedEmail(email);
-  if (!allowed) {
-    const error = new Error("That email is not on the approved list.");
+  const password = token.trim();
+  if (password !== APP_PASSWORD) {
+    const error = new Error("Access denied. Wrong password.");
     error.statusCode = 403;
     throw error;
   }
 
   return {
-    email,
-    name: email,
+    email: "basement-theater@local",
+    name: "Basement Theater",
     picture: "",
   };
 }
@@ -52,5 +43,4 @@ module.exports = {
   readPrivateJson,
   requireAllowedUser,
   sendJson,
-  isAllowedEmail,
 };

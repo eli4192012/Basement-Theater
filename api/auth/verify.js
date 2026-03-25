@@ -1,4 +1,5 @@
-const { isAllowedEmail, sendJson } = require("../_lib/access");
+const { sendJson } = require("../_lib/access");
+const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,28 +9,27 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-    const email = String(body.email || "").trim().toLowerCase();
-    if (!email) {
-      sendJson(res, 400, { error: "Enter an email address." });
+    const password = String(body.password || "");
+    if (!password) {
+      sendJson(res, 400, { error: "Enter the password." });
       return;
     }
 
-    const allowed = await isAllowedEmail(email);
-    if (!allowed) {
-      sendJson(res, 403, { error: "Access denied. That email is not approved for Basement Theater." });
+    if (password !== APP_PASSWORD) {
+      sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }
 
     sendJson(res, 200, {
       ok: true,
       user: {
-        email,
-        name: email,
+        email: "basement-theater@local",
+        name: "Basement Theater",
         picture: "",
       },
-      token: email,
+      token: password,
     });
   } catch (error) {
-    sendJson(res, 401, { error: error.message || "Could not verify that email." });
+    sendJson(res, 401, { error: error.message || "Could not verify that password." });
   }
 };
