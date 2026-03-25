@@ -11,7 +11,920 @@
       rel="stylesheet"
     />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="./styles.css" />
+    <style>
+:root {
+  --bg: #120b09;
+  --bg-soft: #1b100d;
+  --panel: #241512;
+  --panel-soft: rgba(255, 233, 197, 0.08);
+  --line: rgba(255, 221, 168, 0.12);
+  --text: #fff7ea;
+  --muted: rgba(255, 239, 216, 0.74);
+  --muted-dim: rgba(255, 233, 197, 0.54);
+  --accent: #b33a20;
+  --accent-strong: #d37b2d;
+  --chip: rgba(89, 37, 28, 0.58);
+  --gold: #d7a44c;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.56);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Manrope", sans-serif;
+  background:
+    linear-gradient(180deg, rgba(10, 4, 2, 0.18), rgba(0, 0, 0, 0.86)),
+    radial-gradient(circle at top, rgba(152, 36, 24, 0.34), transparent 26%),
+    radial-gradient(circle at bottom, rgba(104, 57, 20, 0.22), transparent 34%),
+    linear-gradient(180deg, #1a0f0c 0%, #120b09 18%, #100807 100%);
+}
+
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 228, 179, 0.08), transparent 18%),
+    radial-gradient(circle at 85% 12%, rgba(179, 58, 32, 0.18), transparent 22%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 72px,
+      rgba(255, 228, 179, 0.025) 72px,
+      rgba(255, 228, 179, 0.025) 76px
+    );
+  opacity: 0.8;
+}
+
+.page-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1500px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 18px 0 64px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0 18px;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(18, 11, 9, 0.92), rgba(18, 11, 9, 0.44));
+}
+
+.brand-lockup,
+.topbar-actions,
+.nav-links,
+.hero-actions,
+.detail-actions,
+.detail-header,
+.shelf-header {
+  display: flex;
+}
+
+.brand-lockup {
+  align-items: center;
+  gap: 28px;
+}
+
+.brand-wordmark {
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(215, 164, 76, 0.18);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 3vw, 2.55rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.nav-links {
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: var(--gold);
+}
+
+.hidden-view {
+  display: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(11, 5, 4, 0.76), rgba(11, 5, 4, 0.92)),
+    radial-gradient(circle at top, rgba(179, 58, 32, 0.2), transparent 26%);
+  backdrop-filter: blur(10px);
+}
+
+.auth-card {
+  width: min(560px, 100%);
+  padding: 36px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(45, 21, 17, 0.96), rgba(20, 11, 9, 0.98));
+  border: 1px solid rgba(215, 164, 76, 0.16);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.auth-title {
+  max-width: none;
+  margin-bottom: 12px;
+  font-size: clamp(2.8rem, 7vw, 4.6rem);
+}
+
+.auth-message {
+  max-width: 34ch;
+  margin: 0 auto 22px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.google-signin-slot {
+  display: flex;
+  justify-content: center;
+}
+
+.topbar-actions {
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-bar {
+  margin: 6px 0 18px;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(54, 24, 19, 0.9), rgba(28, 15, 12, 0.94));
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 235, 205, 0.04);
+}
+
+.profile-list,
+.profile-section-right,
+.profile-meta,
+.card-topline {
+  display: flex;
+  align-items: center;
+}
+
+.profile-section-right {
+  gap: 12px;
+}
+
+.profile-list {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 220, 170, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 240, 216, 0.04);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.profile-pill.active {
+  border-color: var(--profile-color);
+  box-shadow: inset 0 0 0 1px var(--profile-color);
+}
+
+.profile-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--profile-color);
+}
+
+.profile-meta {
+  gap: 10px;
+  color: var(--muted);
+}
+
+.profile-name,
+.profile-name-input {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.profile-name-input {
+  width: min(180px, 34vw);
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  outline: none;
+}
+
+.profile-name-input[readonly] {
+  padding-left: 0;
+  border-color: transparent;
+  pointer-events: none;
+}
+
+.profile-name-input:not([readonly]) {
+  border-color: rgba(215, 164, 76, 0.32);
+  background: rgba(255, 244, 227, 0.08);
+}
+
+.profile-gate {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(215, 164, 76, 0.12);
+  border: 1px solid rgba(215, 164, 76, 0.16);
+}
+
+.rename-profile-button {
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: min(360px, 48vw);
+  color: var(--muted-dim);
+  font-size: 0.8rem;
+}
+
+.search input {
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 220, 170, 0.16);
+  border-radius: 4px;
+  outline: none;
+  color: var(--text);
+  background: rgba(32, 15, 11, 0.8);
+}
+
+.search input:focus {
+  border-color: rgba(215, 164, 76, 0.42);
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 30px;
+  min-height: 72vh;
+  margin-bottom: 24px;
+  padding: clamp(28px, 5vw, 56px);
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(20, 8, 5, 0.92) 0%, rgba(20, 8, 5, 0.76) 38%, rgba(20, 8, 5, 0.24) 100%),
+    radial-gradient(circle at top right, rgba(215, 164, 76, 0.14), transparent 26%),
+    var(--hero-gradient, linear-gradient(135deg, #6f1f16, #2a1714));
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(215, 164, 76, 0.16);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 223, 168, 0.04), rgba(0, 0, 0, 0.56)),
+    linear-gradient(0deg, rgba(18, 11, 9, 1) 0%, rgba(18, 11, 9, 0) 28%);
+}
+
+.hero-copy,
+.hero-art,
+.browse-panel,
+.rows,
+.shelf-header {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-copy {
+  align-self: end;
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: rgba(255, 255, 255, 0.76);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1,
+h3,
+.card-title {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.03em;
+}
+
+h1 {
+  max-width: 9ch;
+  font-size: clamp(4rem, 9vw, 7rem);
+  line-height: 0.88;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 1.85rem;
+}
+
+h3 {
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 0.92;
+}
+
+.hero-meta,
+.hero-description,
+.detail-meta,
+.detail-description,
+.results-count,
+.card-meta {
+  color: var(--muted);
+}
+
+.hero-meta,
+.detail-meta {
+  margin-top: 16px;
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-description,
+.detail-description {
+  max-width: 62ch;
+  margin-top: 16px;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.hero-actions,
+.detail-actions {
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.primary-button,
+.ghost-button,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--text);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.primary-button {
+  background: linear-gradient(180deg, #e0b86e, #c28735);
+  color: #24130d;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(194, 135, 53, 0.28);
+}
+
+.primary-button:hover,
+.ghost-button:hover,
+.chip:hover,
+.card:hover {
+  transform: scale(1.03);
+}
+
+.ghost-button {
+  background: rgba(92, 42, 31, 0.78);
+  border: 1px solid rgba(255, 222, 173, 0.12);
+}
+
+.disabled-button {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.info-button {
+  background: rgba(92, 42, 31, 0.62);
+}
+
+.hero-art {
+  position: relative;
+  min-height: 420px;
+  border-radius: 18px;
+  background:
+    var(--hero-image, none),
+    linear-gradient(180deg, rgba(255, 240, 214, 0.05), rgba(0, 0, 0, 0.5)),
+    var(--hero-gradient, linear-gradient(135deg, #6f1f16, #2a1714));
+  background-size: contain, cover, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 179, 0.08);
+}
+
+.hero-art::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(255, 220, 170, 0.12);
+  border-radius: 12px;
+}
+
+.hero-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(39, 18, 13, 0.7);
+  color: rgba(255, 232, 196, 0.92);
+  border: 1px solid rgba(215, 164, 76, 0.2);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.browse-panel {
+  margin-bottom: 24px;
+}
+
+.surprise-panel {
+  margin-bottom: 16px;
+}
+
+.surprise-buttons,
+.secondary-actions,
+.card-icon-row,
+.detail-info-grid,
+.stats-panel {
+  display: flex;
+}
+
+.surprise-buttons {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stats-panel {
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1 1 220px;
+  min-height: 92px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(54, 24, 19, 0.9), rgba(29, 14, 12, 0.95));
+  border: 1px solid rgba(215, 164, 76, 0.12);
+}
+
+.stat-card p:last-child {
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.shelf-header {
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.results-count {
+  font-size: 0.95rem;
+}
+
+.genre-chips,
+.letter-chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.genre-chips {
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.letter-chips {
+  gap: 8px;
+}
+
+.chip {
+  min-height: 38px;
+  padding: 0 14px;
+  background: var(--chip);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.88rem;
+}
+
+.chip.active {
+  background: rgba(179, 58, 32, 0.36);
+  border-color: rgba(215, 164, 76, 0.42);
+  color: #fff3de;
+}
+
+.letter-chip {
+  min-width: 38px;
+  padding: 0 10px;
+}
+
+.rows {
+  display: grid;
+  gap: 30px;
+}
+
+.row {
+  display: grid;
+  gap: 12px;
+}
+
+.row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.row-header h4 {
+  margin: 0;
+  font-size: 1.42rem;
+  font-weight: 800;
+}
+
+.row-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(45, 21, 17, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 179, 0.06);
+  cursor: pointer;
+  transition: transform 180ms ease;
+}
+
+.card-poster {
+  display: grid;
+  align-items: end;
+  min-height: 252px;
+  padding: 14px;
+  border-radius: 8px 8px 0 0;
+  background:
+    var(--card-image, none),
+    linear-gradient(180deg, rgba(255, 244, 227, 0.03), rgba(0, 0, 0, 0.76)),
+    var(--card-gradient, linear-gradient(135deg, #8b2c20, #2a1714));
+  background-size: contain, cover, cover;
+  background-position: center center, center, center;
+  background-repeat: no-repeat;
+  box-shadow: var(--shadow);
+}
+
+.card-kicker {
+  display: inline-block;
+  padding: 4px 7px;
+  border-radius: 3px;
+  background: rgba(33, 15, 12, 0.68);
+  color: rgba(255, 236, 204, 0.94);
+  border: 1px solid rgba(215, 164, 76, 0.16);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card-topline {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-icon-row {
+  gap: 8px;
+}
+
+.favorite-button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(31, 12, 9, 0.62);
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+}
+
+.favorite-button.active {
+  color: #ffd54a;
+}
+
+.watchlist-button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(31, 12, 9, 0.62);
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  font-size: 1.15rem;
+}
+
+.watchlist-button.active {
+  color: #8bd3ff;
+}
+
+.card-title {
+  margin-top: 0;
+  font-size: 1.95rem;
+  line-height: 0.94;
+  text-shadow: none;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-meta {
+  margin-top: 8px;
+  font-size: 0.83rem;
+}
+
+.card-body {
+  min-height: 108px;
+  padding: 14px 12px 16px;
+  background: linear-gradient(180deg, rgba(40, 20, 16, 0.98), rgba(20, 11, 9, 0.99));
+}
+
+.progress-note {
+  margin-top: 8px;
+  color: #8bd3ff;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detail-modal {
+  width: min(980px, calc(100% - 24px));
+  max-width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.detail-modal::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.detail-card {
+  position: relative;
+  overflow: hidden;
+  padding: 26px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #2d1813 0%, #140c0a 100%);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(215, 164, 76, 0.14);
+}
+
+.close-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(64, 28, 22, 0.84);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.detail-header {
+  gap: 24px;
+  align-items: stretch;
+}
+
+.detail-art {
+  flex: 0 0 300px;
+  min-height: 400px;
+  border-radius: 12px;
+  background:
+    var(--detail-image, none),
+    linear-gradient(180deg, rgba(255, 244, 227, 0.03), rgba(0, 0, 0, 0.62)),
+    var(--detail-gradient, linear-gradient(135deg, #8b2c20, #2a1714));
+  background-size: contain, cover, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat;
+}
+
+.detail-copy {
+  align-self: center;
+}
+
+.detail-info-grid {
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.detail-info-grid > div {
+  min-width: 160px;
+}
+
+.detail-info-grid p {
+  color: var(--text);
+}
+
+.secondary-actions {
+  gap: 12px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.review-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.review-note {
+  margin-bottom: 20px;
+  color: var(--muted);
+  max-width: 74ch;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.review-card {
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(45, 21, 17, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255, 228, 179, 0.06);
+}
+
+.review-image {
+  min-height: 300px;
+  background-color: #222;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.review-body {
+  padding: 14px;
+}
+
+.review-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.8rem;
+  line-height: 0.94;
+}
+
+.review-actions {
+  margin-top: 12px;
+}
+
+.review-link {
+  min-height: 38px;
+  width: 100%;
+}
+
+.welcome-modal {
+  width: min(960px, calc(100% - 24px));
+}
+
+.welcome-card {
+  padding: 32px;
+}
+
+.welcome-copy {
+  display: grid;
+  gap: 18px;
+}
+
+.welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.welcome-grid > div {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 244, 227, 0.04);
+  border: 1px solid rgba(215, 164, 76, 0.12);
+}
+
+.welcome-grid p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.empty-state {
+  padding: 40px 24px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(54, 24, 19, 0.9), rgba(29, 14, 12, 0.95));
+  border: 1px solid rgba(215, 164, 76, 0.12);
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (max-width: 980px) {
+  .topbar,
+  .brand-lockup,
+  .topbar-actions,
+  .detail-header,
+  .profile-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+  }
+
+  .search {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .hero-art,
+  .detail-art {
+    width: 100%;
+    min-height: 260px;
+  }
+}
+
+</style>
   </head>
   <body>
     <div class="app-backdrop"></div>
@@ -184,6 +1097,834 @@
       </form>
     </dialog>
 
-    <script src="./app.js" type="module"></script>
+    <script type="module">
+﻿const STORAGE_KEYS = {
+  profiles: "basement-theater.profiles",
+  activeProfileId: "basement-theater.active-profile-id",
+  progress: "basement-theater.progress",
+  favorites: "basement-theater.favorites",
+  watchlist: "basement-theater.watchlist",
+  history: "basement-theater.history",
+  welcomeSeen: "basement-theater.welcome-seen",
+};
+
+const DEFAULT_PROFILES = [
+  { id: "kid-1", name: "Kid 1", maturity: "PG", color: "#ff7b72" },
+  { id: "kid-2", name: "Kid 2", maturity: "PG", color: "#6ee7b7" },
+  { id: "teen", name: "Teen", maturity: "PG-13", color: "#60a5fa" },
+  { id: "adult", name: "Adults", maturity: "R", color: "#f59e0b" },
+];
+
+const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
+
+const state = {
+  catalog: null,
+  trash: { items: [], totalCandidates: 0 },
+  auth: {
+    token: sessionStorage.getItem("basement-theater.google-token") || "",
+    user: loadJson("basement-theater.google-user", null),
+    config: null,
+  },
+  profiles: loadJson(STORAGE_KEYS.profiles, DEFAULT_PROFILES),
+  activeProfileId: localStorage.getItem(STORAGE_KEYS.activeProfileId) || DEFAULT_PROFILES[0].id,
+  progress: loadJson(STORAGE_KEYS.progress, {}),
+  favorites: loadJson(STORAGE_KEYS.favorites, {}),
+  watchlist: loadJson(STORAGE_KEYS.watchlist, {}),
+  history: loadJson(STORAGE_KEYS.history, {}),
+  activeCategory: "All",
+  activeLetter: "All",
+  query: "",
+  featuredIndex: 0,
+  activeView: "library",
+  surpriseMode: "all",
+  editingProfileName: false,
+};
+
+const els = {
+  authGate: document.querySelector("#authGate"),
+  authMessage: document.querySelector("#authMessage"),
+  googleSignInButton: document.querySelector("#googleSignInButton"),
+  rows: document.querySelector("#rows"),
+  favoritesRows: document.querySelector("#favoritesRows"),
+  trashGrid: document.querySelector("#trashGrid"),
+  favoritesCount: document.querySelector("#favoritesCount"),
+  trashCount: document.querySelector("#trashCount"),
+  searchInput: document.querySelector("#searchInput"),
+  genreChips: document.querySelector("#genreChips"),
+  letterChips: document.querySelector("#letterChips"),
+  resultsHeading: document.querySelector("#resultsHeading"),
+  resultsCount: document.querySelector("#resultsCount"),
+  heroPanel: document.querySelector("#heroPanel"),
+  heroTitle: document.querySelector("#heroTitle"),
+  heroMeta: document.querySelector("#heroMeta"),
+  heroDescription: document.querySelector("#heroDescription"),
+  heroPlay: document.querySelector("#heroPlay"),
+  heroInfo: document.querySelector("#heroInfo"),
+  heroArt: document.querySelector("#heroArt"),
+  randomPickButton: document.querySelector("#randomPickButton"),
+  detailModal: document.querySelector("#detailModal"),
+  welcomeModal: document.querySelector("#welcomeModal"),
+  detailTitle: document.querySelector("#detailTitle"),
+  detailMeta: document.querySelector("#detailMeta"),
+  detailDescription: document.querySelector("#detailDescription"),
+  detailOpen: document.querySelector("#detailOpen"),
+  detailPreview: document.querySelector("#detailPreview"),
+  detailArt: document.querySelector("#detailArt"),
+  libraryView: document.querySelector("#libraryView"),
+  favoritesView: document.querySelector("#favoritesView"),
+  trashView: document.querySelector("#trashView"),
+  libraryTabButton: document.querySelector("#libraryTabButton"),
+  favoritesTabButton: document.querySelector("#favoritesTabButton"),
+  trashTabButton: document.querySelector("#trashTabButton"),
+  detailActions: document.querySelector(".detail-actions"),
+  topbarActions: document.querySelector(".topbar-actions"),
+  welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
+  surpriseButtons: document.querySelectorAll("[data-surprise-mode]"),
+  statsPanel: document.querySelector("#statsPanel"),
+  statsMostWatched: document.querySelector("#statsMostWatched"),
+  statsKidPrefs: document.querySelector("#statsKidPrefs"),
+  statsTotalHours: document.querySelector("#statsTotalHours"),
+};
+
+const palette = [
+  ["#6f1317", "#151515"],
+  ["#b20710", "#1b1b1b"],
+  ["#2d3d63", "#141414"],
+  ["#7a1e2d", "#171717"],
+  ["#7f2f16", "#111827"],
+  ["#1d4f63", "#151515"],
+  ["#144030", "#151515"],
+  ["#4d1837", "#161616"],
+];
+
+init();
+
+async function init() {
+  ensureActiveProfile();
+  buildProfileBar();
+  bindEvents();
+  await bootstrapAuth();
+}
+
+async function bootstrapAuth() {
+  setAuthMessage("Checking access setup...");
+  try {
+    state.auth.config = await fetchJson("/api/config");
+  } catch {
+    setAuthMessage("Could not load the sign-in setup. Try refreshing in a moment.");
+    return;
+  }
+
+  if (!state.auth.config?.googleClientId) {
+    setAuthMessage("Google sign-in is not configured yet. Add the Google client ID in Vercel to turn on private access.");
+    return;
+  }
+
+  if (state.auth.token) {
+    const verified = await verifyAccess(state.auth.token);
+    if (verified) {
+      await loadProtectedData();
+      return;
+    }
+  }
+
+  setAuthMessage("Sign in with an approved Google account to open the theater.");
+  renderGoogleSignIn();
+}
+
+async function loadProtectedData() {
+  const [catalog, trash] = await Promise.all([
+    authedFetchJson("/api/catalog"),
+    authedFetchJson("/api/trash").catch(() => ({ items: [], totalCandidates: 0 })),
+  ]);
+  state.catalog = catalog;
+  state.trash = trash;
+  els.authGate.classList.add("hidden");
+  renderAll();
+}
+
+function renderGoogleSignIn() {
+  if (!window.google?.accounts?.id) {
+    window.setTimeout(renderGoogleSignIn, 300);
+    return;
+  }
+
+  els.googleSignInButton.innerHTML = "";
+  window.google.accounts.id.initialize({
+    client_id: state.auth.config.googleClientId,
+    callback: async (response) => {
+      setAuthMessage("Checking your access...");
+      const verified = await verifyAccess(response.credential);
+      if (!verified) return;
+      await loadProtectedData();
+    },
+  });
+  window.google.accounts.id.renderButton(els.googleSignInButton, {
+    theme: "outline",
+    size: "large",
+    shape: "pill",
+    width: 280,
+    text: "signin_with",
+  });
+}
+
+async function verifyAccess(token) {
+  try {
+    const result = await fetchJson("/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: token }),
+    });
+    state.auth.token = token;
+    state.auth.user = result.user;
+    sessionStorage.setItem("basement-theater.google-token", token);
+    localStorage.setItem("basement-theater.google-user", JSON.stringify(result.user));
+    return true;
+  } catch (error) {
+    state.auth.token = "";
+    state.auth.user = null;
+    sessionStorage.removeItem("basement-theater.google-token");
+    localStorage.removeItem("basement-theater.google-user");
+    setAuthMessage(error.message || "That account is not approved for Basement Theater.");
+    return false;
+  }
+}
+
+async function authedFetchJson(url) {
+  return fetchJson(url, {
+    headers: {
+      Authorization: `Bearer ${state.auth.token}`,
+    },
+  });
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Request failed.");
+  }
+  return payload;
+}
+
+function setAuthMessage(message) {
+  els.authMessage.textContent = message;
+}
+
+function renderAll() {
+  renderHero();
+  renderProfiles();
+  renderChips();
+  renderLetterChips();
+  updateSurpriseButtons();
+  renderRows();
+  renderFavorites();
+  renderTrash();
+  renderStats();
+  syncView();
+  maybeShowWelcome();
+}
+
+function buildProfileBar() {
+  const profileBar = document.createElement("div");
+  profileBar.className = "profile-bar";
+  profileBar.innerHTML = `
+    <div class="profile-section">
+      <div>
+        <p class="eyebrow">Profiles</p>
+        <div id="profileList" class="profile-list"></div>
+      </div>
+      <div class="profile-section-right">
+        <div class="profile-meta">
+          <input id="activeProfileName" class="profile-name-input" type="text" maxlength="24" readonly aria-label="Active profile name" />
+          <span id="activeProfileGate" class="profile-gate"></span>
+        </div>
+        <button id="renameProfileButton" class="ghost-button rename-profile-button" type="button">Rename</button>
+      </div>
+    </div>
+  `;
+  els.topbarActions.parentNode.insertAdjacentElement("afterend", profileBar);
+  els.profileList = document.querySelector("#profileList");
+  els.activeProfileName = document.querySelector("#activeProfileName");
+  els.activeProfileGate = document.querySelector("#activeProfileGate");
+  els.renameProfileButton = document.querySelector("#renameProfileButton");
+}
+
+function bindEvents() {
+  els.searchInput.addEventListener("input", (event) => {
+    state.query = event.target.value.trim().toLowerCase();
+    rerenderActiveView();
+  });
+
+  els.renameProfileButton.addEventListener("click", () => {
+    if (state.editingProfileName) saveActiveProfileName();
+    else startProfileRename();
+  });
+  els.activeProfileName.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      saveActiveProfileName();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelActiveProfileRename();
+    }
+  });
+  els.activeProfileName.addEventListener("blur", () => {
+    if (state.editingProfileName) saveActiveProfileName();
+  });
+
+  els.randomPickButton.addEventListener("click", () => runSurprise(state.surpriseMode));
+  els.heroPlay.addEventListener("click", () => {
+    const heroItem = getHeroItem();
+    if (heroItem) markWatched(heroItem);
+  });
+  els.heroInfo.addEventListener("click", () => {
+    const heroItem = getHeroItem();
+    if (heroItem) openModal(heroItem);
+  });
+
+  els.libraryTabButton.addEventListener("click", () => setView("library"));
+  els.favoritesTabButton.addEventListener("click", () => setView("favorites"));
+  els.trashTabButton.addEventListener("click", () => setView("trash"));
+
+  els.surpriseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.surpriseMode = button.dataset.surpriseMode;
+      updateSurpriseButtons();
+      runSurprise(state.surpriseMode);
+    });
+  });
+
+  els.detailModal.addEventListener("click", (event) => {
+    const rect = els.detailModal.getBoundingClientRect();
+    const inDialog =
+      rect.top <= event.clientY &&
+      event.clientY <= rect.top + rect.height &&
+      rect.left <= event.clientX &&
+      event.clientX <= rect.left + rect.width;
+    if (!inDialog) els.detailModal.close();
+  });
+
+  els.welcomeModal?.addEventListener("close", dismissWelcome);
+  els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
+}
+
+function setView(view) {
+  state.activeView = view;
+  syncView();
+}
+
+function syncView() {
+  const favorites = state.activeView === "favorites";
+  const trashing = state.activeView === "trash";
+  const library = state.activeView === "library";
+
+  els.libraryView.classList.toggle("hidden-view", !library);
+  els.favoritesView.classList.toggle("hidden-view", !favorites);
+  els.trashView.classList.toggle("hidden-view", !trashing);
+  els.libraryTabButton.classList.toggle("active", library);
+  els.favoritesTabButton.classList.toggle("active", favorites);
+  els.trashTabButton.classList.toggle("active", trashing);
+  els.randomPickButton.disabled = !library;
+  els.randomPickButton.classList.toggle("disabled-button", !library);
+  if (library) renderRows();
+  if (favorites) renderFavorites();
+  if (trashing) renderTrash();
+}
+
+function rerenderActiveView() {
+  renderStats();
+  renderProfiles();
+  if (state.activeView === "library") {
+    renderHero();
+    renderRows();
+  } else if (state.activeView === "favorites") {
+    renderFavorites();
+  } else {
+    renderTrash();
+  }
+}
+
+function getActiveProfile() {
+  return state.profiles.find((profile) => profile.id === state.activeProfileId) || state.profiles[0];
+}
+
+function startProfileRename() {
+  const active = getActiveProfile();
+  if (!active) return;
+  state.editingProfileName = true;
+  els.activeProfileName.readOnly = false;
+  els.activeProfileName.focus();
+  els.activeProfileName.select();
+  els.renameProfileButton.textContent = "Save";
+}
+
+function saveActiveProfileName() {
+  const active = getActiveProfile();
+  if (!active) return;
+
+  const cleaned = els.activeProfileName.value.trim().replace(/\s+/g, " ").slice(0, 24);
+  active.name = cleaned || active.name;
+  persistState(STORAGE_KEYS.profiles, state.profiles);
+  finishProfileRename();
+  rerenderActiveView();
+}
+
+function cancelActiveProfileRename() {
+  const active = getActiveProfile();
+  if (!active) return;
+  els.activeProfileName.value = active.name;
+  finishProfileRename();
+}
+
+function finishProfileRename() {
+  state.editingProfileName = false;
+  els.activeProfileName.readOnly = true;
+  els.renameProfileButton.textContent = "Rename";
+}
+
+function ensureActiveProfile() {
+  if (!state.profiles.some((profile) => profile.id === state.activeProfileId)) {
+    state.activeProfileId = state.profiles[0].id;
+  }
+}
+
+function renderProfiles() {
+  const active = getActiveProfile();
+  els.profileList.innerHTML = state.profiles
+    .map(
+      (profile) => `
+        <button type="button" class="profile-pill ${profile.id === active.id ? "active" : ""}" data-profile-id="${escapeHtml(profile.id)}" style="--profile-color:${profile.color}">
+          <span class="profile-dot"></span>
+          <span>${escapeHtml(profile.name)}</span>
+        </button>
+      `,
+    )
+    .join("");
+
+  els.profileList.querySelectorAll(".profile-pill").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeProfileId = button.dataset.profileId;
+      localStorage.setItem(STORAGE_KEYS.activeProfileId, state.activeProfileId);
+      rerenderActiveView();
+    });
+  });
+
+  els.activeProfileName.value = active.name;
+  els.activeProfileGate.textContent = `Allowed: ${active.maturity}`;
+  els.renameProfileButton.textContent = state.editingProfileName ? "Save" : "Rename";
+}
+
+function getAllowedItems(items, profile = getActiveProfile()) {
+  return items.filter((item) => MATURITY_ORDER[inferRating(item)] <= MATURITY_ORDER[profile.maturity]);
+}
+
+function isFavoriteItem(item, profile = getActiveProfile()) {
+  return Boolean(state.favorites[profile.id]?.[item.url]);
+}
+
+function getLibraryItems() {
+  const active = getActiveProfile();
+  return getAllowedItems(state.catalog?.items ?? [], active).filter((item) => !isFavoriteItem(item, active));
+}
+
+function getFilteredItems() {
+  const items = getLibraryItems();
+  return items.filter((item) => {
+    const matchesCategory = state.activeCategory === "All" || item.category === state.activeCategory;
+    const matchesLetter = state.activeLetter === "All" || normalizedFirstCharacter(item.title) === state.activeLetter;
+    const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
+    const matchesQuery = !state.query || haystack.includes(state.query);
+    return matchesCategory && matchesLetter && matchesQuery;
+  });
+}
+
+function getContinueWatchingItems() {
+  const active = getActiveProfile();
+  const watched = state.progress[active.id] || {};
+  const items = getLibraryItems();
+  return items.filter((item) => watched[item.url]).sort((a, b) => watched[b.url] - watched[a.url]).slice(0, 12);
+}
+
+function getFavoriteItems() {
+  const active = getActiveProfile();
+  const favorites = state.favorites[active.id] || {};
+  const items = getAllowedItems(state.catalog?.items ?? []);
+  return items.filter((item) => favorites[item.url]);
+}
+
+function getWatchlistItems() {
+  const active = getActiveProfile();
+  const watchlist = state.watchlist[active.id] || {};
+  const items = getLibraryItems();
+  return items.filter((item) => watchlist[item.url]).slice(0, 12);
+}
+
+function getRecentlyWatchedItems() {
+  const active = getActiveProfile();
+  const history = state.history[active.id] || [];
+  const items = getLibraryItems();
+  return history.map((entry) => items.find((item) => item.url === entry.url)).filter(Boolean).slice(0, 12);
+}
+
+function sortItemsByCover(items) {
+  return items.slice().sort((a, b) => {
+    const aHasCover = Number(Boolean(a.posterUrl || a.backdropUrl));
+    const bHasCover = Number(Boolean(b.posterUrl || b.backdropUrl));
+    if (aHasCover !== bHasCover) return bHasCover - aHasCover;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+function getTrashItems() {
+  return (state.trash?.items ?? []).filter((item) => {
+    const haystack = `${item.title} ${item.reason} ${item.category}`.toLowerCase();
+    return !state.query || haystack.includes(state.query);
+  });
+}
+
+function getHeroItem() {
+  const preferred = state.catalog?.featured ?? [];
+  const items = getLibraryItems();
+  const coveredItems = items.filter((item) => item.posterUrl || item.backdropUrl);
+  const pool = coveredItems.length ? coveredItems : items;
+  const title = preferred[state.featuredIndex % Math.max(preferred.length, 1)];
+  return pool.find((item) => item.title === title && (item.posterUrl || item.backdropUrl)) ?? pool[0];
+}
+
+function renderHero() {
+  const heroItem = getHeroItem();
+  if (!heroItem) return;
+  const gradient = gradientFor(heroItem.title);
+  els.heroPanel.style.setProperty("--hero-gradient", gradient);
+  els.heroArt.style.setProperty("--hero-gradient", gradient);
+  els.heroArt.style.setProperty("--hero-image", heroItem.backdropUrl ? `url("${heroItem.backdropUrl}")` : "none");
+  els.detailArt.style.setProperty("--detail-gradient", gradient);
+  els.detailArt.style.setProperty("--detail-image", heroItem.posterUrl ? `url("${heroItem.posterUrl}")` : "none");
+  els.heroTitle.textContent = heroItem.title;
+  els.heroMeta.textContent = `${heroItem.category} • ${heroItem.type === "series" ? "Series" : "Movie"} • ${inferRating(heroItem)}${heroItem.year ? ` • ${heroItem.year}` : ""}`;
+  els.heroDescription.textContent = heroItem.overview || buildDescription(heroItem);
+  els.heroPlay.href = heroItem.url;
+}
+
+function renderChips() {
+  const categories = ["All", ...(state.catalog?.categories ?? [])];
+  els.genreChips.innerHTML = categories.map((category) => `<button type="button" class="chip ${category === state.activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join("");
+  els.genreChips.querySelectorAll(".chip").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeCategory = button.dataset.category;
+      renderChips();
+      renderRows();
+    });
+  });
+}
+
+function renderLetterChips() {
+  const letters = ["All", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), "#"];
+  els.letterChips.innerHTML = letters.map((letter) => `<button type="button" class="chip letter-chip ${letter === state.activeLetter ? "active" : ""}" data-letter="${escapeHtml(letter)}">${escapeHtml(letter)}</button>`).join("");
+  els.letterChips.querySelectorAll(".letter-chip").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeLetter = button.dataset.letter;
+      renderLetterChips();
+      renderRows();
+    });
+  });
+}
+
+function renderRows() {
+  const filtered = getFilteredItems();
+  const grouped = filtered.reduce((map, item) => {
+    map[item.category] ||= [];
+    map[item.category].push(item);
+    return map;
+  }, {});
+
+  const specialRows = [];
+  const continueWatching = getContinueWatchingItems();
+  if (continueWatching.length) specialRows.push(renderCustomRow("Continue Watching", continueWatching));
+  const watchlist = getWatchlistItems();
+  if (watchlist.length) specialRows.push(renderCustomRow("My Watchlist", watchlist));
+  const recentlyWatched = getRecentlyWatchedItems();
+  if (recentlyWatched.length) specialRows.push(renderCustomRow("Recently Watched", recentlyWatched));
+
+  const heading = state.activeCategory === "All" ? "All titles" : state.activeCategory;
+  const suffix = state.activeLetter === "All" ? "" : ` • ${state.activeLetter}`;
+  els.resultsHeading.textContent = `${heading}${suffix}`;
+  els.resultsCount.textContent = `${filtered.length} title${filtered.length === 1 ? "" : "s"}`;
+
+  const categoryRows = Object.keys(grouped)
+    .map((category) => {
+      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
+      return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
+    })
+    .join("");
+
+  els.rows.innerHTML = specialRows.length || categoryRows ? `${specialRows.join("")}${categoryRows}` : `<div class="empty-state">No titles match that search yet. Try a different category or keyword.</div>`;
+  bindCardInteractions(els.rows);
+}
+
+function renderCustomRow(title, items) {
+  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><p class="results-count">${items.length} titles</p></div><div class="row-grid">${sortItemsByCover(items).map(renderCard).join("")}</div></section>`;
+}
+
+function renderFavorites() {
+  const items = getFavoriteItems().filter((item) => {
+    const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
+    return !state.query || haystack.includes(state.query);
+  });
+
+  els.favoritesCount.textContent = `${items.length} title${items.length === 1 ? "" : "s"}`;
+  if (!items.length) {
+    els.favoritesRows.innerHTML = `<div class="empty-state">No favorites yet for ${escapeHtml(getActiveProfile().name)}. Tap the star on any title to move it here.</div>`;
+    return;
+  }
+
+  const grouped = items.reduce((map, item) => {
+    map[item.category] ||= [];
+    map[item.category].push(item);
+    return map;
+  }, {});
+
+  els.favoritesRows.innerHTML = Object.keys(grouped)
+    .map((category) => {
+      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
+      return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
+    })
+    .join("");
+
+  bindCardInteractions(els.favoritesRows);
+}
+
+function renderStats() {
+  const active = getActiveProfile();
+  const history = state.history[active.id] || [];
+  const counts = history.reduce((map, entry) => {
+    map[entry.title] = (map[entry.title] || 0) + 1;
+    return map;
+  }, {});
+  const mostWatched = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([title, count]) => `${title} (${count})`).join(", ") || "No watches yet";
+  const kidProfiles = state.profiles.filter((profile) => profile.maturity !== "R");
+  const kidSummary = kidProfiles.map((profile) => {
+    const kidHistory = state.history[profile.id] || [];
+    const top = kidHistory[0]?.title || "Nothing yet";
+    return `${profile.name}: ${top}`;
+  }).join(" • ");
+  const totalMinutes = history.reduce((sum, entry) => sum + (entry.runtime || 95), 0);
+  els.statsMostWatched.textContent = mostWatched;
+  els.statsKidPrefs.textContent = kidSummary || "No kid profile activity yet";
+  els.statsTotalHours.textContent = `${(totalMinutes / 60).toFixed(1)} hrs`;
+}
+
+function renderTrash() {
+  const items = getTrashItems();
+  els.trashCount.textContent = `${items.length} candidate${items.length === 1 ? "" : "s"}`;
+  els.trashGrid.innerHTML = items.length ? items.map(renderTrashCard).join("") : `<div class="empty-state">No trash review candidates match that search.</div>`;
+}
+
+function renderTrashCard(item) {
+  return `<article class="review-card"><div class="review-body"><div class="review-title">${escapeHtml(item.title)}</div><div class="review-meta">${escapeHtml(item.category)}${item.year ? ` • ${item.year}` : ""}</div><div class="review-meta">Reason: ${escapeHtml(item.reason || "Unknown")}</div><div class="review-meta">Status: ${escapeHtml(String(item.httpStatus ?? "n/a"))}</div><div class="review-actions"><a class="ghost-button review-link" href="${escapeHtml(item.checkedUrl || item.url || "#")}" target="_blank" rel="noreferrer">Open Checked Link</a></div></div></article>`;
+}
+
+function bindCardInteractions(container) {
+  container.querySelectorAll(".card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const item = state.catalog.items.find((entry) => entry.url === card.dataset.url);
+      if (item) openModal(item);
+    });
+  });
+  container.querySelectorAll(".favorite-button").forEach((button) => button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleFavorite(button.dataset.url);
+  }));
+  container.querySelectorAll(".watchlist-button").forEach((button) => button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleWatchlist(button.dataset.url);
+  }));
+}
+
+function renderCard(item) {
+  const gradient = gradientFor(item.title);
+  const active = getActiveProfile();
+  const isFavorite = Boolean(state.favorites[active.id]?.[item.url]);
+  const inWatchlist = Boolean(state.watchlist[active.id]?.[item.url]);
+  const progress = state.progress[active.id]?.[item.url];
+  return `
+    <article class="card" data-url="${escapeHtml(item.url)}" tabindex="0">
+      <div class="card-poster" style='--card-gradient:${gradient};--card-image:${item.posterUrl ? `url("${escapeHtml(item.posterUrl)}")` : "none"}'>
+        <div class="card-topline">
+          <span class="card-kicker">${item.type === "series" ? "Series" : "Movie"}</span>
+          <div class="card-icon-row">
+            <button class="watchlist-button ${inWatchlist ? "active" : ""}" data-url="${escapeHtml(item.url)}" type="button" aria-label="Toggle watchlist">+</button>
+            <button class="favorite-button ${isFavorite ? "active" : ""}" data-url="${escapeHtml(item.url)}" type="button" aria-label="Toggle favorite">★</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
+        <div class="card-meta">${escapeHtml(item.category)} • ${inferRating(item)}${item.year ? ` • ${item.year}` : ""}</div>
+        ${progress ? `<div class="progress-note">Continue watching</div>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function openModal(item) {
+  const gradient = gradientFor(item.title);
+  const active = getActiveProfile();
+  const isFavorite = Boolean(state.favorites[active.id]?.[item.url]);
+  const inWatchlist = Boolean(state.watchlist[active.id]?.[item.url]);
+
+  els.detailArt.style.setProperty("--detail-gradient", gradient);
+  els.detailArt.style.setProperty("--detail-image", item.posterUrl ? `url("${item.posterUrl}")` : "none");
+  els.detailTitle.textContent = item.title;
+  els.detailMeta.textContent = `${item.category} • ${item.type === "series" ? "Series or folder" : "Movie"} • ${inferRating(item)}${item.year ? ` • ${item.year}` : ""}`;
+  els.detailDescription.textContent = item.overview || buildDescription(item);
+  els.detailOpen.href = item.url;
+  els.detailOpen.onclick = () => markWatched(item);
+  els.detailPreview.href = item.previewUrl || item.url;
+  els.detailPreview.style.display = item.previewUrl ? "inline-flex" : "none";
+
+  document.querySelectorAll(".detail-dynamic").forEach((node) => node.remove());
+  const infoBlock = document.createElement("div");
+  infoBlock.className = "detail-dynamic detail-info-grid";
+  infoBlock.innerHTML = `
+    <div><span class="eyebrow">Runtime</span><p>${escapeHtml(item.runtime ? `${item.runtime} min` : "Unknown")}</p></div>
+    <div><span class="eyebrow">TMDB Rating</span><p>${escapeHtml(item.tmdbRating ? Number(item.tmdbRating).toFixed(1) : "N/A")}</p></div>
+    <div><span class="eyebrow">Cast</span><p>${escapeHtml((item.cast || []).join(", ") || "Not loaded yet")}</p></div>
+  `;
+  els.detailDescription.insertAdjacentElement("afterend", infoBlock);
+
+  const controls = document.createElement("div");
+  controls.className = "detail-dynamic detail-actions secondary-actions";
+  controls.innerHTML = `
+    <button id="detailFavoriteButton" class="ghost-button" type="button">${isFavorite ? "Remove Favorite" : "Favorite"}</button>
+    <button id="detailWatchlistButton" class="ghost-button" type="button">${inWatchlist ? "Remove Watchlist" : "Add to Watchlist"}</button>
+  `;
+  els.detailActions.insertAdjacentElement("beforebegin", controls);
+  document.querySelector("#detailFavoriteButton").addEventListener("click", () => toggleFavorite(item.url));
+  document.querySelector("#detailWatchlistButton").addEventListener("click", () => toggleWatchlist(item.url));
+
+  if (!els.detailModal.open) els.detailModal.showModal();
+}
+
+function runSurprise(mode) {
+  const all = getAllowedItems(state.catalog?.items ?? []);
+  let pool = all;
+  if (mode === "category" && state.activeCategory !== "All") {
+    pool = all.filter((item) => item.category === state.activeCategory);
+  } else if (mode === "kid-safe") {
+    pool = state.catalog.items.filter((item) => MATURITY_ORDER[inferRating(item)] <= MATURITY_ORDER.PG);
+  }
+  if (!pool.length) return;
+  animateShuffle(pool);
+}
+
+function animateShuffle(pool) {
+  let ticks = 0;
+  const interval = setInterval(() => {
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    setHero(item);
+    ticks += 1;
+    if (ticks >= 10) {
+      clearInterval(interval);
+      openModal(item);
+    }
+  }, 120);
+}
+
+function toggleFavorite(url) {
+  const active = getActiveProfile();
+  state.favorites[active.id] ||= {};
+  if (state.favorites[active.id][url]) delete state.favorites[active.id][url];
+  else state.favorites[active.id][url] = Date.now();
+  persistState(STORAGE_KEYS.favorites, state.favorites);
+  rerenderActiveView();
+}
+
+function toggleWatchlist(url) {
+  const active = getActiveProfile();
+  state.watchlist[active.id] ||= {};
+  if (state.watchlist[active.id][url]) delete state.watchlist[active.id][url];
+  else state.watchlist[active.id][url] = Date.now();
+  persistState(STORAGE_KEYS.watchlist, state.watchlist);
+  rerenderActiveView();
+}
+
+function markWatched(item) {
+  const active = getActiveProfile();
+  state.progress[active.id] ||= {};
+  state.progress[active.id][item.url] = Date.now();
+  state.history[active.id] ||= [];
+  state.history[active.id] = [
+    { url: item.url, title: item.title, runtime: item.runtime || 95, watchedAt: Date.now() },
+    ...state.history[active.id].filter((entry) => entry.url !== item.url),
+  ].slice(0, 40);
+  persistState(STORAGE_KEYS.progress, state.progress);
+  persistState(STORAGE_KEYS.history, state.history);
+  rerenderActiveView();
+}
+
+function updateSurpriseButtons() {
+  els.surpriseButtons.forEach((button) => button.classList.toggle("active", button.dataset.surpriseMode === state.surpriseMode));
+}
+
+function inferRating(item) {
+  const text = `${item.title} ${item.category}`.toLowerCase();
+  if (/(terrifier|saw|conjuring|annabelle|halloween|chucky|purge|texas chain|elm street|john wick|deadpool|south park|evil dead)/.test(text)) return "R";
+  if (/(harry potter|spider man|marvel|transformers|ghostbusters|gravity falls|teen titans|dragon ball|pokemon detective pikachu|ready player one|superman|oppenheimer|8 mile)/.test(text)) return "PG-13";
+  if (/(disney|family|animation|bluey|spongebob|toy story|minions|despicable me|my little pony|garfield|pokemon|dog man)/.test(text)) return "G";
+  return "PG";
+}
+
+function gradientFor(seedText) {
+  const total = [...seedText].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const [start, end] = palette[total % palette.length];
+  return `linear-gradient(135deg, ${start}, ${end})`;
+}
+
+function buildDescription(item) {
+  const mode = item.type === "series" ? "Open the collection in Google Drive and jump into the folder like a streaming season shelf." : "Launch this title in Google Drive from your Basement Theater streaming library.";
+  return `${mode} Curated from the "${item.category}" section of your catalog for the ${getActiveProfile().name} profile.`;
+}
+
+function normalizedFirstCharacter(title) {
+  const first = title.trim().charAt(0).toUpperCase();
+  return /[A-Z]/.test(first) ? first : "#";
+}
+
+function loadJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function persistState(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+
+function maybeShowWelcome() {
+  if (localStorage.getItem(STORAGE_KEYS.welcomeSeen)) return;
+  if (!els.welcomeModal || els.welcomeModal.open) return;
+  els.welcomeModal.showModal();
+}
+
+function dismissWelcome() {
+  localStorage.setItem(STORAGE_KEYS.welcomeSeen, "true");
+}
+
+</script>
   </body>
   </html>

@@ -1,6 +1,6 @@
 # Basement Theater
 
-Netflix-style streaming app generated from the links inside `The Basement Theater Sorter.docx`.
+Netflix-style streaming app generated from the links inside `The Basement Theater Sorter.docx`, with the front-end bundled into a single `index.html`.
 
 ## Run it
 
@@ -26,6 +26,7 @@ For the Google-locked version, run the app on Vercel so the `/api/*` routes are 
 
 ## Notes
 
+- The front-end now runs from a single [index.html](/Users/elith/Desktop/basement-theater-app/index.html).
 - The deployed app reads its protected catalog through Vercel API routes.
 - Protected catalog data lives under `api/_lib/private/`.
 - File links open directly in Google Drive.
