@@ -629,6 +629,7 @@ h3 {
 
 .public-doc-page.page-home,
 .public-doc-page.page-announcements,
+.public-doc-page.page-updates,
 .public-doc-page.page-game-stash,
 .public-doc-page.page-proxy-corner {
   color: #f2f4f8;
@@ -654,6 +655,10 @@ h3 {
   color: #ffe900;
 }
 
+.public-doc-title.updates {
+  color: #ff2f2f;
+}
+
 .public-doc-title.home {
   color: #33e0ff;
 }
@@ -673,6 +678,10 @@ h3 {
 
 .public-doc-divider.announcements {
   background: #ffe900;
+}
+
+.public-doc-divider.updates {
+  background: #ff2f2f;
 }
 
 .public-doc-divider.home {
@@ -762,6 +771,35 @@ h3 {
   color: #4ea1ff;
   text-decoration: underline;
   word-break: break-word;
+}
+
+.public-updates-list {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.public-update-block {
+  padding-bottom: 16px;
+  border-bottom: 1px dashed rgba(255, 77, 77, 0.55);
+}
+
+.public-update-block:last-child {
+  border-bottom: 0;
+}
+
+.public-update-block h4 {
+  margin: 0 0 12px;
+  color: #ff2f2f;
+  font-size: 1.1rem;
+}
+
+.public-update-block p {
+  margin: 0 0 8px;
+  color: #ff4e4e;
+  font-weight: 800;
+  line-height: 1.55;
 }
 
 .public-home-grid {
@@ -1374,7 +1412,7 @@ const DEFAULT_PROFILES = [
 ];
 
 const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
-const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "game-stash", "proxy-corner"];
+const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 
 const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
 
@@ -1935,6 +1973,7 @@ function getFilteredPublicEntries(page) {
 function renderCuratedPublicPage(page) {
   if (page.slug === "proxy-corner") return renderProxyCornerPage(page);
   if (page.slug === "game-stash") return renderGameStashPage(page);
+  if (page.slug === "updates") return renderUpdatesPage(page);
   if (page.slug === "announcements") return renderAnnouncementsPage(page);
   return renderHomePage(page);
 }
@@ -1946,7 +1985,8 @@ function renderHomePage(page) {
   const alertLines = entries.filter((entry) => /announcement/i.test(entry) || /go to the announcements/i.test(entry));
   const activityIndex = entries.findIndex((entry) => /Average Activity/i.test(entry));
   const activity = activityIndex >= 0 ? entries.slice(activityIndex, activityIndex + 5) : [];
-  const body = entries.filter((entry) => ![title, status, ...alertLines, ...activity].includes(entry));
+  const hiddenHomeLines = new Set(["MY KING 👑 - ELI", "Mr wallace btw lmao"]);
+  const body = entries.filter((entry) => ![title, status, ...alertLines, ...activity].includes(entry) && !hiddenHomeLines.has(entry));
 
   return `
     <section class="public-doc-page page-home">
@@ -2000,6 +2040,58 @@ function renderGameStashPage(page) {
         ${intro ? `<p class="public-doc-note">${escapeHtml(intro)}</p>` : ""}
         ${mainLink ? `<p><a class="public-doc-centered-link" href="${escapeHtml(mainLink.url)}" target="_blank" rel="noreferrer">${escapeHtml(cleanImportedLabel(mainLink.text || "Ultimate Game Stash"))}</a></p>` : ""}
         ${disclaimer ? `<p><span class="public-doc-callout">${escapeHtml(disclaimer)}</span></p>` : ""}
+      </div>
+    </section>
+  `;
+}
+
+function renderUpdatesPage(page) {
+  const entries = getFilteredPublicEntries(page).map((entry) => cleanImportedLabel(entry.text)).filter(Boolean);
+  const title = entries[0] || "Updates";
+  const intro = entries[1] || "";
+  const blocks = [];
+  let current = null;
+
+  for (const entry of entries.slice(2)) {
+    const cleaned = entry.replace(/~+/g, "").trim();
+    if (!cleaned) continue;
+    if (/^Update\b|^UPDATE\b/.test(cleaned)) {
+      current = { heading: cleaned, lines: [] };
+      blocks.push(current);
+      continue;
+    }
+    if (!current) {
+      current = { heading: "", lines: [] };
+      blocks.push(current);
+    }
+
+    const splitLines = cleaned
+      .replace(/Added ProxiesAdded/gi, "Added Proxies\nAdded")
+      .replace(/Added New MusicAdded/gi, "Added New Music\nAdded")
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    current.lines.push(...splitLines);
+  }
+
+  return `
+    <section class="public-doc-page page-updates">
+      <h3 class="public-doc-title updates">${escapeHtml(title)}</h3>
+      <div class="public-doc-divider updates"></div>
+      <div class="public-doc-copy">
+        ${intro ? `<p class="public-doc-note">${escapeHtml(intro)}</p>` : ""}
+      </div>
+      <div class="public-updates-list">
+        ${blocks
+          .map(
+            (block) => `
+              <section class="public-update-block">
+                ${block.heading ? `<h4>${escapeHtml(block.heading)}</h4>` : ""}
+                ${block.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+              </section>
+            `,
+          )
+          .join("")}
       </div>
     </section>
   `;
