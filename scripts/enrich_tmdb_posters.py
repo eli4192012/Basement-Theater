@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import re
 import time
@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 ENV_PATH = ROOT / ".env"
 MANUAL_POSTERS_PATH = ROOT / "data" / "manual-posters.json"
 USER_AGENT = "BasementTheaterTMDB/1.0"
@@ -244,3 +244,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

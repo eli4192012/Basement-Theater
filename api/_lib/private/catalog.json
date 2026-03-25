@@ -1825,7 +1825,12 @@
       "url": "https://drive.google.com/drive/folders/1Rl63s8mf0P41xy-bVNamLoEz7xAkf-nL",
       "previewUrl": "https://drive.google.com/drive/folders/1Rl63s8mf0P41xy-bVNamLoEz7xAkf-nL",
       "driveId": "1Rl63s8mf0P41xy-bVNamLoEz7xAkf-nL",
-      "driveKind": "folder"
+      "driveKind": "folder",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Sonic_The_Hedgehog.svg/960px-Sonic_The_Hedgehog.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Sonic the Hedgehog",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Sonic_the_Hedgehog",
+      "wikipediaScore": 78
     },
     {
       "title": "The Killing Joke",
@@ -1915,9 +1920,12 @@
       "previewUrl": "https://drive.google.com/file/d/1y55KImA3InXXLD0DB2Ko9Wu0_Fbsmfh-/preview",
       "driveId": "1y55KImA3InXXLD0DB2Ko9Wu0_Fbsmfh-",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/iLAGiPnSuODt9cn332bkFElrRig.jpg",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Diary_of_a_Wimpy_Kid_logo.svg/960px-Diary_of_a_Wimpy_Kid_logo.svg.png",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/oniHiwopis0ZN71pHydIAzTkkOM.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Diary of a Wimpy Kid",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Diary_of_a_Wimpy_Kid",
+      "wikipediaScore": 78
     },
     {
       "title": "Demon Slayer S1 E13",
@@ -3655,7 +3663,12 @@
       "url": "https://kaido.to/",
       "previewUrl": null,
       "driveId": null,
-      "driveKind": null
+      "driveKind": null,
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/1/10/TokaidoHakone.jpg",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Kaidō",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Kaid%C5%8D",
+      "wikipediaScore": 78
     },
     {
       "title": "animeflix",
@@ -3761,9 +3774,12 @@
       "previewUrl": "https://drive.google.com/drive/folders/1cOFMumtLFERJqS6Y5oTyBb6ZRXNHCgZF",
       "driveId": "1cOFMumtLFERJqS6Y5oTyBb6ZRXNHCgZF",
       "driveKind": "folder",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/5h0EU2lqBb03dp5vtRuUHJwqzem.jpg",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/5/55/Stephen_Hillenburg_by_Carlos_Cazurro_%28cropped%29.jpg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/aasp5EmwclAQbwfGABWLTNLhjwB.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "List of SpongeBob SquarePants episodes (seasons 1–10)",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/List_of_SpongeBob_SquarePants_episodes_(seasons_1%E2%80%9310)",
+      "wikipediaScore": 48
     },
     {
       "title": "Garfield & Friends Full Series",
@@ -4016,7 +4032,12 @@
       "url": "https://drive.google.com/file/d/1LZI5E52J_R_Cx6f3EXLl-BAn6vuhUduD/view",
       "previewUrl": "https://drive.google.com/file/d/1LZI5E52J_R_Cx6f3EXLl-BAn6vuhUduD/preview",
       "driveId": "1LZI5E52J_R_Cx6f3EXLl-BAn6vuhUduD",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Hotel_Transylvania_logo.svg/960px-Hotel_Transylvania_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Hotel Transylvania",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Hotel_Transylvania",
+      "wikipediaScore": 78
     },
     {
       "title": "Hotel Transylvania 3 Summer Vacation 2018",
@@ -6179,7 +6200,12 @@
       "url": "https://drive.google.com/file/d/10pB2dWxRnTfgQ7UE-m7OMuorO4UA4Q-L/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/10pB2dWxRnTfgQ7UE-m7OMuorO4UA4Q-L/preview",
       "driveId": "10pB2dWxRnTfgQ7UE-m7OMuorO4UA4Q-L",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Evil_Dead_logo.svg/960px-Evil_Dead_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Evil Dead",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Evil_Dead",
+      "wikipediaScore": 78
     },
     {
       "title": "Meg2",
@@ -6988,7 +7014,12 @@
       "url": "https://drive.google.com/file/d/1AoToS8Ettg_wVvjDxQz3BiWLu-ewi6RG/view",
       "previewUrl": "https://drive.google.com/file/d/1AoToS8Ettg_wVvjDxQz3BiWLu-ewi6RG/preview",
       "driveId": "1AoToS8Ettg_wVvjDxQz3BiWLu-ewi6RG",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "RPReplay Final1716100426",
@@ -7541,7 +7572,12 @@
       "url": "https://drive.google.com/file/d/1q5wcbuy536XQKTBAF7ImApMAlNMVHM5T/view?usp=sharing",
       "previewUrl": "https://drive.google.com/file/d/1q5wcbuy536XQKTBAF7ImApMAlNMVHM5T/preview",
       "driveId": "1q5wcbuy536XQKTBAF7ImApMAlNMVHM5T",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "Moana 2 2024",
@@ -7957,7 +7993,12 @@
       "url": "https://drive.google.com/file/d/1Vbux2rKqR7SsUGDYYFZpKbTKxoa31r9U/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/1Vbux2rKqR7SsUGDYYFZpKbTKxoa31r9U/preview",
       "driveId": "1Vbux2rKqR7SsUGDYYFZpKbTKxoa31r9U",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "Pokemon Pikachu the Movie 2001 (2000 )",
@@ -8403,7 +8444,12 @@
       "url": "https://drive.google.com/file/d/1MK3TtFmwYuGoUpHVJ5uESuJzG8PrTppE/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/1MK3TtFmwYuGoUpHVJ5uESuJzG8PrTppE/preview",
       "driveId": "1MK3TtFmwYuGoUpHVJ5uESuJzG8PrTppE",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "South Park- The Streaming Wars 2022",
@@ -8601,7 +8647,12 @@
       "url": "https://drive.google.com/file/d/1UKCK7zdXb374ZiDB-79zubOVtBU-8Q2D/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/1UKCK7zdXb374ZiDB-79zubOVtBU-8Q2D/preview",
       "driveId": "1UKCK7zdXb374ZiDB-79zubOVtBU-8Q2D",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "Pokémon the Movie- The Power of Us 2018",
@@ -8651,7 +8702,12 @@
       "url": "https://drive.google.com/file/d/17faKYkcJ9wTp2ZWXx9w-s0oC8603ukZ_/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/17faKYkcJ9wTp2ZWXx9w-s0oC8603ukZ_/preview",
       "driveId": "17faKYkcJ9wTp2ZWXx9w-s0oC8603ukZ_",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "Curse of Chucky",
@@ -11659,7 +11715,12 @@
       "url": "https://drive.google.com/file/d/1_5PiiaO_lwVMh3_4Px-TU0modiH11V8r/view?usp=drive_link",
       "previewUrl": "https://drive.google.com/file/d/1_5PiiaO_lwVMh3_4Px-TU0modiH11V8r/preview",
       "driveId": "1_5PiiaO_lwVMh3_4Px-TU0modiH11V8r",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "Pokémon 3- The Movie - Spell of the Unown 2000",
@@ -11681,7 +11742,9 @@
       "url": "https://drive.google.com/file/d/1NdTT4lliP8hYR0TmvI43koPyS_oC8ZWu/view",
       "previewUrl": "https://drive.google.com/file/d/1NdTT4lliP8hYR0TmvI43koPyS_oC8ZWu/preview",
       "driveId": "1NdTT4lliP8hYR0TmvI43koPyS_oC8ZWu",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S07M01 Destiny Deoxys (2004 re-dvdrip)",
@@ -11692,7 +11755,9 @@
       "url": "https://drive.google.com/file/d/1ifpppV1xDhhLcveUmjM_6cMezT2vz2x7/view",
       "previewUrl": "https://drive.google.com/file/d/1ifpppV1xDhhLcveUmjM_6cMezT2vz2x7/preview",
       "driveId": "1ifpppV1xDhhLcveUmjM_6cMezT2vz2x7",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S08M01 Lucario And The Mystery Of Mew (2005 re-dvdrip)",
@@ -11703,7 +11768,9 @@
       "url": "https://drive.google.com/file/d/1tOVjBt76zhvjdnQscX2JDpXLvHfnK8vs/view",
       "previewUrl": "https://drive.google.com/file/d/1tOVjBt76zhvjdnQscX2JDpXLvHfnK8vs/preview",
       "driveId": "1tOVjBt76zhvjdnQscX2JDpXLvHfnK8vs",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S09M01 Pokemon Ranger and the Temple of the Sea (2006 re-dvdrip)",
@@ -11714,7 +11781,9 @@
       "url": "https://drive.google.com/file/d/1-dFcez20ORyN87Fu8ewkOfTPZcjhlRFX/view",
       "previewUrl": "https://drive.google.com/file/d/1-dFcez20ORyN87Fu8ewkOfTPZcjhlRFX/preview",
       "driveId": "1-dFcez20ORyN87Fu8ewkOfTPZcjhlRFX",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S09M02 The Mastermind of Mirage Pokemon (2006 re-tvrip)",
@@ -11725,7 +11794,9 @@
       "url": "https://drive.google.com/file/d/1jwRoYdU8ouuQvLXvnS3cEGJA-qnzMSRl/view",
       "previewUrl": "https://drive.google.com/file/d/1jwRoYdU8ouuQvLXvnS3cEGJA-qnzMSRl/preview",
       "driveId": "1jwRoYdU8ouuQvLXvnS3cEGJA-qnzMSRl",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S10M01 The Rise Of Darkrai (2007 re-dvdrip)",
@@ -11736,7 +11807,9 @@
       "url": "https://drive.google.com/file/d/1BOQls6TkzeS1xl9_CNKfzFE4zvYFM86_/view",
       "previewUrl": "https://drive.google.com/file/d/1BOQls6TkzeS1xl9_CNKfzFE4zvYFM86_/preview",
       "driveId": "1BOQls6TkzeS1xl9_CNKfzFE4zvYFM86_",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S11M01 Giratina and the Sky Warrior (2008 re-dvdrip)",
@@ -11747,7 +11820,9 @@
       "url": "https://drive.google.com/file/d/1UNIh4bEoFww-J7jK2uC71Xzy7oo2wPFd/view",
       "previewUrl": "https://drive.google.com/file/d/1UNIh4bEoFww-J7jK2uC71Xzy7oo2wPFd/preview",
       "driveId": "1UNIh4bEoFww-J7jK2uC71Xzy7oo2wPFd",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S12M01 Arceus and the Jewel of Life (2009 re-dvdrip)",
@@ -11758,7 +11833,9 @@
       "url": "https://drive.google.com/file/d/1BAj7sTAaWEhIbR7py0N4rEYiuVlV-Xd1/view",
       "previewUrl": "https://drive.google.com/file/d/1BAj7sTAaWEhIbR7py0N4rEYiuVlV-Xd1/preview",
       "driveId": "1BAj7sTAaWEhIbR7py0N4rEYiuVlV-Xd1",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S13M01 Zoroark Master of Illusions (2010 re-dvdrip)",
@@ -11769,7 +11846,9 @@
       "url": "https://drive.google.com/file/d/1XsDXQanqAAhWHD_UTCoPNOqAWRn-1xMX/view",
       "previewUrl": "https://drive.google.com/file/d/1XsDXQanqAAhWHD_UTCoPNOqAWRn-1xMX/preview",
       "driveId": "1XsDXQanqAAhWHD_UTCoPNOqAWRn-1xMX",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S17M01 Diancie and the Cocoon of Destruction (2014 re-tvrip)",
@@ -11780,7 +11859,9 @@
       "url": "https://drive.google.com/file/d/1T0EfNAPXtEFlegG4QR4l9octOKCWxc2y/view",
       "previewUrl": "https://drive.google.com/file/d/1T0EfNAPXtEFlegG4QR4l9octOKCWxc2y/preview",
       "driveId": "1T0EfNAPXtEFlegG4QR4l9octOKCWxc2y",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S18M01 Hoopla and the Clash of Ages (2015 re- )",
@@ -11791,7 +11872,9 @@
       "url": "https://drive.google.com/file/d/1ecwRwY6gUk3WqSs3kQZk39gVIKldtshn/view",
       "previewUrl": "https://drive.google.com/file/d/1ecwRwY6gUk3WqSs3kQZk39gVIKldtshn/preview",
       "driveId": "1ecwRwY6gUk3WqSs3kQZk39gVIKldtshn",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Pokemon S19M01 Volcanion and the Mechanical Marvel (2016 re-tvrip)",
@@ -11802,7 +11885,9 @@
       "url": "https://drive.google.com/file/d/1vOw571B5DOODNo2zuW998QG2setoM2CS/view",
       "previewUrl": "https://drive.google.com/file/d/1vOw571B5DOODNo2zuW998QG2setoM2CS/preview",
       "driveId": "1vOw571B5DOODNo2zuW998QG2setoM2CS",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pokemon-fallback-poster.svg",
+      "imageSource": "pokemon-fallback"
     },
     {
       "title": "Digimon Hurricane Touchdown",
@@ -14282,7 +14367,12 @@
       "url": "https://drive.google.com/drive/folders/1QKSJxCrNtvP7Li3lLz0GhuTV7WrbXMiS",
       "previewUrl": "https://drive.google.com/drive/folders/1QKSJxCrNtvP7Li3lLz0GhuTV7WrbXMiS",
       "driveId": "1QKSJxCrNtvP7Li3lLz0GhuTV7WrbXMiS",
-      "driveKind": "folder"
+      "driveKind": "folder",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "imageSource": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "wikipediaScore": 78
     },
     {
       "title": "annas-archive",

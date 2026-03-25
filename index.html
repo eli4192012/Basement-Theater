@@ -10,17 +10,26 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app-backdrop"></div>
+    <section id="authGate" class="auth-gate">
+      <div class="auth-card">
+        <p class="eyebrow">Private Screening</p>
+        <h1 class="auth-title">Sign In To Enter Basement Theater</h1>
+        <p id="authMessage" class="auth-message">Checking access setup...</p>
+        <div id="googleSignInButton" class="google-signin-slot"></div>
+      </div>
+    </section>
     <div class="page-shell">
       <header class="topbar">
         <div class="brand-lockup">
           <div class="brand-wordmark">BASEMENT THEATER</div>
           <nav class="nav-links" aria-label="Primary">
             <button id="libraryTabButton" class="nav-link active" type="button">Library</button>
-            <button id="reviewTabButton" class="nav-link" type="button">Wikipedia Review</button>
+            <button id="favoritesTabButton" class="nav-link" type="button">Favorites</button>
             <button id="trashTabButton" class="nav-link" type="button">Trash Review</button>
           </nav>
         </div>
@@ -90,16 +99,16 @@
           <section id="rows" class="rows"></section>
         </section>
 
-        <section id="reviewView" class="hidden-view">
+        <section id="favoritesView" class="hidden-view">
           <section class="review-header">
             <div>
-              <p class="eyebrow">Review Queue</p>
-              <h2>Wikipedia Cover Candidates</h2>
+              <p class="eyebrow">Saved Picks</p>
+              <h2>Favorites</h2>
             </div>
-            <p id="reviewCount" class="results-count"></p>
+            <p id="favoritesCount" class="results-count"></p>
           </section>
-          <p class="review-note">Covers shown here are only suggestions from Wikipedia. They are not applied to the main app until we explicitly merge them.</p>
-          <section id="reviewGrid" class="review-grid"></section>
+          <p class="review-note">Favorite a title to move it here. Remove favorite to send it back into the main library.</p>
+          <section id="favoritesRows" class="rows"></section>
         </section>
 
         <section id="trashView" class="hidden-view">
@@ -110,7 +119,7 @@
             </div>
             <p id="trashCount" class="results-count"></p>
           </section>
-          <p class="review-note">These titles were flagged by an automated Google Drive link check. They are only suggestions for review and are not deleted from the main app.</p>
+          <p class="review-note">This review queue is empty right now because the previously flagged trash titles were deleted from the library.</p>
           <section id="trashGrid" class="review-grid"></section>
         </section>
       </main>
@@ -130,6 +139,46 @@
               <a id="detailOpen" class="primary-button" href="#" target="_blank" rel="noreferrer">Open in Drive</a>
               <a id="detailPreview" class="ghost-button" href="#" target="_blank" rel="noreferrer">Preview</a>
             </div>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="welcomeModal" class="detail-modal welcome-modal">
+      <form method="dialog" class="detail-card welcome-card">
+        <button class="close-button" aria-label="Close welcome">x</button>
+        <div class="welcome-copy">
+          <p class="eyebrow">Welcome</p>
+          <h3>How Basement Theater Works</h3>
+          <p class="detail-description">This app is your family movie shelf. Pick a profile, browse the library, and open titles straight from Google Drive.</p>
+          <div class="welcome-grid">
+            <div>
+              <span class="eyebrow">Library</span>
+              <p>Browse by category or A-Z. Titles with covers rise to the top, and the featured pick always uses a covered title.</p>
+            </div>
+            <div>
+              <span class="eyebrow">Profiles</span>
+              <p>Each profile keeps its own favorites, watchlist, continue watching, and age filter.</p>
+            </div>
+            <div>
+              <span class="eyebrow">Favorites</span>
+              <p>Tap the star to move a title into the Favorites tab. Remove it there and it returns to the main library.</p>
+            </div>
+            <div>
+              <span class="eyebrow">Play</span>
+              <p>Click a poster for more details, then use Play or Preview to open the Drive link.</p>
+            </div>
+            <div>
+              <span class="eyebrow">Surprise Me</span>
+              <p>Use Shuffle for a random pick from everything, the current category, or kid-safe titles only.</p>
+            </div>
+            <div>
+              <span class="eyebrow">Trash Review</span>
+              <p>That tab is just a holding area for broken-link review. It does not affect the main library unless you choose to clean things up.</p>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <button id="welcomeDismissButton" class="primary-button" type="submit">Start Watching</button>
           </div>
         </div>
       </form>

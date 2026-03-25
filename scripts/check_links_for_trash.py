@@ -1,4 +1,4 @@
-import json
+﻿import json
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -9,8 +9,8 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
-OUTPUT_PATH = ROOT / "data" / "trash-review.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
+OUTPUT_PATH = ROOT / "api" / "_lib" / "private" / "trash-review.json"
 USER_AGENT = "BasementTheaterLinkCheck/1.0"
 MAX_WORKERS = 12
 
@@ -136,3 +136,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

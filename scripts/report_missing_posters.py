@@ -1,9 +1,9 @@
-import json
+﻿import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 REPORT_PATH = ROOT / "data" / "missing-posters.json"
 
 
@@ -26,3 +26,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

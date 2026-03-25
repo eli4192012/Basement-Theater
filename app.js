@@ -5,6 +5,7 @@
   favorites: "basement-theater.favorites",
   watchlist: "basement-theater.watchlist",
   history: "basement-theater.history",
+  welcomeSeen: "basement-theater.welcome-seen",
 };
 
 const DEFAULT_PROFILES = [
@@ -18,8 +19,12 @@ const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
 
 const state = {
   catalog: null,
-  review: { items: [], totalCandidates: 0 },
   trash: { items: [], totalCandidates: 0 },
+  auth: {
+    token: sessionStorage.getItem("basement-theater.google-token") || "",
+    user: loadJson("basement-theater.google-user", null),
+    config: null,
+  },
   profiles: loadJson(STORAGE_KEYS.profiles, DEFAULT_PROFILES),
   activeProfileId: localStorage.getItem(STORAGE_KEYS.activeProfileId) || DEFAULT_PROFILES[0].id,
   progress: loadJson(STORAGE_KEYS.progress, {}),
@@ -32,13 +37,17 @@ const state = {
   featuredIndex: 0,
   activeView: "library",
   surpriseMode: "all",
+  editingProfileName: false,
 };
 
 const els = {
+  authGate: document.querySelector("#authGate"),
+  authMessage: document.querySelector("#authMessage"),
+  googleSignInButton: document.querySelector("#googleSignInButton"),
   rows: document.querySelector("#rows"),
-  reviewGrid: document.querySelector("#reviewGrid"),
+  favoritesRows: document.querySelector("#favoritesRows"),
   trashGrid: document.querySelector("#trashGrid"),
-  reviewCount: document.querySelector("#reviewCount"),
+  favoritesCount: document.querySelector("#favoritesCount"),
   trashCount: document.querySelector("#trashCount"),
   searchInput: document.querySelector("#searchInput"),
   genreChips: document.querySelector("#genreChips"),
@@ -54,6 +63,7 @@ const els = {
   heroArt: document.querySelector("#heroArt"),
   randomPickButton: document.querySelector("#randomPickButton"),
   detailModal: document.querySelector("#detailModal"),
+  welcomeModal: document.querySelector("#welcomeModal"),
   detailTitle: document.querySelector("#detailTitle"),
   detailMeta: document.querySelector("#detailMeta"),
   detailDescription: document.querySelector("#detailDescription"),
@@ -61,13 +71,14 @@ const els = {
   detailPreview: document.querySelector("#detailPreview"),
   detailArt: document.querySelector("#detailArt"),
   libraryView: document.querySelector("#libraryView"),
-  reviewView: document.querySelector("#reviewView"),
+  favoritesView: document.querySelector("#favoritesView"),
   trashView: document.querySelector("#trashView"),
   libraryTabButton: document.querySelector("#libraryTabButton"),
-  reviewTabButton: document.querySelector("#reviewTabButton"),
+  favoritesTabButton: document.querySelector("#favoritesTabButton"),
   trashTabButton: document.querySelector("#trashTabButton"),
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
+  welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
   surpriseButtons: document.querySelectorAll("[data-surprise-mode]"),
   statsPanel: document.querySelector("#statsPanel"),
   statsMostWatched: document.querySelector("#statsMostWatched"),
@@ -89,20 +100,115 @@ const palette = [
 init();
 
 async function init() {
-  const [catalogResponse, reviewResponse, trashResponse] = await Promise.all([
-    fetch("./data/catalog.json"),
-    fetch("./data/wikipedia-review.json").catch(() => null),
-    fetch("./data/trash-review.json").catch(() => null),
-  ]);
-
-  state.catalog = await catalogResponse.json();
-  if (reviewResponse?.ok) state.review = await reviewResponse.json();
-  if (trashResponse?.ok) state.trash = await trashResponse.json();
-
   ensureActiveProfile();
   buildProfileBar();
   bindEvents();
+  await bootstrapAuth();
+}
+
+async function bootstrapAuth() {
+  setAuthMessage("Checking access setup...");
+  try {
+    state.auth.config = await fetchJson("/api/config");
+  } catch {
+    setAuthMessage("Could not load the sign-in setup. Try refreshing in a moment.");
+    return;
+  }
+
+  if (!state.auth.config?.googleClientId) {
+    setAuthMessage("Google sign-in is not configured yet. Add the Google client ID in Vercel to turn on private access.");
+    return;
+  }
+
+  if (state.auth.token) {
+    const verified = await verifyAccess(state.auth.token);
+    if (verified) {
+      await loadProtectedData();
+      return;
+    }
+  }
+
+  setAuthMessage("Sign in with an approved Google account to open the theater.");
+  renderGoogleSignIn();
+}
+
+async function loadProtectedData() {
+  const [catalog, trash] = await Promise.all([
+    authedFetchJson("/api/catalog"),
+    authedFetchJson("/api/trash").catch(() => ({ items: [], totalCandidates: 0 })),
+  ]);
+  state.catalog = catalog;
+  state.trash = trash;
+  els.authGate.classList.add("hidden");
   renderAll();
+}
+
+function renderGoogleSignIn() {
+  if (!window.google?.accounts?.id) {
+    window.setTimeout(renderGoogleSignIn, 300);
+    return;
+  }
+
+  els.googleSignInButton.innerHTML = "";
+  window.google.accounts.id.initialize({
+    client_id: state.auth.config.googleClientId,
+    callback: async (response) => {
+      setAuthMessage("Checking your access...");
+      const verified = await verifyAccess(response.credential);
+      if (!verified) return;
+      await loadProtectedData();
+    },
+  });
+  window.google.accounts.id.renderButton(els.googleSignInButton, {
+    theme: "outline",
+    size: "large",
+    shape: "pill",
+    width: 280,
+    text: "signin_with",
+  });
+}
+
+async function verifyAccess(token) {
+  try {
+    const result = await fetchJson("/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: token }),
+    });
+    state.auth.token = token;
+    state.auth.user = result.user;
+    sessionStorage.setItem("basement-theater.google-token", token);
+    localStorage.setItem("basement-theater.google-user", JSON.stringify(result.user));
+    return true;
+  } catch (error) {
+    state.auth.token = "";
+    state.auth.user = null;
+    sessionStorage.removeItem("basement-theater.google-token");
+    localStorage.removeItem("basement-theater.google-user");
+    setAuthMessage(error.message || "That account is not approved for Basement Theater.");
+    return false;
+  }
+}
+
+async function authedFetchJson(url) {
+  return fetchJson(url, {
+    headers: {
+      Authorization: `Bearer ${state.auth.token}`,
+    },
+  });
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Request failed.");
+  }
+  return payload;
+}
+
+function setAuthMessage(message) {
+  els.authMessage.textContent = message;
 }
 
 function renderAll() {
@@ -112,10 +218,11 @@ function renderAll() {
   renderLetterChips();
   updateSurpriseButtons();
   renderRows();
-  renderReview();
+  renderFavorites();
   renderTrash();
   renderStats();
   syncView();
+  maybeShowWelcome();
 }
 
 function buildProfileBar() {
@@ -129,9 +236,10 @@ function buildProfileBar() {
       </div>
       <div class="profile-section-right">
         <div class="profile-meta">
-          <span id="activeProfileName" class="profile-name"></span>
+          <input id="activeProfileName" class="profile-name-input" type="text" maxlength="24" readonly aria-label="Active profile name" />
           <span id="activeProfileGate" class="profile-gate"></span>
         </div>
+        <button id="renameProfileButton" class="ghost-button rename-profile-button" type="button">Rename</button>
       </div>
     </div>
   `;
@@ -139,12 +247,31 @@ function buildProfileBar() {
   els.profileList = document.querySelector("#profileList");
   els.activeProfileName = document.querySelector("#activeProfileName");
   els.activeProfileGate = document.querySelector("#activeProfileGate");
+  els.renameProfileButton = document.querySelector("#renameProfileButton");
 }
 
 function bindEvents() {
   els.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLowerCase();
     rerenderActiveView();
+  });
+
+  els.renameProfileButton.addEventListener("click", () => {
+    if (state.editingProfileName) saveActiveProfileName();
+    else startProfileRename();
+  });
+  els.activeProfileName.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      saveActiveProfileName();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelActiveProfileRename();
+    }
+  });
+  els.activeProfileName.addEventListener("blur", () => {
+    if (state.editingProfileName) saveActiveProfileName();
   });
 
   els.randomPickButton.addEventListener("click", () => runSurprise(state.surpriseMode));
@@ -158,7 +285,7 @@ function bindEvents() {
   });
 
   els.libraryTabButton.addEventListener("click", () => setView("library"));
-  els.reviewTabButton.addEventListener("click", () => setView("review"));
+  els.favoritesTabButton.addEventListener("click", () => setView("favorites"));
   els.trashTabButton.addEventListener("click", () => setView("trash"));
 
   els.surpriseButtons.forEach((button) => {
@@ -178,6 +305,9 @@ function bindEvents() {
       event.clientX <= rect.left + rect.width;
     if (!inDialog) els.detailModal.close();
   });
+
+  els.welcomeModal?.addEventListener("close", dismissWelcome);
+  els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
 }
 
 function setView(view) {
@@ -186,20 +316,20 @@ function setView(view) {
 }
 
 function syncView() {
-  const reviewing = state.activeView === "review";
+  const favorites = state.activeView === "favorites";
   const trashing = state.activeView === "trash";
   const library = state.activeView === "library";
 
   els.libraryView.classList.toggle("hidden-view", !library);
-  els.reviewView.classList.toggle("hidden-view", !reviewing);
+  els.favoritesView.classList.toggle("hidden-view", !favorites);
   els.trashView.classList.toggle("hidden-view", !trashing);
   els.libraryTabButton.classList.toggle("active", library);
-  els.reviewTabButton.classList.toggle("active", reviewing);
+  els.favoritesTabButton.classList.toggle("active", favorites);
   els.trashTabButton.classList.toggle("active", trashing);
   els.randomPickButton.disabled = !library;
   els.randomPickButton.classList.toggle("disabled-button", !library);
   if (library) renderRows();
-  if (reviewing) renderReview();
+  if (favorites) renderFavorites();
   if (trashing) renderTrash();
 }
 
@@ -209,8 +339,8 @@ function rerenderActiveView() {
   if (state.activeView === "library") {
     renderHero();
     renderRows();
-  } else if (state.activeView === "review") {
-    renderReview();
+  } else if (state.activeView === "favorites") {
+    renderFavorites();
   } else {
     renderTrash();
   }
@@ -218,6 +348,40 @@ function rerenderActiveView() {
 
 function getActiveProfile() {
   return state.profiles.find((profile) => profile.id === state.activeProfileId) || state.profiles[0];
+}
+
+function startProfileRename() {
+  const active = getActiveProfile();
+  if (!active) return;
+  state.editingProfileName = true;
+  els.activeProfileName.readOnly = false;
+  els.activeProfileName.focus();
+  els.activeProfileName.select();
+  els.renameProfileButton.textContent = "Save";
+}
+
+function saveActiveProfileName() {
+  const active = getActiveProfile();
+  if (!active) return;
+
+  const cleaned = els.activeProfileName.value.trim().replace(/\s+/g, " ").slice(0, 24);
+  active.name = cleaned || active.name;
+  persistState(STORAGE_KEYS.profiles, state.profiles);
+  finishProfileRename();
+  rerenderActiveView();
+}
+
+function cancelActiveProfileRename() {
+  const active = getActiveProfile();
+  if (!active) return;
+  els.activeProfileName.value = active.name;
+  finishProfileRename();
+}
+
+function finishProfileRename() {
+  state.editingProfileName = false;
+  els.activeProfileName.readOnly = true;
+  els.renameProfileButton.textContent = "Rename";
 }
 
 function ensureActiveProfile() {
@@ -247,16 +411,26 @@ function renderProfiles() {
     });
   });
 
-  els.activeProfileName.textContent = active.name;
+  els.activeProfileName.value = active.name;
   els.activeProfileGate.textContent = `Allowed: ${active.maturity}`;
+  els.renameProfileButton.textContent = state.editingProfileName ? "Save" : "Rename";
 }
 
 function getAllowedItems(items, profile = getActiveProfile()) {
   return items.filter((item) => MATURITY_ORDER[inferRating(item)] <= MATURITY_ORDER[profile.maturity]);
 }
 
+function isFavoriteItem(item, profile = getActiveProfile()) {
+  return Boolean(state.favorites[profile.id]?.[item.url]);
+}
+
+function getLibraryItems() {
+  const active = getActiveProfile();
+  return getAllowedItems(state.catalog?.items ?? [], active).filter((item) => !isFavoriteItem(item, active));
+}
+
 function getFilteredItems() {
-  const items = getAllowedItems(state.catalog?.items ?? []);
+  const items = getLibraryItems();
   return items.filter((item) => {
     const matchesCategory = state.activeCategory === "All" || item.category === state.activeCategory;
     const matchesLetter = state.activeLetter === "All" || normalizedFirstCharacter(item.title) === state.activeLetter;
@@ -269,7 +443,7 @@ function getFilteredItems() {
 function getContinueWatchingItems() {
   const active = getActiveProfile();
   const watched = state.progress[active.id] || {};
-  const items = getAllowedItems(state.catalog?.items ?? []);
+  const items = getLibraryItems();
   return items.filter((item) => watched[item.url]).sort((a, b) => watched[b.url] - watched[a.url]).slice(0, 12);
 }
 
@@ -277,27 +451,29 @@ function getFavoriteItems() {
   const active = getActiveProfile();
   const favorites = state.favorites[active.id] || {};
   const items = getAllowedItems(state.catalog?.items ?? []);
-  return items.filter((item) => favorites[item.url]).slice(0, 12);
+  return items.filter((item) => favorites[item.url]);
 }
 
 function getWatchlistItems() {
   const active = getActiveProfile();
   const watchlist = state.watchlist[active.id] || {};
-  const items = getAllowedItems(state.catalog?.items ?? []);
+  const items = getLibraryItems();
   return items.filter((item) => watchlist[item.url]).slice(0, 12);
 }
 
 function getRecentlyWatchedItems() {
   const active = getActiveProfile();
   const history = state.history[active.id] || [];
-  const items = getAllowedItems(state.catalog?.items ?? []);
+  const items = getLibraryItems();
   return history.map((entry) => items.find((item) => item.url === entry.url)).filter(Boolean).slice(0, 12);
 }
 
-function getReviewItems() {
-  return (state.review?.items ?? []).filter((item) => {
-    const haystack = `${item.title} ${item.wikipediaTitle} ${item.category}`.toLowerCase();
-    return !state.query || haystack.includes(state.query);
+function sortItemsByCover(items) {
+  return items.slice().sort((a, b) => {
+    const aHasCover = Number(Boolean(a.posterUrl || a.backdropUrl));
+    const bHasCover = Number(Boolean(b.posterUrl || b.backdropUrl));
+    if (aHasCover !== bHasCover) return bHasCover - aHasCover;
+    return a.title.localeCompare(b.title);
   });
 }
 
@@ -310,7 +486,7 @@ function getTrashItems() {
 
 function getHeroItem() {
   const preferred = state.catalog?.featured ?? [];
-  const items = getAllowedItems(state.catalog?.items ?? []);
+  const items = getLibraryItems();
   const coveredItems = items.filter((item) => item.posterUrl || item.backdropUrl);
   const pool = coveredItems.length ? coveredItems : items;
   const title = preferred[state.featuredIndex % Math.max(preferred.length, 1)];
@@ -369,8 +545,6 @@ function renderRows() {
   if (continueWatching.length) specialRows.push(renderCustomRow("Continue Watching", continueWatching));
   const watchlist = getWatchlistItems();
   if (watchlist.length) specialRows.push(renderCustomRow("My Watchlist", watchlist));
-  const favorites = getFavoriteItems();
-  if (favorites.length) specialRows.push(renderCustomRow("My Favorites", favorites));
   const recentlyWatched = getRecentlyWatchedItems();
   if (recentlyWatched.length) specialRows.push(renderCustomRow("Recently Watched", recentlyWatched));
 
@@ -381,31 +555,45 @@ function renderRows() {
 
   const categoryRows = Object.keys(grouped)
     .map((category) => {
-      const cards = grouped[category].slice().sort((a, b) => a.title.localeCompare(b.title)).map(renderCard).join("");
+      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
       return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
     })
     .join("");
 
   els.rows.innerHTML = specialRows.length || categoryRows ? `${specialRows.join("")}${categoryRows}` : `<div class="empty-state">No titles match that search yet. Try a different category or keyword.</div>`;
-
-  els.rows.querySelectorAll(".card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const item = state.catalog.items.find((entry) => entry.url === card.dataset.url);
-      if (item) openModal(item);
-    });
-  });
-  els.rows.querySelectorAll(".favorite-button").forEach((button) => button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleFavorite(button.dataset.url);
-  }));
-  els.rows.querySelectorAll(".watchlist-button").forEach((button) => button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleWatchlist(button.dataset.url);
-  }));
+  bindCardInteractions(els.rows);
 }
 
 function renderCustomRow(title, items) {
-  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><p class="results-count">${items.length} titles</p></div><div class="row-grid">${items.map(renderCard).join("")}</div></section>`;
+  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><p class="results-count">${items.length} titles</p></div><div class="row-grid">${sortItemsByCover(items).map(renderCard).join("")}</div></section>`;
+}
+
+function renderFavorites() {
+  const items = getFavoriteItems().filter((item) => {
+    const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
+    return !state.query || haystack.includes(state.query);
+  });
+
+  els.favoritesCount.textContent = `${items.length} title${items.length === 1 ? "" : "s"}`;
+  if (!items.length) {
+    els.favoritesRows.innerHTML = `<div class="empty-state">No favorites yet for ${escapeHtml(getActiveProfile().name)}. Tap the star on any title to move it here.</div>`;
+    return;
+  }
+
+  const grouped = items.reduce((map, item) => {
+    map[item.category] ||= [];
+    map[item.category].push(item);
+    return map;
+  }, {});
+
+  els.favoritesRows.innerHTML = Object.keys(grouped)
+    .map((category) => {
+      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
+      return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
+    })
+    .join("");
+
+  bindCardInteractions(els.favoritesRows);
 }
 
 function renderStats() {
@@ -428,24 +616,31 @@ function renderStats() {
   els.statsTotalHours.textContent = `${(totalMinutes / 60).toFixed(1)} hrs`;
 }
 
-function renderReview() {
-  const items = getReviewItems();
-  els.reviewCount.textContent = `${items.length} candidate${items.length === 1 ? "" : "s"}`;
-  els.reviewGrid.innerHTML = items.length ? items.map(renderReviewCard).join("") : `<div class="empty-state">No Wikipedia review candidates match that search.</div>`;
-}
-
 function renderTrash() {
   const items = getTrashItems();
   els.trashCount.textContent = `${items.length} candidate${items.length === 1 ? "" : "s"}`;
   els.trashGrid.innerHTML = items.length ? items.map(renderTrashCard).join("") : `<div class="empty-state">No trash review candidates match that search.</div>`;
 }
 
-function renderReviewCard(item) {
-  return `<article class="review-card"><div class="review-image" style='background-image:url("${escapeHtml(item.posterUrl)}")'></div><div class="review-body"><div class="review-title">${escapeHtml(item.title)}</div><div class="review-meta">${escapeHtml(item.category)}${item.year ? ` • ${item.year}` : ""}</div><div class="review-meta">Wikipedia match: ${escapeHtml(item.wikipediaTitle || "Unknown")}</div><div class="review-meta">Confidence: ${escapeHtml(String(item.score ?? ""))}</div><div class="review-actions"><a class="ghost-button review-link" href="${escapeHtml(item.wikipediaUrl || "#")}" target="_blank" rel="noreferrer">Open Wikipedia</a></div></div></article>`;
-}
-
 function renderTrashCard(item) {
   return `<article class="review-card"><div class="review-body"><div class="review-title">${escapeHtml(item.title)}</div><div class="review-meta">${escapeHtml(item.category)}${item.year ? ` • ${item.year}` : ""}</div><div class="review-meta">Reason: ${escapeHtml(item.reason || "Unknown")}</div><div class="review-meta">Status: ${escapeHtml(String(item.httpStatus ?? "n/a"))}</div><div class="review-actions"><a class="ghost-button review-link" href="${escapeHtml(item.checkedUrl || item.url || "#")}" target="_blank" rel="noreferrer">Open Checked Link</a></div></div></article>`;
+}
+
+function bindCardInteractions(container) {
+  container.querySelectorAll(".card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const item = state.catalog.items.find((entry) => entry.url === card.dataset.url);
+      if (item) openModal(item);
+    });
+  });
+  container.querySelectorAll(".favorite-button").forEach((button) => button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleFavorite(button.dataset.url);
+  }));
+  container.querySelectorAll(".watchlist-button").forEach((button) => button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleWatchlist(button.dataset.url);
+  }));
 }
 
 function renderCard(item) {
@@ -619,3 +814,13 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+
+function maybeShowWelcome() {
+  if (localStorage.getItem(STORAGE_KEYS.welcomeSeen)) return;
+  if (!els.welcomeModal || els.welcomeModal.open) return;
+  els.welcomeModal.showModal();
+}
+
+function dismissWelcome() {
+  localStorage.setItem(STORAGE_KEYS.welcomeSeen, "true");
+}

@@ -1,10 +1,10 @@
-import json
+﻿import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
-TRASH_PATH = ROOT / "data" / "trash-review.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
+TRASH_PATH = ROOT / "api" / "_lib" / "private" / "trash-review.json"
 
 
 def main():
@@ -32,3 +32,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

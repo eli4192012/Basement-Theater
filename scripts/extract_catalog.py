@@ -1,4 +1,4 @@
-import json
+﻿import json
 import re
 import zipfile
 import xml.etree.ElementTree as ET
@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCX_PATH = ROOT / "The Basement Theater Sorter.docx"
-OUTPUT_PATH = ROOT / "data" / "catalog.json"
+OUTPUT_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 
 NS = {
     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -77,7 +77,7 @@ def is_heading(text):
 
 
 def maybe_fix_mojibake(text):
-    if "ð" not in text and "â" not in text:
+    if "Ã°" not in text and "Ã¢" not in text:
         return text
     try:
         return text.encode("cp1252").decode("utf-8")
@@ -284,3 +284,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

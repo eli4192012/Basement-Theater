@@ -1,10 +1,10 @@
-import json
+﻿import json
 import re
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 
 
 def normalize_text(value):
@@ -91,3 +91,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

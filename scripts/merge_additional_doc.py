@@ -1,4 +1,4 @@
-import json
+﻿import json
 import re
 import zipfile
 import xml.etree.ElementTree as ET
@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 DOCX_PATH = Path(r"C:\Users\elith\Downloads\The Basement Theater Sorter (1).docx")
 
 NS = {
@@ -23,7 +23,7 @@ NOISE_RE = re.compile(
 
 
 def maybe_fix_mojibake(text):
-    if "Ã°" not in text and "Ã¢" not in text:
+    if "ÃƒÂ°" not in text and "ÃƒÂ¢" not in text:
         return text
     try:
         return text.encode("cp1252").decode("utf-8")
@@ -245,3 +245,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

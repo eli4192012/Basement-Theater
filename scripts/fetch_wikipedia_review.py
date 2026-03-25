@@ -1,4 +1,4 @@
-import json
+﻿import json
 import re
 import time
 from datetime import datetime, timezone
@@ -8,7 +8,7 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG_PATH = ROOT / "data" / "catalog.json"
+CATALOG_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 OUTPUT_PATH = ROOT / "data" / "wikipedia-review.json"
 USER_AGENT = "BasementTheaterWikipediaReview/1.0"
 
@@ -146,3 +146,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
