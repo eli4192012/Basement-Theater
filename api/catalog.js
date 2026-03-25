@@ -2,9 +2,7 @@ const { readPrivateJson, requireAllowedUser, sendJson } = require("./_lib/access
 
 module.exports = async function handler(req, res) {
   try {
-    if (process.env.GOOGLE_CLIENT_ID) {
-      await requireAllowedUser(req);
-    }
+    await requireAllowedUser(req);
     const catalog = await readPrivateJson("catalog.json");
     sendJson(res, 200, catalog);
   } catch (error) {
