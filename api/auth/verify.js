@@ -1,4 +1,4 @@
-const { isAllowedEmail, sendJson, verifyGoogleToken } = require("../_lib/access");
+const { isAllowedEmail, sendJson } = require("../_lib/access");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -6,35 +6,30 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    sendJson(res, 503, { error: "Google sign-in is not configured yet." });
-    return;
-  }
-
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-    const credential = body.credential;
-    if (!credential) {
-      sendJson(res, 400, { error: "Missing Google credential." });
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!email) {
+      sendJson(res, 400, { error: "Enter an email address." });
       return;
     }
 
-    const payload = await verifyGoogleToken(credential);
-    const allowed = await isAllowedEmail(payload.email);
+    const allowed = await isAllowedEmail(email);
     if (!allowed) {
-      sendJson(res, 403, { error: "This account is not approved for Basement Theater." });
+      sendJson(res, 403, { error: "Access denied. That email is not approved for Basement Theater." });
       return;
     }
 
     sendJson(res, 200, {
       ok: true,
       user: {
-        email: payload.email,
-        name: payload.name || payload.email,
-        picture: payload.picture || "",
+        email,
+        name: email,
+        picture: "",
       },
+      token: email,
     });
   } catch (error) {
-    sendJson(res, 401, { error: error.message || "Google sign-in failed." });
+    sendJson(res, 401, { error: error.message || "Could not verify that email." });
   }
 };

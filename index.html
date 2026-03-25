@@ -10,8 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
+        <style>
 :root {
   --bg: #120b09;
   --bg-soft: #1b100d;
@@ -931,9 +930,12 @@ h3 {
     <section id="authGate" class="auth-gate">
       <div class="auth-card">
         <p class="eyebrow">Private Screening</p>
-        <h1 class="auth-title">Sign In To Enter Basement Theater</h1>
-        <p id="authMessage" class="auth-message">Checking access setup...</p>
-        <div id="googleSignInButton" class="google-signin-slot"></div>
+        <h1 class="auth-title">Enter Your Email To Open Basement Theater</h1>
+        <p id="authMessage" class="auth-message">Enter an approved email address to continue.</p>
+        <form id="emailAccessForm" class="auth-form">
+          <input id="emailAccessInput" class="auth-input" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <button class="primary-button" type="submit">Enter Theater</button>
+        </form>
       </div>
     </section>
     <div class="page-shell">
@@ -1121,8 +1123,8 @@ const state = {
   catalog: null,
   trash: { items: [], totalCandidates: 0 },
   auth: {
-    token: sessionStorage.getItem("basement-theater.google-token") || "",
-    user: loadJson("basement-theater.google-user", null),
+    token: sessionStorage.getItem("basement-theater.email-token") || "",
+    user: loadJson("basement-theater.email-user", null),
     config: null,
   },
   profiles: loadJson(STORAGE_KEYS.profiles, DEFAULT_PROFILES),
@@ -1143,7 +1145,8 @@ const state = {
 const els = {
   authGate: document.querySelector("#authGate"),
   authMessage: document.querySelector("#authMessage"),
-  googleSignInButton: document.querySelector("#googleSignInButton"),
+  emailAccessForm: document.querySelector("#emailAccessForm"),
+  emailAccessInput: document.querySelector("#emailAccessInput"),
   rows: document.querySelector("#rows"),
   favoritesRows: document.querySelector("#favoritesRows"),
   trashGrid: document.querySelector("#trashGrid"),
@@ -1207,18 +1210,7 @@ async function init() {
 }
 
 async function bootstrapAuth() {
-  setAuthMessage("Checking access setup...");
-  try {
-    state.auth.config = await fetchJson("/api/config");
-  } catch {
-    setAuthMessage("Could not load the sign-in setup. Try refreshing in a moment.");
-    return;
-  }
-
-  if (!state.auth.config?.googleClientId) {
-    setAuthMessage("Google sign-in is not configured yet. Add the Google client ID in Vercel to turn on private access.");
-    return;
-  }
+  setAuthMessage("Enter an approved email address to continue.");
 
   if (state.auth.token) {
     const verified = await verifyAccess(state.auth.token);
@@ -1228,8 +1220,6 @@ async function bootstrapAuth() {
     }
   }
 
-  setAuthMessage("Sign in with an approved Google account to open the theater.");
-  renderGoogleSignIn();
 }
 
 async function loadProtectedData() {
@@ -1243,49 +1233,24 @@ async function loadProtectedData() {
   renderAll();
 }
 
-function renderGoogleSignIn() {
-  if (!window.google?.accounts?.id) {
-    window.setTimeout(renderGoogleSignIn, 300);
-    return;
-  }
-
-  els.googleSignInButton.innerHTML = "";
-  window.google.accounts.id.initialize({
-    client_id: state.auth.config.googleClientId,
-    callback: async (response) => {
-      setAuthMessage("Checking your access...");
-      const verified = await verifyAccess(response.credential);
-      if (!verified) return;
-      await loadProtectedData();
-    },
-  });
-  window.google.accounts.id.renderButton(els.googleSignInButton, {
-    theme: "outline",
-    size: "large",
-    shape: "pill",
-    width: 280,
-    text: "signin_with",
-  });
-}
-
-async function verifyAccess(token) {
+async function verifyAccess(email) {
   try {
     const result = await fetchJson("/api/auth/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credential: token }),
     });
-    state.auth.token = token;
+    state.auth.token = result.token;
     state.auth.user = result.user;
-    sessionStorage.setItem("basement-theater.google-token", token);
-    localStorage.setItem("basement-theater.google-user", JSON.stringify(result.user));
+    sessionStorage.setItem("basement-theater.email-token", result.token);
+    localStorage.setItem("basement-theater.email-user", JSON.stringify(result.user));
     return true;
   } catch (error) {
     state.auth.token = "";
     state.auth.user = null;
-    sessionStorage.removeItem("basement-theater.google-token");
-    localStorage.removeItem("basement-theater.google-user");
-    setAuthMessage(error.message || "That account is not approved for Basement Theater.");
+    sessionStorage.removeItem("basement-theater.email-token");
+    localStorage.removeItem("basement-theater.email-user");
+    setAuthMessage(error.message || "Access denied.");
     return false;
   }
 }
@@ -1408,6 +1373,13 @@ function bindEvents() {
 
   els.welcomeModal?.addEventListener("close", dismissWelcome);
   els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
+  els.emailAccessForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setAuthMessage("Checking your access...");
+    const verified = await verifyAccess(els.emailAccessInput.value);
+    if (!verified) return;
+    await loadProtectedData();
+  });
 }
 
 function setView(view) {
