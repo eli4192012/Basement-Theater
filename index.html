@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Basement Theater</title>
+    <title>The Basement Premium</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -1268,7 +1268,7 @@ h3 {
     <section id="authGate" class="auth-gate">
       <div class="auth-card">
         <p class="eyebrow">Private Screening</p>
-        <h1 class="auth-title">Enter The Password To Open Basement Theater</h1>
+        <h1 class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
         <form id="passwordAccessForm" class="auth-form">
           <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" required />
@@ -1279,7 +1279,7 @@ h3 {
     <div class="page-shell">
       <header class="topbar">
         <div class="brand-lockup">
-          <div class="brand-wordmark">THE BASEMENT THEATER</div>
+          <div class="brand-wordmark">THE BASEMENT PREMIUM</div>
           <nav class="nav-links" aria-label="Primary">
             <button id="homeTabButton" class="nav-link active" type="button">Home</button>
             <button id="announcementsTabButton" class="nav-link" type="button">Announcements</button>
@@ -1420,7 +1420,7 @@ h3 {
         <button class="close-button" aria-label="Close welcome">x</button>
         <div class="welcome-copy">
           <p class="eyebrow">Welcome</p>
-          <h3>How Basement Theater Works</h3>
+          <h3>How The Basement Premium Works</h3>
           <p class="detail-description">This app is your family movie shelf. Pick a profile, browse the library, and open titles straight from Google Drive.</p>
           <div class="welcome-grid">
             <div>
@@ -1766,6 +1766,7 @@ function bindEvents() {
 function setView(view) {
   state.activeView = view;
   if (PUBLIC_PAGE_WHITELIST.includes(view)) state.activePublicPageSlug = view;
+  if (view === "library") selectAdultsProfile();
   syncView();
 }
 
@@ -1853,6 +1854,13 @@ function ensureActiveProfile() {
   if (!state.profiles.some((profile) => profile.id === state.activeProfileId)) {
     state.activeProfileId = state.profiles[0].id;
   }
+}
+
+function selectAdultsProfile() {
+  const adultsProfile = state.profiles.find((profile) => profile.id === "adult") || state.profiles.find((profile) => profile.maturity === "R");
+  if (!adultsProfile) return;
+  state.activeProfileId = adultsProfile.id;
+  localStorage.setItem(STORAGE_KEYS.activeProfileId, state.activeProfileId);
 }
 
 function renderProfiles() {
@@ -2563,7 +2571,7 @@ function gradientFor(seedText) {
 }
 
 function buildDescription(item) {
-  const mode = item.type === "series" ? "Open the collection in Google Drive and jump into the folder like a streaming season shelf." : "Launch this title in Google Drive from your Basement Theater streaming library.";
+  const mode = item.type === "series" ? "Open the collection in Google Drive and jump into the folder like a streaming season shelf." : "Launch this title in Google Drive from your The Basement Premium streaming library.";
   return `${mode} Curated from the "${item.category}" section of your catalog for the ${getActiveProfile().name} profile.`;
 }
 
