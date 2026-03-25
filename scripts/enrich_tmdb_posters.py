@@ -13,6 +13,7 @@ ENV_PATH = ROOT / ".env"
 MANUAL_POSTERS_PATH = ROOT / "data" / "manual-posters.json"
 USER_AGENT = "BasementTheaterTMDB/1.0"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
+TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
 
 STOP_WORDS = {
     "full",
@@ -91,6 +92,16 @@ def fetch_json(url, params):
     request = Request(full_url, headers={"User-Agent": USER_AGENT})
     with urlopen(request, timeout=20) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_details(endpoint, tmdb_id, api_key):
+    return fetch_json(
+        f"https://api.themoviedb.org/3/{endpoint}/{tmdb_id}",
+        {
+            "api_key": api_key,
+            "append_to_response": "credits,content_ratings,release_dates",
+        },
+    )
 
 
 def score_result(item, result):
@@ -187,8 +198,21 @@ def enrich_item(item, api_key, aliases, skip_titles):
         return False
 
     item["posterUrl"] = f"{TMDB_IMAGE_BASE}{poster_path}" if poster_path else None
-    item["backdropUrl"] = f"{TMDB_IMAGE_BASE}{backdrop_path}" if backdrop_path else item["posterUrl"]
+    item["backdropUrl"] = f"{TMDB_BACKDROP_BASE}{backdrop_path}" if backdrop_path else item["posterUrl"]
     item["imageSource"] = "tmdb"
+    item["tmdbId"] = best.get("id")
+    item["tmdbType"] = endpoint
+
+    try:
+        details = fetch_details(endpoint, best.get("id"), api_key)
+        item["overview"] = details.get("overview") or item.get("overview")
+        runtime = details.get("runtime") or (details.get("episode_run_time") or [None])[0]
+        item["runtime"] = runtime
+        item["tmdbRating"] = details.get("vote_average")
+        cast = [person.get("name") for person in details.get("credits", {}).get("cast", [])[:5] if person.get("name")]
+        item["cast"] = cast
+    except Exception:
+        pass
     return True
 
 

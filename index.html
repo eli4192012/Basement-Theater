@@ -61,7 +61,28 @@
               </div>
               <p id="resultsCount" class="results-count"></p>
             </section>
-
+            <section class="surprise-panel">
+              <p class="eyebrow">Surprise Me</p>
+              <div class="surprise-buttons">
+                <button class="chip active" data-surprise-mode="all" type="button">All Movies</button>
+                <button class="chip" data-surprise-mode="category" type="button">This Category</button>
+                <button class="chip" data-surprise-mode="kid-safe" type="button">Kid-Safe</button>
+              </div>
+            </section>
+            <section id="statsPanel" class="stats-panel">
+              <div class="stat-card">
+                <p class="eyebrow">Most Watched</p>
+                <p id="statsMostWatched"></p>
+              </div>
+              <div class="stat-card">
+                <p class="eyebrow">Kid Preferences</p>
+                <p id="statsKidPrefs"></p>
+              </div>
+              <div class="stat-card">
+                <p class="eyebrow">Total Watched</p>
+                <p id="statsTotalHours"></p>
+              </div>
+            </section>
             <section id="genreChips" class="genre-chips" aria-label="Browse categories"></section>
             <section id="letterChips" class="letter-chips" aria-label="Browse A to Z"></section>
           </section>
@@ -77,9 +98,7 @@
             </div>
             <p id="reviewCount" class="results-count"></p>
           </section>
-          <p class="review-note">
-            Covers shown here are only suggestions from Wikipedia. They are not applied to the main app until we explicitly merge them.
-          </p>
+          <p class="review-note">Covers shown here are only suggestions from Wikipedia. They are not applied to the main app until we explicitly merge them.</p>
           <section id="reviewGrid" class="review-grid"></section>
         </section>
 
@@ -91,9 +110,7 @@
             </div>
             <p id="trashCount" class="results-count"></p>
           </section>
-          <p class="review-note">
-            These titles were flagged by an automated Google Drive link check. They are only suggestions for review and are not deleted from the main app.
-          </p>
+          <p class="review-note">These titles were flagged by an automated Google Drive link check. They are only suggestions for review and are not deleted from the main app.</p>
           <section id="trashGrid" class="review-grid"></section>
         </section>
       </main>
