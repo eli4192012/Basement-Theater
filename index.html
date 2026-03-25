@@ -614,6 +614,66 @@ h3 {
   gap: 10px;
 }
 
+.public-sections {
+  display: grid;
+  gap: 18px;
+}
+
+.public-section {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(52, 26, 21, 0.92), rgba(25, 13, 10, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 235, 205, 0.03);
+}
+
+.public-section h3 {
+  margin: 0 0 14px;
+  font-size: 1.2rem;
+}
+
+.public-entry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.public-entry {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 244, 228, 0.04);
+  border: 1px solid rgba(255, 225, 180, 0.08);
+}
+
+.public-entry p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.public-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.public-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 220, 170, 0.14);
+  color: var(--text);
+  text-decoration: none;
+  background: rgba(255, 233, 197, 0.06);
+}
+
+.public-link:hover {
+  border-color: rgba(215, 164, 76, 0.4);
+  color: var(--gold);
+}
+
 .row-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -950,6 +1010,7 @@ h3 {
           <div class="brand-wordmark">BASEMENT THEATER</div>
           <nav class="nav-links" aria-label="Primary">
             <button id="libraryTabButton" class="nav-link active" type="button">Library</button>
+            <button id="publicTabsButton" class="nav-link" type="button">Public Tabs</button>
             <button id="favoritesTabButton" class="nav-link" type="button">Favorites</button>
             <button id="trashTabButton" class="nav-link" type="button">Trash Review</button>
           </nav>
@@ -1030,6 +1091,19 @@ h3 {
           </section>
           <p class="review-note">Favorite a title to move it here. Remove favorite to send it back into the main library.</p>
           <section id="favoritesRows" class="rows"></section>
+        </section>
+
+        <section id="publicView" class="hidden-view">
+          <section class="review-header">
+            <div>
+              <p class="eyebrow">Imported From Doc</p>
+              <h2 id="publicPageTitle">Public Tabs</h2>
+            </div>
+            <p id="publicPageMeta" class="results-count"></p>
+          </section>
+          <p class="review-note">Each page from the public Basement doc lives here as its own tab.</p>
+          <section id="publicTabsChips" class="genre-chips" aria-label="Public document pages"></section>
+          <section id="publicSections" class="public-sections"></section>
         </section>
 
         <section id="trashView" class="hidden-view">
@@ -1129,6 +1203,7 @@ const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
 
 const state = {
   catalog: null,
+  publicPages: { pages: [], totalPages: 0, sourceDocument: "" },
   trash: { items: [], totalCandidates: 0 },
   auth: {
     token: sessionStorage.getItem("basement-theater.password-token") || "",
@@ -1146,6 +1221,7 @@ const state = {
   query: "",
   featuredIndex: 0,
   activeView: "library",
+  activePublicPageSlug: "home",
   surpriseMode: "all",
   editingProfileName: false,
 };
@@ -1156,6 +1232,7 @@ const els = {
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
   passwordAccessInput: document.querySelector("#passwordAccessInput"),
   rows: document.querySelector("#rows"),
+  publicSections: document.querySelector("#publicSections"),
   favoritesRows: document.querySelector("#favoritesRows"),
   trashGrid: document.querySelector("#trashGrid"),
   favoritesCount: document.querySelector("#favoritesCount"),
@@ -1172,6 +1249,9 @@ const els = {
   heroPlay: document.querySelector("#heroPlay"),
   heroInfo: document.querySelector("#heroInfo"),
   heroArt: document.querySelector("#heroArt"),
+  publicPageTitle: document.querySelector("#publicPageTitle"),
+  publicPageMeta: document.querySelector("#publicPageMeta"),
+  publicTabsChips: document.querySelector("#publicTabsChips"),
   randomPickButton: document.querySelector("#randomPickButton"),
   detailModal: document.querySelector("#detailModal"),
   welcomeModal: document.querySelector("#welcomeModal"),
@@ -1182,9 +1262,11 @@ const els = {
   detailPreview: document.querySelector("#detailPreview"),
   detailArt: document.querySelector("#detailArt"),
   libraryView: document.querySelector("#libraryView"),
+  publicView: document.querySelector("#publicView"),
   favoritesView: document.querySelector("#favoritesView"),
   trashView: document.querySelector("#trashView"),
   libraryTabButton: document.querySelector("#libraryTabButton"),
+  publicTabsButton: document.querySelector("#publicTabsButton"),
   favoritesTabButton: document.querySelector("#favoritesTabButton"),
   trashTabButton: document.querySelector("#trashTabButton"),
   detailActions: document.querySelector(".detail-actions"),
@@ -1231,12 +1313,15 @@ async function bootstrapAuth() {
 }
 
 async function loadProtectedData() {
-  const [catalog, trash] = await Promise.all([
+  const [catalog, publicPages, trash] = await Promise.all([
     authedFetchJson("/api/catalog"),
+    authedFetchJson("/api/public-pages").catch(() => ({ pages: [], totalPages: 0, sourceDocument: "" })),
     authedFetchJson("/api/trash").catch(() => ({ items: [], totalCandidates: 0 })),
   ]);
   state.catalog = catalog;
+  state.publicPages = publicPages;
   state.trash = trash;
+  state.activePublicPageSlug = publicPages.pages?.[0]?.slug || "home";
   els.authGate.classList.add("hidden");
   renderAll();
 }
@@ -1289,6 +1374,8 @@ function renderAll() {
   renderProfiles();
   renderChips();
   renderLetterChips();
+  renderPublicTabs();
+  renderPublicPage();
   updateSurpriseButtons();
   renderRows();
   renderFavorites();
@@ -1358,6 +1445,7 @@ function bindEvents() {
   });
 
   els.libraryTabButton.addEventListener("click", () => setView("library"));
+  els.publicTabsButton.addEventListener("click", () => setView("public"));
   els.favoritesTabButton.addEventListener("click", () => setView("favorites"));
   els.trashTabButton.addEventListener("click", () => setView("trash"));
 
@@ -1397,18 +1485,22 @@ function setView(view) {
 
 function syncView() {
   const favorites = state.activeView === "favorites";
+  const publicTabs = state.activeView === "public";
   const trashing = state.activeView === "trash";
   const library = state.activeView === "library";
 
   els.libraryView.classList.toggle("hidden-view", !library);
+  els.publicView.classList.toggle("hidden-view", !publicTabs);
   els.favoritesView.classList.toggle("hidden-view", !favorites);
   els.trashView.classList.toggle("hidden-view", !trashing);
   els.libraryTabButton.classList.toggle("active", library);
+  els.publicTabsButton.classList.toggle("active", publicTabs);
   els.favoritesTabButton.classList.toggle("active", favorites);
   els.trashTabButton.classList.toggle("active", trashing);
   els.randomPickButton.disabled = !library;
   els.randomPickButton.classList.toggle("disabled-button", !library);
   if (library) renderRows();
+  if (publicTabs) renderPublicPage();
   if (favorites) renderFavorites();
   if (trashing) renderTrash();
 }
@@ -1419,6 +1511,9 @@ function rerenderActiveView() {
   if (state.activeView === "library") {
     renderHero();
     renderRows();
+  } else if (state.activeView === "public") {
+    renderPublicTabs();
+    renderPublicPage();
   } else if (state.activeView === "favorites") {
     renderFavorites();
   } else {
@@ -1603,6 +1698,61 @@ function renderLetterChips() {
       renderRows();
     });
   });
+}
+
+function renderPublicTabs() {
+  const pages = state.publicPages?.pages ?? [];
+  els.publicTabsChips.innerHTML = pages
+    .map((page) => `<button type="button" class="chip ${page.slug === state.activePublicPageSlug ? "active" : ""}" data-public-page="${escapeHtml(page.slug)}">${escapeHtml(cleanImportedLabel(page.title))}</button>`)
+    .join("");
+
+  els.publicTabsChips.querySelectorAll("[data-public-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activePublicPageSlug = button.dataset.publicPage;
+      renderPublicTabs();
+      renderPublicPage();
+    });
+  });
+}
+
+function renderPublicPage() {
+  const pages = state.publicPages?.pages ?? [];
+  const activePage = pages.find((page) => page.slug === state.activePublicPageSlug) || pages[0];
+  if (!activePage) {
+    els.publicPageTitle.textContent = "Public Tabs";
+    els.publicPageMeta.textContent = "No imported pages yet";
+    els.publicSections.innerHTML = `<div class="empty-state">Import the public doc to see its tabs here.</div>`;
+    return;
+  }
+
+  const filteredSections = (activePage.sections || [])
+    .map((section) => ({
+      ...section,
+      entries: (section.entries || []).filter((entry) => {
+        const haystack = `${entry.text} ${(entry.links || []).map((link) => `${link.text} ${link.url}`).join(" ")}`.toLowerCase();
+        return !state.query || haystack.includes(state.query);
+      }),
+    }))
+    .filter((section) => section.entries.length);
+
+  els.publicPageTitle.textContent = cleanImportedLabel(activePage.title);
+  els.publicPageMeta.textContent = `${filteredSections.length} section${filteredSections.length === 1 ? "" : "s"}`;
+  els.publicSections.innerHTML = filteredSections.length
+    ? filteredSections.map(renderPublicSection).join("")
+    : `<div class="empty-state">No matching content on this page yet. Try a different search.</div>`;
+}
+
+function renderPublicSection(section) {
+  const heading = cleanImportedLabel(section.heading || "Page Content");
+  const entries = section.entries.map(renderPublicEntry).join("");
+  return `<section class="public-section"><h3>${escapeHtml(heading)}</h3><div class="public-entry-list">${entries}</div></section>`;
+}
+
+function renderPublicEntry(entry) {
+  const links = (entry.links || [])
+    .map((link) => `<a class="public-link" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(cleanImportedLabel(link.text || link.url))}</a>`)
+    .join("");
+  return `<article class="public-entry">${entry.text ? `<p>${escapeHtml(cleanImportedLabel(entry.text))}</p>` : ""}${links ? `<div class="public-links">${links}</div>` : ""}</article>`;
 }
 
 function renderRows() {
@@ -1915,6 +2065,13 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function cleanImportedLabel(value) {
+  return String(value || "")
+    .replace(/[ðâÃïœž€¢™“”]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 
