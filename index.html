@@ -1238,7 +1238,7 @@ async function verifyAccess(password) {
     const result = await fetchJson("/api/auth/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ credential: token }),
+      body: JSON.stringify({ password }),
     });
     state.auth.token = result.token;
     state.auth.user = result.user;
