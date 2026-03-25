@@ -619,6 +619,182 @@ h3 {
   gap: 18px;
 }
 
+.public-doc-page {
+  padding: 26px 24px 30px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1f2125;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.public-doc-page.page-home,
+.public-doc-page.page-announcements,
+.public-doc-page.page-game-stash,
+.public-doc-page.page-proxy-corner {
+  color: #f2f4f8;
+}
+
+.public-doc-title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(2rem, 5vw, 2.7rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.public-doc-title.proxy {
+  color: #ff2f2f;
+}
+
+.public-doc-title.game-stash {
+  color: #ff2f2f;
+}
+
+.public-doc-title.announcements {
+  color: #ffe900;
+}
+
+.public-doc-title.home {
+  color: #33e0ff;
+}
+
+.public-doc-divider {
+  width: min(100%, 520px);
+  height: 3px;
+  margin: 18px auto 24px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.public-doc-divider.proxy,
+.public-doc-divider.game-stash {
+  background: #ff2f2f;
+}
+
+.public-doc-divider.announcements {
+  background: #ffe900;
+}
+
+.public-doc-divider.home {
+  background: #33e0ff;
+}
+
+.public-doc-copy {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.public-doc-copy p {
+  margin: 0 0 14px;
+  line-height: 1.65;
+}
+
+.public-doc-callout {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #ffee33;
+  color: #ff2020;
+  font-weight: 900;
+  box-shadow: 0 0 0 2px rgba(255, 239, 51, 0.15);
+}
+
+.public-doc-subtitle {
+  margin: 10px 0 18px;
+  text-align: center;
+  color: #ff4e4e;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.public-doc-note {
+  color: #ff4e4e;
+  font-weight: 800;
+}
+
+.public-doc-centered-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #ff1f1f;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.public-proxy-intro {
+  margin-bottom: 26px;
+  text-align: center;
+  color: #f0f1f4;
+}
+
+.public-proxy-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.public-proxy-group {
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 77, 77, 0.34);
+}
+
+.public-proxy-group:last-child {
+  border-bottom: 0;
+}
+
+.public-proxy-group h3 {
+  margin: 0 0 8px;
+  color: #ff6a6a;
+  font-size: 1rem;
+  text-decoration: underline;
+}
+
+.public-proxy-links {
+  display: grid;
+  gap: 6px;
+}
+
+.public-proxy-links a,
+.public-rich-link {
+  color: #4ea1ff;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.public-home-grid {
+  display: grid;
+  gap: 16px;
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+.public-home-panel {
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.public-home-status {
+  color: #8aff95;
+  font-weight: 900;
+}
+
+.public-home-alert {
+  color: #ff4e4e;
+  font-weight: 900;
+}
+
+.public-home-activity {
+  display: grid;
+  gap: 8px;
+  color: #d7dbe3;
+}
+
 .public-section {
   padding: 18px;
   border: 1px solid var(--line);
@@ -1198,6 +1374,7 @@ const DEFAULT_PROFILES = [
 ];
 
 const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
+const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "game-stash", "proxy-corner"];
 
 const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
 
@@ -1321,7 +1498,7 @@ async function loadProtectedData() {
   state.catalog = catalog;
   state.publicPages = publicPages;
   state.trash = trash;
-  state.activePublicPageSlug = publicPages.pages?.[0]?.slug || "home";
+  state.activePublicPageSlug = getVisiblePublicPages()[0]?.slug || "home";
   els.authGate.classList.add("hidden");
   renderAll();
 }
@@ -1701,7 +1878,7 @@ function renderLetterChips() {
 }
 
 function renderPublicTabs() {
-  const pages = state.publicPages?.pages ?? [];
+  const pages = getVisiblePublicPages();
   els.publicTabsChips.innerHTML = pages
     .map((page) => `<button type="button" class="chip ${page.slug === state.activePublicPageSlug ? "active" : ""}" data-public-page="${escapeHtml(page.slug)}">${escapeHtml(cleanImportedLabel(page.title))}</button>`)
     .join("");
@@ -1716,7 +1893,7 @@ function renderPublicTabs() {
 }
 
 function renderPublicPage() {
-  const pages = state.publicPages?.pages ?? [];
+  const pages = getVisiblePublicPages();
   const activePage = pages.find((page) => page.slug === state.activePublicPageSlug) || pages[0];
   if (!activePage) {
     els.publicPageTitle.textContent = "Public Tabs";
@@ -1725,21 +1902,9 @@ function renderPublicPage() {
     return;
   }
 
-  const filteredSections = (activePage.sections || [])
-    .map((section) => ({
-      ...section,
-      entries: (section.entries || []).filter((entry) => {
-        const haystack = `${entry.text} ${(entry.links || []).map((link) => `${link.text} ${link.url}`).join(" ")}`.toLowerCase();
-        return !state.query || haystack.includes(state.query);
-      }),
-    }))
-    .filter((section) => section.entries.length);
-
   els.publicPageTitle.textContent = cleanImportedLabel(activePage.title);
-  els.publicPageMeta.textContent = `${filteredSections.length} section${filteredSections.length === 1 ? "" : "s"}`;
-  els.publicSections.innerHTML = filteredSections.length
-    ? filteredSections.map(renderPublicSection).join("")
-    : `<div class="empty-state">No matching content on this page yet. Try a different search.</div>`;
+  els.publicPageMeta.textContent = cleanImportedLabel(activePage.title);
+  els.publicSections.innerHTML = renderCuratedPublicPage(activePage);
 }
 
 function renderPublicSection(section) {
@@ -1753,6 +1918,143 @@ function renderPublicEntry(entry) {
     .map((link) => `<a class="public-link" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(cleanImportedLabel(link.text || link.url))}</a>`)
     .join("");
   return `<article class="public-entry">${entry.text ? `<p>${escapeHtml(cleanImportedLabel(entry.text))}</p>` : ""}${links ? `<div class="public-links">${links}</div>` : ""}</article>`;
+}
+
+function getVisiblePublicPages() {
+  return (state.publicPages?.pages ?? []).filter((page) => PUBLIC_PAGE_WHITELIST.includes(page.slug));
+}
+
+function getFilteredPublicEntries(page) {
+  const entries = (page.sections || []).flatMap((section) => section.entries || []);
+  return entries.filter((entry) => {
+    const haystack = `${entry.text} ${(entry.links || []).map((link) => `${link.text} ${link.url}`).join(" ")}`.toLowerCase();
+    return !state.query || haystack.includes(state.query);
+  });
+}
+
+function renderCuratedPublicPage(page) {
+  if (page.slug === "proxy-corner") return renderProxyCornerPage(page);
+  if (page.slug === "game-stash") return renderGameStashPage(page);
+  if (page.slug === "announcements") return renderAnnouncementsPage(page);
+  return renderHomePage(page);
+}
+
+function renderHomePage(page) {
+  const entries = getFilteredPublicEntries(page).map((entry) => cleanImportedLabel(entry.text)).filter(Boolean);
+  const title = entries[0] || "The Basement";
+  const status = entries.find((entry) => /^Status:/i.test(entry)) || "";
+  const alertLines = entries.filter((entry) => /announcement/i.test(entry) || /go to the announcements/i.test(entry));
+  const activityIndex = entries.findIndex((entry) => /Average Activity/i.test(entry));
+  const activity = activityIndex >= 0 ? entries.slice(activityIndex, activityIndex + 5) : [];
+  const body = entries.filter((entry) => ![title, status, ...alertLines, ...activity].includes(entry));
+
+  return `
+    <section class="public-doc-page page-home">
+      <h3 class="public-doc-title home">${escapeHtml(title)}</h3>
+      <div class="public-doc-divider home"></div>
+      <div class="public-home-grid">
+        ${status ? `<div class="public-home-panel public-home-status">${escapeHtml(status)}</div>` : ""}
+        ${alertLines.length ? `<div class="public-home-panel public-home-alert">${alertLines.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
+        ${activity.length ? `<div class="public-home-panel public-home-activity">${activity.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
+        ${body.length ? `<div class="public-home-panel">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
+      </div>
+    </section>
+  `;
+}
+
+function renderAnnouncementsPage(page) {
+  const entries = getFilteredPublicEntries(page).map((entry) => cleanImportedLabel(entry.text)).filter(Boolean);
+  const title = entries[0] || "Announcements";
+  const heading = entries[1] || "Announcement";
+  const body = entries[2] || "";
+  const updateTitle = entries[3] || "";
+  const updateTime = entries[4] || "";
+
+  return `
+    <section class="public-doc-page page-announcements">
+      <h3 class="public-doc-title announcements">${escapeHtml(title)}</h3>
+      <div class="public-doc-divider announcements"></div>
+      <div class="public-doc-copy">
+        <p><span class="public-doc-callout">${escapeHtml(heading)}</span></p>
+        ${body ? `<p class="public-doc-note">${escapeHtml(body)}</p>` : ""}
+        ${updateTitle ? `<h3 class="public-doc-title announcements" style="font-size:2rem;margin-top:26px;">${escapeHtml(updateTitle)}</h3>` : ""}
+        ${updateTime ? `<p class="public-doc-note">${escapeHtml(updateTime)}</p>` : ""}
+      </div>
+    </section>
+  `;
+}
+
+function renderGameStashPage(page) {
+  const entries = getFilteredPublicEntries(page);
+  const texts = entries.map((entry) => cleanImportedLabel(entry.text)).filter(Boolean);
+  const mainTitle = texts[0] || "Game Stash";
+  const intro = texts.find((text) => /original game stash page/i.test(text)) || "";
+  const disclaimer = texts.find((text) => /We Do Not Take Any Credit/i.test(text)) || "";
+  const mainLink = entries.flatMap((entry) => entry.links || [])[0];
+
+  return `
+    <section class="public-doc-page page-game-stash">
+      <h3 class="public-doc-title game-stash">${escapeHtml(mainTitle)}</h3>
+      <div class="public-doc-divider game-stash"></div>
+      <div class="public-doc-copy">
+        ${intro ? `<p class="public-doc-note">${escapeHtml(intro)}</p>` : ""}
+        ${mainLink ? `<p><a class="public-doc-centered-link" href="${escapeHtml(mainLink.url)}" target="_blank" rel="noreferrer">${escapeHtml(cleanImportedLabel(mainLink.text || "Ultimate Game Stash"))}</a></p>` : ""}
+        ${disclaimer ? `<p><span class="public-doc-callout">${escapeHtml(disclaimer)}</span></p>` : ""}
+      </div>
+    </section>
+  `;
+}
+
+function renderProxyCornerPage(page) {
+  const entries = getFilteredPublicEntries(page);
+  const texts = entries.map((entry) => cleanImportedLabel(entry.text)).filter(Boolean);
+  const title = texts[0] || "Proxy Corner";
+  const intro = texts[1] || "";
+  const total = texts[2] || "";
+  const groups = [];
+  let currentGroup = null;
+
+  for (const entry of entries.slice(3)) {
+    const text = cleanImportedLabel(entry.text);
+    const links = (entry.links || []).map((link) => ({ text: cleanImportedLabel(link.text || link.url), url: link.url }));
+    if (/\(\d+\)/.test(text) && !text.startsWith("http")) {
+      currentGroup = { title: text, links: [] };
+      groups.push(currentGroup);
+      continue;
+    }
+    if (links.length && currentGroup) {
+      currentGroup.links.push(...links);
+      continue;
+    }
+    if (text.startsWith("http") && currentGroup) {
+      currentGroup.links.push({ text, url: text });
+    }
+  }
+
+  return `
+    <section class="public-doc-page page-proxy-corner">
+      <h3 class="public-doc-title proxy">${escapeHtml(title)}</h3>
+      <div class="public-doc-divider proxy"></div>
+      <div class="public-proxy-intro">
+        ${intro ? `<p>${escapeHtml(intro)}</p>` : ""}
+        ${total ? `<p class="public-doc-note">${escapeHtml(total)}</p>` : ""}
+      </div>
+      <div class="public-proxy-grid">
+        ${groups
+          .map(
+            (group) => `
+              <section class="public-proxy-group">
+                <h3>${escapeHtml(group.title)}</h3>
+                <div class="public-proxy-links">
+                  ${group.links.map((link) => `<a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.text || link.url)}</a>`).join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
 }
 
 function renderRows() {
