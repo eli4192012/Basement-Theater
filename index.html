@@ -833,6 +833,64 @@ h3 {
   color: #d7dbe3;
 }
 
+.game-stash-hero {
+  max-width: 760px;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+.game-stash-subpages {
+  display: grid;
+  gap: 22px;
+}
+
+.game-stash-section {
+  padding: 18px 16px 20px;
+  border-top: 3px solid rgba(119, 172, 255, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.game-stash-section h4 {
+  margin: 0 0 14px;
+  text-align: center;
+  color: #f3f6ff;
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.game-stash-section p {
+  margin: 0 0 10px;
+  text-align: center;
+  color: #ff4e4e;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.game-stash-link-list {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.game-stash-link-list a {
+  color: #9dc2ff;
+  text-decoration: underline;
+  font-weight: 800;
+  text-align: center;
+  word-break: break-word;
+}
+
+.game-stash-mini-heading {
+  margin: 18px auto 12px;
+  width: min(100%, 520px);
+  padding-top: 14px;
+  border-top: 1px solid rgba(119, 172, 255, 0.92);
+  text-align: center;
+  color: #f4f7ff;
+  font-size: 1.9rem;
+  font-weight: 900;
+}
+
 .public-section {
   padding: 18px;
   border: 1px solid var(--line);
@@ -1221,10 +1279,14 @@ h3 {
     <div class="page-shell">
       <header class="topbar">
         <div class="brand-lockup">
-          <div class="brand-wordmark">BASEMENT THEATER</div>
+          <div class="brand-wordmark">THE BASEMENT THEATER</div>
           <nav class="nav-links" aria-label="Primary">
-            <button id="libraryTabButton" class="nav-link active" type="button">Library</button>
-            <button id="publicTabsButton" class="nav-link" type="button">Public Tabs</button>
+            <button id="homeTabButton" class="nav-link active" type="button">Home</button>
+            <button id="announcementsTabButton" class="nav-link" type="button">Announcements</button>
+            <button id="updatesTabButton" class="nav-link" type="button">Updates</button>
+            <button id="gameStashTabButton" class="nav-link" type="button">Game Stash</button>
+            <button id="proxyCornerTabButton" class="nav-link" type="button">Proxy Corner</button>
+            <button id="libraryTabButton" class="nav-link" type="button">Theater</button>
             <button id="favoritesTabButton" class="nav-link" type="button">Favorites</button>
             <button id="trashTabButton" class="nav-link" type="button">Trash Review</button>
           </nav>
@@ -1435,7 +1497,7 @@ const state = {
   activeLetter: "All",
   query: "",
   featuredIndex: 0,
-  activeView: "library",
+  activeView: "home",
   activePublicPageSlug: "home",
   surpriseMode: "all",
   editingProfileName: false,
@@ -1480,8 +1542,12 @@ const els = {
   publicView: document.querySelector("#publicView"),
   favoritesView: document.querySelector("#favoritesView"),
   trashView: document.querySelector("#trashView"),
+  homeTabButton: document.querySelector("#homeTabButton"),
+  announcementsTabButton: document.querySelector("#announcementsTabButton"),
+  updatesTabButton: document.querySelector("#updatesTabButton"),
+  gameStashTabButton: document.querySelector("#gameStashTabButton"),
+  proxyCornerTabButton: document.querySelector("#proxyCornerTabButton"),
   libraryTabButton: document.querySelector("#libraryTabButton"),
-  publicTabsButton: document.querySelector("#publicTabsButton"),
   favoritesTabButton: document.querySelector("#favoritesTabButton"),
   trashTabButton: document.querySelector("#trashTabButton"),
   detailActions: document.querySelector(".detail-actions"),
@@ -1659,8 +1725,12 @@ function bindEvents() {
     if (heroItem) openModal(heroItem);
   });
 
+  els.homeTabButton.addEventListener("click", () => setView("home"));
+  els.announcementsTabButton.addEventListener("click", () => setView("announcements"));
+  els.updatesTabButton.addEventListener("click", () => setView("updates"));
+  els.gameStashTabButton.addEventListener("click", () => setView("game-stash"));
+  els.proxyCornerTabButton.addEventListener("click", () => setView("proxy-corner"));
   els.libraryTabButton.addEventListener("click", () => setView("library"));
-  els.publicTabsButton.addEventListener("click", () => setView("public"));
   els.favoritesTabButton.addEventListener("click", () => setView("favorites"));
   els.trashTabButton.addEventListener("click", () => setView("trash"));
 
@@ -1695,12 +1765,13 @@ function bindEvents() {
 
 function setView(view) {
   state.activeView = view;
+  if (PUBLIC_PAGE_WHITELIST.includes(view)) state.activePublicPageSlug = view;
   syncView();
 }
 
 function syncView() {
   const favorites = state.activeView === "favorites";
-  const publicTabs = state.activeView === "public";
+  const publicTabs = PUBLIC_PAGE_WHITELIST.includes(state.activeView);
   const trashing = state.activeView === "trash";
   const library = state.activeView === "library";
 
@@ -1708,8 +1779,12 @@ function syncView() {
   els.publicView.classList.toggle("hidden-view", !publicTabs);
   els.favoritesView.classList.toggle("hidden-view", !favorites);
   els.trashView.classList.toggle("hidden-view", !trashing);
+  els.homeTabButton.classList.toggle("active", state.activeView === "home");
+  els.announcementsTabButton.classList.toggle("active", state.activeView === "announcements");
+  els.updatesTabButton.classList.toggle("active", state.activeView === "updates");
+  els.gameStashTabButton.classList.toggle("active", state.activeView === "game-stash");
+  els.proxyCornerTabButton.classList.toggle("active", state.activeView === "proxy-corner");
   els.libraryTabButton.classList.toggle("active", library);
-  els.publicTabsButton.classList.toggle("active", publicTabs);
   els.favoritesTabButton.classList.toggle("active", favorites);
   els.trashTabButton.classList.toggle("active", trashing);
   els.randomPickButton.disabled = !library;
@@ -1726,7 +1801,7 @@ function rerenderActiveView() {
   if (state.activeView === "library") {
     renderHero();
     renderRows();
-  } else if (state.activeView === "public") {
+  } else if (PUBLIC_PAGE_WHITELIST.includes(state.activeView)) {
     renderPublicTabs();
     renderPublicPage();
   } else if (state.activeView === "favorites") {
@@ -1916,18 +1991,8 @@ function renderLetterChips() {
 }
 
 function renderPublicTabs() {
-  const pages = getVisiblePublicPages();
-  els.publicTabsChips.innerHTML = pages
-    .map((page) => `<button type="button" class="chip ${page.slug === state.activePublicPageSlug ? "active" : ""}" data-public-page="${escapeHtml(page.slug)}">${escapeHtml(cleanImportedLabel(page.title))}</button>`)
-    .join("");
-
-  els.publicTabsChips.querySelectorAll("[data-public-page]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.activePublicPageSlug = button.dataset.publicPage;
-      renderPublicTabs();
-      renderPublicPage();
-    });
-  });
+  els.publicTabsChips.innerHTML = "";
+  els.publicTabsChips.style.display = "none";
 }
 
 function renderPublicPage() {
@@ -1968,6 +2033,10 @@ function getFilteredPublicEntries(page) {
     const haystack = `${entry.text} ${(entry.links || []).map((link) => `${link.text} ${link.url}`).join(" ")}`.toLowerCase();
     return !state.query || haystack.includes(state.query);
   });
+}
+
+function getPublicPage(slug) {
+  return (state.publicPages?.pages ?? []).find((page) => page.slug === slug) || null;
 }
 
 function renderCuratedPublicPage(page) {
@@ -2031,15 +2100,29 @@ function renderGameStashPage(page) {
   const intro = texts.find((text) => /original game stash page/i.test(text)) || "";
   const disclaimer = texts.find((text) => /We Do Not Take Any Credit/i.test(text)) || "";
   const mainLink = entries.flatMap((entry) => entry.links || [])[0];
+  const gamingRoomPage = getPublicPage("gaming-room");
+  const importantLinksPage = getPublicPage("important-links");
+  const gameSections = (gamingRoomPage?.sections || []).filter((section) => {
+    const heading = cleanImportedLabel(section.heading || "");
+    return heading === "Owners Favorites!" || heading === "1-9" || /^[A-Z]$/.test(heading) || /Games$/.test(heading);
+  });
+  const importantSections = (importantLinksPage?.sections || []).filter((section) => {
+    const heading = cleanImportedLabel(section.heading || "");
+    return heading === "" || /Games Page|HTML Page/.test(heading);
+  });
 
   return `
     <section class="public-doc-page page-game-stash">
-      <h3 class="public-doc-title game-stash">${escapeHtml(mainTitle)}</h3>
-      <div class="public-doc-divider game-stash"></div>
-      <div class="public-doc-copy">
+      <div class="game-stash-hero">
+        <h3 class="public-doc-title game-stash">${escapeHtml(mainTitle)}</h3>
+        <div class="public-doc-divider game-stash"></div>
         ${intro ? `<p class="public-doc-note">${escapeHtml(intro)}</p>` : ""}
         ${mainLink ? `<p><a class="public-doc-centered-link" href="${escapeHtml(mainLink.url)}" target="_blank" rel="noreferrer">${escapeHtml(cleanImportedLabel(mainLink.text || "Ultimate Game Stash"))}</a></p>` : ""}
         ${disclaimer ? `<p><span class="public-doc-callout">${escapeHtml(disclaimer)}</span></p>` : ""}
+      </div>
+      <div class="game-stash-subpages">
+        ${importantSections.map(renderGameStashDocSection).join("")}
+        ${gameSections.map(renderGameStashGameSection).join("")}
       </div>
     </section>
   `;
@@ -2144,6 +2227,55 @@ function renderProxyCornerPage(page) {
             `,
           )
           .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderGameStashDocSection(section) {
+  const heading = cleanImportedLabel(section.heading || "Game Stash Original");
+  const entries = (section.entries || []).map((entry) => {
+    const text = cleanImportedLabel(entry.text);
+    const links = (entry.links || []).map((link) => ({ text: cleanImportedLabel(link.text || link.url), url: link.url }));
+    return { text, links };
+  });
+
+  return `
+    <section class="game-stash-section">
+      <h4>${escapeHtml(heading)}</h4>
+      ${entries
+        .map((entry) => {
+          if (entry.links.length) {
+            return `<div class="game-stash-link-list">${entry.links.map((link) => `<a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(link.text || link.url)}</a>`).join("")}</div>`;
+          }
+          return entry.text ? `<p>${escapeHtml(entry.text)}</p>` : "";
+        })
+        .join("")}
+    </section>
+  `;
+}
+
+function renderGameStashGameSection(section) {
+  const heading = cleanImportedLabel(section.heading || "");
+  const entries = (section.entries || [])
+    .map((entry) => {
+      const text = cleanImportedLabel(entry.text);
+      const primaryLink = (entry.links || [])[0];
+      if (!primaryLink) return null;
+      return {
+        text: text || cleanImportedLabel(primaryLink.text || primaryLink.url),
+        url: primaryLink.url,
+      };
+    })
+    .filter(Boolean);
+
+  if (!entries.length) return "";
+
+  return `
+    <section class="game-stash-section">
+      <div class="game-stash-mini-heading">${escapeHtml(heading)}</div>
+      <div class="game-stash-link-list">
+        ${entries.map((entry) => `<a href="${escapeHtml(entry.url)}" target="_blank" rel="noreferrer">${escapeHtml(entry.text)}</a>`).join("")}
       </div>
     </section>
   `;
