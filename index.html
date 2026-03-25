@@ -1572,8 +1572,6 @@ function renderHero() {
   els.heroPanel.style.setProperty("--hero-gradient", gradient);
   els.heroArt.style.setProperty("--hero-gradient", gradient);
   els.heroArt.style.setProperty("--hero-image", heroItem.backdropUrl ? `url("${heroItem.backdropUrl}")` : "none");
-  els.detailArt.style.setProperty("--detail-gradient", gradient);
-  els.detailArt.style.setProperty("--detail-image", heroItem.posterUrl ? `url("${heroItem.posterUrl}")` : "none");
   els.heroTitle.textContent = heroItem.title;
   els.heroMeta.textContent = `${heroItem.category} • ${heroItem.type === "series" ? "Series" : "Movie"} • ${inferRating(heroItem)}${heroItem.year ? ` • ${heroItem.year}` : ""}`;
   els.heroDescription.textContent = heroItem.overview || buildDescription(heroItem);
@@ -1753,8 +1751,9 @@ function openModal(item) {
   els.detailMeta.textContent = `${item.category} • ${item.type === "series" ? "Series or folder" : "Movie"} • ${inferRating(item)}${item.year ? ` • ${item.year}` : ""}`;
   els.detailDescription.textContent = item.overview || buildDescription(item);
   els.detailOpen.href = item.url;
-  els.detailOpen.onclick = () => markWatched(item);
+  els.detailOpen.onclick = (event) => handleDriveOpen(event, item, item.url);
   els.detailPreview.href = item.previewUrl || item.url;
+  els.detailPreview.onclick = (event) => handleDriveOpen(event, item, item.previewUrl || item.url);
   els.detailPreview.style.display = item.previewUrl ? "inline-flex" : "none";
 
   document.querySelectorAll(".detail-dynamic").forEach((node) => node.remove());
@@ -1835,6 +1834,12 @@ function markWatched(item) {
   persistState(STORAGE_KEYS.progress, state.progress);
   persistState(STORAGE_KEYS.history, state.history);
   rerenderActiveView();
+}
+
+function handleDriveOpen(event, item, url) {
+  event.preventDefault();
+  markWatched(item);
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function updateSurpriseButtons() {
