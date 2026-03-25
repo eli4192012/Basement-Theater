@@ -1117,6 +1117,8 @@ const DEFAULT_PROFILES = [
   { id: "adult", name: "Adults", maturity: "R", color: "#f59e0b" },
 ];
 
+const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
+
 const MATURITY_ORDER = { G: 0, PG: 1, "PG-13": 2, R: 3 };
 
 const state = {
@@ -1504,7 +1506,9 @@ function getLibraryItems() {
 function getFilteredItems() {
   const items = getLibraryItems();
   return items.filter((item) => {
-    const matchesCategory = state.activeCategory === "All" || item.category === state.activeCategory;
+    const matchesCategory =
+      state.activeCategory === "All" ||
+      (state.activeCategory === SPECIAL_CATEGORY_KINSLER ? isKinslerItem(item) : item.category === state.activeCategory);
     const matchesLetter = state.activeLetter === "All" || normalizedFirstCharacter(item.title) === state.activeLetter;
     const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
     const matchesQuery = !state.query || haystack.includes(state.query);
@@ -1572,7 +1576,7 @@ function renderHero() {
 }
 
 function renderChips() {
-  const categories = ["All", ...(state.catalog?.categories ?? [])];
+  const categories = ["All", SPECIAL_CATEGORY_KINSLER, ...(state.catalog?.categories ?? [])];
   els.genreChips.innerHTML = categories.map((category) => `<button type="button" class="chip ${category === state.activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join("");
   els.genreChips.querySelectorAll(".chip").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1598,8 +1602,9 @@ function renderLetterChips() {
 function renderRows() {
   const filtered = getFilteredItems();
   const grouped = filtered.reduce((map, item) => {
-    map[item.category] ||= [];
-    map[item.category].push(item);
+    const groupName = state.activeCategory === SPECIAL_CATEGORY_KINSLER ? SPECIAL_CATEGORY_KINSLER : item.category;
+    map[groupName] ||= [];
+    map[groupName].push(item);
     return map;
   }, {});
 
@@ -1843,6 +1848,11 @@ function inferRating(item) {
   if (/(harry potter|spider man|marvel|transformers|ghostbusters|gravity falls|teen titans|dragon ball|pokemon detective pikachu|ready player one|superman|oppenheimer|8 mile)/.test(text)) return "PG-13";
   if (/(disney|family|animation|bluey|spongebob|toy story|minions|despicable me|my little pony|garfield|pokemon|dog man)/.test(text)) return "G";
   return "PG";
+}
+
+function isKinslerItem(item) {
+  const text = `${item.title} ${item.rawTitle || ""} ${item.category}`.toLowerCase();
+  return /(marvel|avengers|iron man|captain america|thor|hulk|ant man|guardians of the galaxy|doctor strange|black panther|captain marvel|shang chi|eternals|deadpool|wolverine|moon knight)/.test(text);
 }
 
 function gradientFor(seedText) {
