@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200" role="img" aria-labelledby="title desc">
+  <title id="title">WALL-E Cover</title>
+  <desc id="desc">A blue space-themed poster-style cover inspired by WALL-E.</desc>
+  <defs>
+    <linearGradient id="space" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0b1a4f"/>
+      <stop offset="50%" stop-color="#143a8c"/>
+      <stop offset="100%" stop-color="#071126"/>
+    </linearGradient>
+    <radialGradient id="planet" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#7be1ff"/>
+      <stop offset="65%" stop-color="#1e8ae6"/>
+      <stop offset="100%" stop-color="#0a356e"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="1200" fill="url(#space)"/>
+  <g fill="#ffffff" opacity="0.8">
+    <circle cx="84" cy="92" r="2"/>
+    <circle cx="164" cy="150" r="3"/>
+    <circle cx="244" cy="70" r="2"/>
+    <circle cx="334" cy="122" r="2"/>
+    <circle cx="418" cy="84" r="3"/>
+    <circle cx="510" cy="150" r="2"/>
+    <circle cx="612" cy="78" r="2"/>
+    <circle cx="688" cy="138" r="3"/>
+    <circle cx="734" cy="214" r="2"/>
+    <circle cx="104" cy="300" r="2"/>
+    <circle cx="214" cy="258" r="3"/>
+    <circle cx="585" cy="278" r="2"/>
+    <circle cx="670" cy="330" r="3"/>
+  </g>
+
+  <circle cx="125" cy="905" r="480" fill="url(#planet)" opacity="0.98"/>
+  <path d="M0 870 C170 730 375 715 560 790 C665 833 737 890 800 930 L800 1200 L0 1200 Z" fill="#0a1e45" opacity="0.65"/>
+
+  <g filter="url(#shadow)" transform="translate(238 420)">
+    <rect x="0" y="130" width="210" height="188" rx="24" fill="#99653c" stroke="#56351e" stroke-width="10"/>
+    <rect x="16" y="146" width="178" height="156" rx="18" fill="#b88249"/>
+    <circle cx="55" cy="350" r="46" fill="#3a3f4e"/>
+    <circle cx="155" cy="350" r="46" fill="#3a3f4e"/>
+    <circle cx="55" cy="350" r="18" fill="#76829a"/>
+    <circle cx="155" cy="350" r="18" fill="#76829a"/>
+    <path d="M66 88 L105 162" stroke="#8d9ab2" stroke-width="16" stroke-linecap="round"/>
+    <path d="M165 88 L130 162" stroke="#8d9ab2" stroke-width="16" stroke-linecap="round"/>
+    <ellipse cx="88" cy="72" rx="52" ry="62" fill="#d9f4ff" stroke="#49566d" stroke-width="16"/>
+    <ellipse cx="156" cy="72" rx="52" ry="62" fill="#d9f4ff" stroke="#49566d" stroke-width="16"/>
+    <circle cx="96" cy="80" r="18" fill="#1a2736"/>
+    <circle cx="148" cy="80" r="18" fill="#1a2736"/>
+    <circle cx="101" cy="74" r="6" fill="#fff"/>
+    <circle cx="153" cy="74" r="6" fill="#fff"/>
+    <path d="M-18 210 L-88 285" stroke="#8d9ab2" stroke-width="18" stroke-linecap="round"/>
+    <path d="M228 210 L300 285" stroke="#8d9ab2" stroke-width="18" stroke-linecap="round"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="612" y="590" width="72" height="160" rx="30" fill="#eef5ff"/>
+    <path d="M648 548 C608 548 592 574 592 610 C592 658 624 684 648 706 C672 684 704 658 704 610 C704 574 688 548 648 548 Z" fill="#eef5ff"/>
+    <circle cx="628" cy="604" r="8" fill="#1f2638"/>
+  </g>
+
+  <g text-anchor="middle" filter="url(#shadow)">
+    <text x="530" y="182" fill="#f3f7ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">Disney • PIXAR</text>
+    <text x="530" y="280" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="110" font-weight="900" letter-spacing="8">WALL•E</text>
+  </g>
+</svg>

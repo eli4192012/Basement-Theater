@@ -608,6 +608,12 @@ h3 {
   font-weight: 800;
 }
 
+.row-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .row-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -1111,9 +1117,9 @@ h3 {
 };
 
 const DEFAULT_PROFILES = [
-  { id: "kid-1", name: "Kid 1", maturity: "PG", color: "#ff7b72" },
-  { id: "kid-2", name: "Kid 2", maturity: "PG", color: "#6ee7b7" },
-  { id: "teen", name: "Teen", maturity: "PG-13", color: "#60a5fa" },
+  { id: "kid-1", name: "Person 1", maturity: "PG", color: "#ff7b72" },
+  { id: "kid-2", name: "Person 2", maturity: "PG", color: "#6ee7b7" },
+  { id: "teen", name: "Person 3", maturity: "PG-13", color: "#60a5fa" },
   { id: "adult", name: "Adults", maturity: "R", color: "#f59e0b" },
 ];
 
@@ -1631,7 +1637,11 @@ function renderRows() {
 }
 
 function renderCustomRow(title, items) {
-  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><p class="results-count">${items.length} titles</p></div><div class="row-grid">${sortItemsByCover(items).map(renderCard).join("")}</div></section>`;
+  const actionButton =
+    title === "Continue Watching"
+      ? `<button type="button" class="ghost-button row-action-button" data-row-action="clear-continue">Clear</button>`
+      : "";
+  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><div class="row-header-actions">${actionButton}<p class="results-count">${items.length} titles</p></div></div><div class="row-grid">${sortItemsByCover(items).map(renderCard).join("")}</div></section>`;
 }
 
 function renderFavorites() {
@@ -1707,6 +1717,12 @@ function bindCardInteractions(container) {
     event.stopPropagation();
     toggleWatchlist(button.dataset.url);
   }));
+  container.querySelectorAll('[data-row-action="clear-continue"]').forEach((button) =>
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      clearContinueWatching();
+    }),
+  );
 }
 
 function renderCard(item) {
@@ -1827,6 +1843,15 @@ function markWatched(item) {
     { url: item.url, title: item.title, runtime: item.runtime || 95, watchedAt: Date.now() },
     ...state.history[active.id].filter((entry) => entry.url !== item.url),
   ].slice(0, 40);
+  persistState(STORAGE_KEYS.progress, state.progress);
+  persistState(STORAGE_KEYS.history, state.history);
+  rerenderActiveView();
+}
+
+function clearContinueWatching() {
+  const active = getActiveProfile();
+  state.progress[active.id] = {};
+  state.history[active.id] = [];
   persistState(STORAGE_KEYS.progress, state.progress);
   persistState(STORAGE_KEYS.history, state.history);
   rerenderActiveView();

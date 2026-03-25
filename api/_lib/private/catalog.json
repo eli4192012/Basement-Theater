@@ -385,9 +385,9 @@
       "previewUrl": "https://drive.google.com/file/d/1emX4CShNejqhStNK-b0xDVBBMA0t2gcE/preview",
       "driveId": "1emX4CShNejqhStNK-b0xDVBBMA0t2gcE",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/gyh0eECE2IqrW8GWl3KoHBfc45j.jpg",
+      "posterUrl": "./assets/tmnt-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/2Cpg8hUn60PK9CW9d5SWf605Ah8.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "local"
     },
     {
       "title": "The Nun II",
@@ -1835,7 +1835,9 @@
       "url": "https://drive.google.com/drive/folders/1Nb17fir8Loz7Zx9gkrlAGXvE7uAzi7TG",
       "previewUrl": "https://drive.google.com/drive/folders/1Nb17fir8Loz7Zx9gkrlAGXvE7uAzi7TG",
       "driveId": "1Nb17fir8Loz7Zx9gkrlAGXvE7uAzi7TG",
-      "driveKind": "folder"
+      "driveKind": "folder",
+      "posterUrl": "./assets/tmnt-cover.svg",
+      "imageSource": "local"
     },
     {
       "title": "Invincible Comic Collection (1-144)",
@@ -2669,9 +2671,9 @@
       "previewUrl": "https://drive.google.com/drive/folders/1cOFMumtLFERJqS6Y5oTyBb6ZRXNHCgZF",
       "driveId": "1cOFMumtLFERJqS6Y5oTyBb6ZRXNHCgZF",
       "driveKind": "folder",
-      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/5/55/Stephen_Hillenburg_by_Carlos_Cazurro_%28cropped%29.jpg",
+      "posterUrl": "./assets/spongebob-squarepants-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/aasp5EmwclAQbwfGABWLTNLhjwB.jpg",
-      "imageSource": "wikipedia",
+      "imageSource": "local",
       "wikipediaTitle": "List of SpongeBob SquarePants episodes (seasons 1–10)",
       "wikipediaUrl": "https://en.wikipedia.org/wiki/List_of_SpongeBob_SquarePants_episodes_(seasons_1%E2%80%9310)",
       "wikipediaScore": 48
@@ -3309,7 +3311,9 @@
       "url": "https://drive.google.com/file/d/1qhxQw4uC6aO1KN0UZrybu1YY1vdtBwmM/view",
       "previewUrl": "https://drive.google.com/file/d/1qhxQw4uC6aO1KN0UZrybu1YY1vdtBwmM/preview",
       "driveId": "1qhxQw4uC6aO1KN0UZrybu1YY1vdtBwmM",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/shrek-the-third-cover.svg",
+      "imageSource": "local"
     },
     {
       "title": "Scary Movie 2000 700MB-Mkvking",
@@ -8016,7 +8020,9 @@
       "url": "https://drive.google.com/file/d/1D4fFFOThEcYDjLQqISw-29Le-xKt27pg/view",
       "previewUrl": "https://drive.google.com/file/d/1D4fFFOThEcYDjLQqISw-29Le-xKt27pg/preview",
       "driveId": "1D4fFFOThEcYDjLQqISw-29Le-xKt27pg",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/pirates-of-the-caribbean-cover.svg",
+      "imageSource": "local"
     },
     {
       "title": "Pirates of the Caribbean At Worlds End",
@@ -8028,9 +8034,9 @@
       "previewUrl": "https://drive.google.com/file/d/1HuD4_RlXiHOUYHvi56h0t8D7__dCEH1Y/preview",
       "driveId": "1HuD4_RlXiHOUYHvi56h0t8D7__dCEH1Y",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/jGWpG4YhpQwVmjyHEGkxEkeRf0S.jpg",
+      "posterUrl": "./assets/pirates-of-the-caribbean-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/1jHxkVXMI5s3vRiyiZooUy1shB5.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "local"
     },
     {
       "title": "Pirates of the Caribbean- On Stranger Tides 2011",
@@ -8042,9 +8048,9 @@
       "previewUrl": "https://drive.google.com/file/d/1Nc5QxL1XnvFJy6aNQ2s1j_TwtwqWRjoY/preview",
       "driveId": "1Nc5QxL1XnvFJy6aNQ2s1j_TwtwqWRjoY",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/keGfSvCmYj7CvdRx36OdVrAEibE.jpg",
+      "posterUrl": "./assets/pirates-of-the-caribbean-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/uzIGtyS6bbnJzGsPL93WCF1FWm8.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "local"
     },
     {
       "title": "Peter Pan 1953",
@@ -8385,9 +8391,9 @@
       "previewUrl": "https://drive.google.com/file/d/1gdIpjtTCHV_a8p9KPQaQg1ljIcanpu5S/preview",
       "driveId": "1gdIpjtTCHV_a8p9KPQaQg1ljIcanpu5S",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/fwX5RdPDBFsbEAXc46DrvRz5Bca.jpg",
+      "posterUrl": "./assets/tmnt-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/wZPF5XyKtDfu7mOVfos21YlyKGq.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "local"
     },
     {
       "title": "TMNT 2007 H264 -RARBG",
@@ -8398,7 +8404,9 @@
       "url": "https://drive.google.com/file/d/18iqYAOVbRHOT7jzJ3sqlyxi8RS5AH5sM/view?usp=sharing",
       "previewUrl": "https://drive.google.com/file/d/18iqYAOVbRHOT7jzJ3sqlyxi8RS5AH5sM/preview",
       "driveId": "18iqYAOVbRHOT7jzJ3sqlyxi8RS5AH5sM",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/tmnt-cover.svg",
+      "imageSource": "local"
     },
     {
       "title": "Teenage Mutant Ninja Turtles 2014",
@@ -8410,9 +8418,9 @@
       "previewUrl": "https://drive.google.com/file/d/1nfyJg41IDD_zRmv3i64MUSpPuCPTq7gb/preview",
       "driveId": "1nfyJg41IDD_zRmv3i64MUSpPuCPTq7gb",
       "driveKind": "file",
-      "posterUrl": "https://image.tmdb.org/t/p/w500/azL2ThbJMIkts3ZMt3j1YgBUeDB.jpg",
+      "posterUrl": "./assets/tmnt-cover.svg",
       "backdropUrl": "https://image.tmdb.org/t/p/w500/eezsbzYPbYKjjh6E1XHDBNlLynh.jpg",
-      "imageSource": "tmdb"
+      "imageSource": "local"
     },
     {
       "title": "Teenage Mutant Ninja Turtles Out of the Shadows 2016 WEB-DL H264 AC3-EVO",
@@ -8423,7 +8431,9 @@
       "url": "https://drive.google.com/file/d/1fWvuZyyF8dWKn9y60awRgwTxKAQd11cl/view",
       "previewUrl": "https://drive.google.com/file/d/1fWvuZyyF8dWKn9y60awRgwTxKAQd11cl/preview",
       "driveId": "1fWvuZyyF8dWKn9y60awRgwTxKAQd11cl",
-      "driveKind": "file"
+      "driveKind": "file",
+      "posterUrl": "./assets/tmnt-cover.svg",
+      "imageSource": "local"
     },
     {
       "title": "Fast and Furious 2009 DVDRip AC3-VAiN",

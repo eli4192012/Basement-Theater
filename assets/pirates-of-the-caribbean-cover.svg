@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Pirates of the Caribbean Cover</title>
+  <desc id="desc">A warm sepia poster-style cover inspired by Pirates of the Caribbean.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#5a1d11"/>
+      <stop offset="45%" stop-color="#8e3a17"/>
+      <stop offset="100%" stop-color="#1a0e0b"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#4d1e14"/>
+      <stop offset="100%" stop-color="#120807"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="1200" fill="url(#sky)"/>
+  <rect y="820" width="800" height="380" fill="url(#sea)"/>
+  <circle cx="630" cy="170" r="82" fill="#df9342" opacity="0.38"/>
+
+  <g opacity="0.18" fill="#e5b678">
+    <path d="M0 250 C130 215 210 260 300 228 C420 184 530 200 640 250 C710 282 760 292 800 286 L800 0 L0 0 Z"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="400" cy="980" rx="250" ry="50" fill="#000" opacity="0.28"/>
+
+    <g transform="translate(400 470)">
+      <ellipse cx="0" cy="0" rx="122" ry="168" fill="#d8b78b"/>
+      <path d="M-122 -16 C-78 -168 86 -168 122 -16 C132 20 126 102 110 168 L-110 168 C-126 102 -132 18 -122 -16 Z" fill="#6b271a"/>
+      <path d="M-120 -60 C-56 -122 54 -126 122 -52 L122 -152 L-120 -152 Z" fill="#3b1510"/>
+      <circle cx="-42" cy="-16" r="14" fill="#1d130f"/>
+      <circle cx="42" cy="-16" r="14" fill="#1d130f"/>
+      <path d="M-68 58 C-22 80 22 80 68 58" fill="none" stroke="#6f2a16" stroke-width="12" stroke-linecap="round"/>
+      <path d="M-18 16 C-6 66 -8 108 -14 142" stroke="#70411a" stroke-width="18" stroke-linecap="round"/>
+      <path d="M-132 -34 C-188 44 -226 124 -238 202" stroke="#5b2f18" stroke-width="16" stroke-linecap="round"/>
+      <path d="M132 -34 C188 44 226 124 238 202" stroke="#5b2f18" stroke-width="16" stroke-linecap="round"/>
+      <path d="M-208 -180 C-162 -232 -124 -234 -84 -198" fill="none" stroke="#201513" stroke-width="28" stroke-linecap="round"/>
+      <path d="M208 -180 C162 -232 124 -234 84 -198" fill="none" stroke="#201513" stroke-width="28" stroke-linecap="round"/>
+      <path d="M-106 -178 C-92 -218 -74 -236 -40 -250" fill="none" stroke="#e5c8a1" stroke-width="18" stroke-linecap="round"/>
+      <path d="M106 -178 C92 -218 74 -236 40 -250" fill="none" stroke="#e5c8a1" stroke-width="18" stroke-linecap="round"/>
+    </g>
+
+    <g transform="translate(165 465)" opacity="0.9">
+      <ellipse cx="0" cy="0" rx="84" ry="122" fill="#d4b693"/>
+      <path d="M-84 -10 C-50 -116 50 -116 84 -10 C90 22 86 76 74 122 L-74 122 C-86 76 -90 22 -84 -10 Z" fill="#6b2616"/>
+    </g>
+
+    <g transform="translate(635 465)" opacity="0.9">
+      <ellipse cx="0" cy="0" rx="84" ry="122" fill="#c0ab8e"/>
+      <path d="M-84 -10 C-50 -116 50 -116 84 -10 C90 22 86 76 74 122 L-74 122 C-86 76 -90 22 -84 -10 Z" fill="#493022"/>
+    </g>
+  </g>
+
+  <g transform="translate(400 878)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="74" fill="#e9ddcf"/>
+    <circle cx="-28" cy="-6" r="10" fill="#1f1712"/>
+    <circle cx="28" cy="-6" r="10" fill="#1f1712"/>
+    <path d="M-72 36 C-36 14 36 14 72 36" fill="none" stroke="#1f1712" stroke-width="12" stroke-linecap="round"/>
+    <path d="M-130 -6 L130 -6" stroke="#d2af7b" stroke-width="18" stroke-linecap="round"/>
+  </g>
+
+  <g text-anchor="middle" filter="url(#shadow)">
+    <text x="400" y="1010" fill="#efe2cf" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="900">PIRATES OF THE CARIBBEAN</text>
+    <text x="400" y="1084" fill="#c7a26b" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">THE CURSE OF THE BLACK PEARL</text>
+  </g>
+</svg>
