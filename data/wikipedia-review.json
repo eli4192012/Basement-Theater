@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-03-25T01:59:41.887422+00:00",
+  "totalCandidates": 14,
+  "items": [
+    {
+      "title": "Sonic the Hedgehog Comics",
+      "category": "Comics & Manga",
+      "year": null,
+      "type": "series",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Sonic_The_Hedgehog.svg/960px-Sonic_The_Hedgehog.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Sonic the Hedgehog",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Sonic_the_Hedgehog",
+      "score": 78
+    },
+    {
+      "title": "diary of a wimpy kid hot mess",
+      "category": "Family & Animation",
+      "year": null,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Diary_of_a_Wimpy_Kid_logo.svg/960px-Diary_of_a_Wimpy_Kid_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Diary of a Wimpy Kid",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Diary_of_a_Wimpy_Kid",
+      "score": 78
+    },
+    {
+      "title": "kaido",
+      "category": "Anime",
+      "year": null,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/1/10/TokaidoHakone.jpg",
+      "source": "wikipedia",
+      "wikipediaTitle": "Kaidō",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Kaid%C5%8D",
+      "score": 78
+    },
+    {
+      "title": "SpongeBob SquarePants seasons 1 to 15 Complete Series",
+      "category": "Anime",
+      "year": null,
+      "type": "series",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/5/55/Stephen_Hillenburg_by_Carlos_Cazurro_%28cropped%29.jpg",
+      "source": "wikipedia",
+      "wikipediaTitle": "List of SpongeBob SquarePants episodes (seasons 1–10)",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/List_of_SpongeBob_SquarePants_episodes_(seasons_1%E2%80%9310)",
+      "score": 48
+    },
+    {
+      "title": "Hotel Transylvania 2 2015 -REMO",
+      "category": "Anime",
+      "year": 2015,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Hotel_Transylvania_logo.svg/960px-Hotel_Transylvania_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Hotel Transylvania",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Hotel_Transylvania",
+      "score": 78
+    },
+    {
+      "title": "Evil Dead Rise 2023 REBOOT",
+      "category": "Holiday",
+      "year": 2023,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Evil_Dead_logo.svg/960px-Evil_Dead_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Evil Dead",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Evil_Dead",
+      "score": 78
+    },
+    {
+      "title": "Pokémon- The Movie 2000",
+      "category": "Holiday",
+      "year": 2000,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon Detective Pikachu 2019",
+      "category": "Featured",
+      "year": 2019,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon Mewtwo Returns (2000 re-dvdrip)",
+      "category": "Holiday",
+      "year": 2000,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon- The Arceus Chronicles 2022",
+      "category": "Featured",
+      "year": 2022,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon the Movie- I Choose You! 2017",
+      "category": "Featured",
+      "year": 2017,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon- Mewtwo Strikes Back Evolution 2019",
+      "category": "Featured",
+      "year": 2019,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon- The First Movie - Mewtwo Strikes Back",
+      "category": "Featured",
+      "year": null,
+      "type": "movie",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    },
+    {
+      "title": "Pokémon Adventures",
+      "category": "Anime",
+      "year": null,
+      "type": "series",
+      "posterUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/960px-International_Pok%C3%A9mon_logo.svg.png",
+      "source": "wikipedia",
+      "wikipediaTitle": "Pokémon",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Pok%C3%A9mon",
+      "score": 78
+    }
+  ]
+}

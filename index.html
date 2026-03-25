@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basement Theater</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-backdrop"></div>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-wordmark">BASEMENT THEATER</div>
+          <nav class="nav-links" aria-label="Primary">
+            <button id="libraryTabButton" class="nav-link active" type="button">Library</button>
+            <button id="reviewTabButton" class="nav-link" type="button">Wikipedia Review</button>
+            <button id="trashTabButton" class="nav-link" type="button">Trash Review</button>
+          </nav>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="search">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Titles, franchises, collections" />
+          </label>
+          <button id="randomPickButton" class="ghost-button" type="button">Shuffle</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="libraryView">
+          <section class="hero" id="heroPanel">
+            <div class="hero-overlay"></div>
+            <div class="hero-copy">
+              <p class="eyebrow">Featured Tonight</p>
+              <h1 id="heroTitle">Loading your library...</h1>
+              <p id="heroMeta" class="hero-meta"></p>
+              <p id="heroDescription" class="hero-description"></p>
+              <div class="hero-actions">
+                <a id="heroPlay" class="primary-button" href="#" target="_blank" rel="noreferrer">Play</a>
+                <button id="heroInfo" class="ghost-button info-button" type="button">More Info</button>
+              </div>
+            </div>
+            <div class="hero-art" id="heroArt" aria-hidden="true">
+              <div class="hero-badge">Basement Original</div>
+            </div>
+          </section>
+
+          <section class="browse-panel">
+            <section class="shelf-header">
+              <div>
+                <p class="eyebrow">Browse</p>
+                <h2 id="resultsHeading">All titles</h2>
+              </div>
+              <p id="resultsCount" class="results-count"></p>
+            </section>
+
+            <section id="genreChips" class="genre-chips" aria-label="Browse categories"></section>
+            <section id="letterChips" class="letter-chips" aria-label="Browse A to Z"></section>
+          </section>
+
+          <section id="rows" class="rows"></section>
+        </section>
+
+        <section id="reviewView" class="hidden-view">
+          <section class="review-header">
+            <div>
+              <p class="eyebrow">Review Queue</p>
+              <h2>Wikipedia Cover Candidates</h2>
+            </div>
+            <p id="reviewCount" class="results-count"></p>
+          </section>
+          <p class="review-note">
+            Covers shown here are only suggestions from Wikipedia. They are not applied to the main app until we explicitly merge them.
+          </p>
+          <section id="reviewGrid" class="review-grid"></section>
+        </section>
+
+        <section id="trashView" class="hidden-view">
+          <section class="review-header">
+            <div>
+              <p class="eyebrow">Trash Queue</p>
+              <h2>Broken or Unplayable Link Candidates</h2>
+            </div>
+            <p id="trashCount" class="results-count"></p>
+          </section>
+          <p class="review-note">
+            These titles were flagged by an automated Google Drive link check. They are only suggestions for review and are not deleted from the main app.
+          </p>
+          <section id="trashGrid" class="review-grid"></section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="detailModal" class="detail-modal">
+      <form method="dialog" class="detail-card">
+        <button class="close-button" aria-label="Close details">x</button>
+        <div class="detail-header">
+          <div class="detail-art" id="detailArt"></div>
+          <div class="detail-copy">
+            <p class="eyebrow">Selected Title</p>
+            <h3 id="detailTitle"></h3>
+            <p id="detailMeta" class="detail-meta"></p>
+            <p id="detailDescription" class="detail-description"></p>
+            <div class="detail-actions">
+              <a id="detailOpen" class="primary-button" href="#" target="_blank" rel="noreferrer">Open in Drive</a>
+              <a id="detailPreview" class="ghost-button" href="#" target="_blank" rel="noreferrer">Preview</a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+  </html>
