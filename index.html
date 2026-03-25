@@ -934,6 +934,9 @@ h3 {
         <h1 class="auth-title">Sign In To Enter Basement Theater</h1>
         <p id="authMessage" class="auth-message">Checking access setup...</p>
         <div id="googleSignInButton" class="google-signin-slot"></div>
+        <div class="auth-actions">
+          <button id="bypassAuthButton" class="ghost-button hidden" type="button">Preview Without Login</button>
+        </div>
       </div>
     </section>
     <div class="page-shell">
@@ -1179,6 +1182,7 @@ const els = {
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
   welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
+  bypassAuthButton: document.querySelector("#bypassAuthButton"),
   surpriseButtons: document.querySelectorAll("[data-surprise-mode]"),
   statsPanel: document.querySelector("#statsPanel"),
   statsMostWatched: document.querySelector("#statsMostWatched"),
@@ -1216,7 +1220,8 @@ async function bootstrapAuth() {
   }
 
   if (!state.auth.config?.googleClientId) {
-    setAuthMessage("Google sign-in is not configured yet. Add the Google client ID in Vercel to turn on private access.");
+    setAuthMessage("Google sign-in is not configured yet. You can preview the app without login for now.");
+    els.bypassAuthButton?.classList.remove("hidden");
     return;
   }
 
@@ -1236,6 +1241,18 @@ async function loadProtectedData() {
   const [catalog, trash] = await Promise.all([
     authedFetchJson("/api/catalog"),
     authedFetchJson("/api/trash").catch(() => ({ items: [], totalCandidates: 0 })),
+  ]);
+  state.catalog = catalog;
+  state.trash = trash;
+  els.authGate.classList.add("hidden");
+  renderAll();
+}
+
+async function loadPreviewData() {
+  setAuthMessage("Opening preview...");
+  const [catalog, trash] = await Promise.all([
+    fetchJson("/api/catalog"),
+    fetchJson("/api/trash").catch(() => ({ items: [], totalCandidates: 0 })),
   ]);
   state.catalog = catalog;
   state.trash = trash;
@@ -1408,6 +1425,7 @@ function bindEvents() {
 
   els.welcomeModal?.addEventListener("close", dismissWelcome);
   els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
+  els.bypassAuthButton?.addEventListener("click", loadPreviewData);
 }
 
 function setView(view) {
