@@ -1825,7 +1825,7 @@ h3 {
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
         <div id="googleSigninWrap" class="hidden">
-          <p id="googleSigninHint" class="auth-message">Google sign-in is required before you enter the password.</p>
+          <p id="googleSigninHint" class="auth-message">Step 1: Sign in with your email. Step 2: Enter the shared password.</p>
           <div id="googleSigninSlot" class="google-signin-slot"></div>
           <p id="googleSigninStatus" class="auth-message hidden"></p>
         </div>
@@ -2591,8 +2591,8 @@ function renderAuthOptions() {
   }
   if (els.googleSigninHint) {
     els.googleSigninHint.textContent = requireGoogle
-      ? "Google sign-in is required before you enter the password."
-      : "Google sign-in is optional right now, but available for activity tracking.";
+      ? "Step 1: Sign in with your email. Step 2: Enter the shared password."
+      : "Sign in with your email first if you want activity tracking, then enter the password.";
   }
   updateGoogleSigninStatus();
   if (state.auth.hostedMode && clientId && window.google?.accounts?.id) {
@@ -2627,19 +2627,16 @@ function initializeGoogleSignIn(clientId) {
   window.google.accounts.id.initialize({
     client_id: clientId,
     callback: handleGoogleCredential,
-    auto_select: true,
-    cancel_on_tap_outside: false,
+    auto_select: false,
+    cancel_on_tap_outside: true,
   });
   window.google.accounts.id.renderButton(els.googleSigninSlot, {
     theme: "filled_black",
     size: "large",
-    text: "signin_with",
+    text: "continue_with",
     shape: "pill",
     width: 260,
   });
-  if (Boolean(state.auth.config?.requireGoogleSignIn)) {
-    window.google.accounts.id.prompt();
-  }
   els.googleSigninSlot.dataset.initialized = clientId;
 }
 
@@ -2672,7 +2669,7 @@ function handleGoogleCredential(response) {
   updateGoogleSigninStatus();
   renderAuthOptions();
   if (state.auth.config?.requireGoogleSignIn) {
-    setAuthMessage("Google sign-in complete. Enter the shared password now.");
+    setAuthMessage("Email sign-in complete. Enter the shared password now.");
   }
 }
 
