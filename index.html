@@ -1261,6 +1261,234 @@ h3 {
   }
 }
 
+/* ── Announcement Banner ── */
+.announcement-banner {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  animation: bannerSlide 0.3s ease;
+}
+@keyframes bannerSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.announcement-banner.active { display: flex; }
+.announcement-banner.type-info    { background: rgba(60,130,200,0.18); border: 1px solid rgba(60,130,200,0.4); color: #90cdf4; }
+.announcement-banner.type-hype    { background: rgba(215,164,76,0.18); border: 1px solid rgba(215,164,76,0.4); color: var(--gold); }
+.announcement-banner.type-warning { background: rgba(179,58,32,0.22); border: 1px solid rgba(179,58,32,0.5); color: #fc8181; }
+.announcement-banner-icon { font-size: 1.2rem; flex-shrink: 0; }
+.announcement-banner-text { flex: 1; }
+.announcement-banner-dismiss { background: none; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 1.1rem; padding: 0 4px; flex-shrink: 0; }
+.announcement-banner-dismiss:hover { opacity: 1; }
+
+/* ── Admin Announcements ── */
+.admin-announce-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.admin-announce-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin: 0 0 16px;
+}
+.admin-announce-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 700px;
+}
+.admin-announce-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.admin-announce-form textarea {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  min-height: 80px;
+  resize: vertical;
+  width: 100%;
+}
+.admin-announce-form textarea:focus { outline: 1px solid var(--gold); border-color: var(--gold); }
+.admin-current-announcement {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: rgba(215,164,76,0.1);
+  border: 1px solid rgba(215,164,76,0.3);
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.admin-current-announcement strong { color: var(--gold); }
+
+/* ── Lazy-loading card images ── */
+.card-poster {
+  transition: background-image 0.2s ease;
+}
+.card-poster.img-loading {
+  opacity: 0.85;
+}
+.card-poster.img-loaded {
+  opacity: 1;
+}
+
+/* ── Admin Panel ── */
+.admin-view {
+  padding: 32px 0;
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.admin-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin: 0;
+}
+.admin-subtitle {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 4px 0 0;
+}
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-password-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 64px 32px;
+  text-align: center;
+}
+.admin-password-gate h2 {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  color: var(--gold);
+  margin: 0;
+}
+.admin-password-form {
+  display: flex;
+  gap: 10px;
+}
+.admin-search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.admin-search-bar input,
+.admin-search-bar select {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.admin-search-bar input { flex: 1; min-width: 200px; }
+.admin-count {
+  margin-left: auto;
+  color: var(--muted-dim);
+  font-size: 0.85rem;
+}
+.admin-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.admin-table th {
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,221,168,0.06);
+  vertical-align: middle;
+  color: var(--text);
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--panel-soft); }
+.admin-table tr.admin-added td { background: rgba(67, 160, 71, 0.08); }
+.admin-table tr.admin-edited td { background: rgba(215, 164, 76, 0.08); }
+.admin-cell-title { font-weight: 700; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-cell-url { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-dim); font-size: 0.78rem; }
+.admin-cell-actions { display: flex; gap: 6px; white-space: nowrap; }
+.admin-btn { padding: 5px 10px; border-radius: 5px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font-size: 0.78rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.admin-btn:hover { background: var(--chip); }
+.admin-btn.danger { border-color: rgba(179,58,32,0.5); color: #e07060; }
+.admin-btn.danger:hover { background: rgba(179,58,32,0.2); }
+.admin-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.admin-btn.primary:hover { background: #c94520; }
+
+/* Admin Edit Modal */
+.admin-modal {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 32px;
+  width: min(600px, 95vw);
+  color: var(--text);
+}
+.admin-modal::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+.admin-modal-title { font-family: "Bebas Neue", sans-serif; font-size: 1.8rem; color: var(--gold); margin: 0 0 20px; }
+.admin-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.admin-field { display: flex; flex-direction: column; gap: 5px; }
+.admin-field.full-width { grid-column: 1 / -1; }
+.admin-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-dim); }
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.admin-field input:focus,
+.admin-field select:focus,
+.admin-field textarea:focus { outline: 1px solid var(--gold); border-color: var(--gold); }
+.admin-field textarea { min-height: 80px; resize: vertical; }
+.admin-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.admin-export-note { font-size: 0.8rem; color: var(--muted-dim); margin-top: 8px; text-align: center; }
+
 </style>
   </head>
   <body>
@@ -1279,7 +1507,7 @@ h3 {
     <div class="page-shell">
       <header class="topbar">
         <div class="brand-lockup">
-          <div class="brand-wordmark">THE BASEMENT PREMIUM</div>
+          <div class="brand-wordmark" id="brandWordmark" title="Double-click to open admin">THE BASEMENT PREMIUM</div>
           <nav class="nav-links" aria-label="Primary">
             <button id="homeTabButton" class="nav-link active" type="button">Home</button>
             <button id="announcementsTabButton" class="nav-link" type="button">Announcements</button>
@@ -1289,6 +1517,7 @@ h3 {
             <button id="libraryTabButton" class="nav-link" type="button">Theater</button>
             <button id="favoritesTabButton" class="nav-link" type="button">Favorites</button>
             <button id="trashTabButton" class="nav-link" type="button">Trash Review</button>
+            <button id="adminTabButton" class="nav-link" type="button" style="display:none">⚙ Admin</button>
           </nav>
         </div>
 
@@ -1300,6 +1529,12 @@ h3 {
           <button id="randomPickButton" class="ghost-button" type="button">Shuffle</button>
         </div>
       </header>
+
+      <div id="announcementBanner" class="announcement-banner">
+        <span class="announcement-banner-icon" id="announcementIcon">📢</span>
+        <span class="announcement-banner-text" id="announcementText"></span>
+        <button class="announcement-banner-dismiss" id="announcementDismiss" aria-label="Dismiss">✕</button>
+      </div>
 
       <main>
         <section id="libraryView">
@@ -1393,8 +1628,126 @@ h3 {
           <p class="review-note">This review queue is empty right now because the previously flagged trash titles were deleted from the library.</p>
           <section id="trashGrid" class="review-grid"></section>
         </section>
+
+        <section id="adminView" class="hidden-view admin-view">
+          <div id="adminPasswordGate" class="admin-password-gate">
+            <h2>⚙ Admin Panel</h2>
+            <p style="color:var(--muted)">Enter the admin password to manage the catalog.</p>
+            <form class="admin-password-form" id="adminPasswordForm">
+              <input id="adminPasswordInput" class="auth-input" type="password" placeholder="Admin password" autocomplete="current-password" />
+              <button class="primary-button" type="submit">Unlock</button>
+            </form>
+            <p id="adminPasswordError" style="color:#e07060;font-size:0.85rem;display:none">Wrong password.</p>
+          </div>
+          <div id="adminPanelContent" style="display:none">
+            <div class="admin-header">
+              <div>
+                <h2 class="admin-title">Catalog Admin</h2>
+                <p class="admin-subtitle" id="adminCatalogCount"></p>
+              </div>
+              <div class="admin-actions">
+                <button class="admin-btn primary" id="adminAddButton">+ Add Title</button>
+                <button class="admin-btn" id="adminPublishButton" style="background:#1a6b35;border-color:#1a6b35;color:#fff">🚀 Publish to GitHub</button>
+                <button class="admin-btn" id="adminExportButton">⬇ Export JSON</button>
+                <button class="admin-btn danger" id="adminResetButton">Reset Overrides</button>
+                <button class="admin-btn" id="adminLockButton">🔒 Lock</button>
+              </div>
+            </div>
+            <div class="admin-search-bar">
+              <input id="adminSearch" type="text" placeholder="Search titles…" />
+              <select id="adminCategoryFilter"><option value="">All Categories</option></select>
+              <span class="admin-count" id="adminResultCount"></span>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Year</th>
+                    <th>Drive URL</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+              </table>
+            </div>
+            <p class="admin-export-note">Changes are saved in your browser. Use "Export JSON" to download an updated catalog.json to replace the source file.</p>
+
+            <div class="admin-announce-section">
+              <h3 class="admin-announce-title">📢 Announcements</h3>
+              <div id="adminCurrentAnnouncement" class="admin-current-announcement" style="display:none"></div>
+              <div class="admin-announce-form">
+                <textarea id="adminAnnounceText" placeholder="Type your announcement here… e.g. 'New movies added! Check the Horror section 🎃'"></textarea>
+                <div class="admin-announce-row">
+                  <select id="adminAnnounceType" class="admin-search-bar" style="margin:0">
+                    <option value="hype">🔥 Hype (gold)</option>
+                    <option value="info">📘 Info (blue)</option>
+                    <option value="warning">⚠️ Warning (red)</option>
+                  </select>
+                  <button class="admin-btn primary" id="adminAnnounceButton">📢 Announce to Everyone</button>
+                  <button class="admin-btn danger" id="adminClearAnnouncementButton">✕ Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
+
+    <dialog id="adminEditModal" class="admin-modal">
+      <h3 class="admin-modal-title" id="adminModalTitle">Edit Title</h3>
+      <form id="adminEditForm">
+        <div class="admin-field-grid">
+          <div class="admin-field full-width">
+            <label>Title</label>
+            <input id="adminFieldTitle" type="text" required />
+          </div>
+          <div class="admin-field">
+            <label>Category</label>
+            <select id="adminFieldCategory"></select>
+          </div>
+          <div class="admin-field">
+            <label>Type</label>
+            <select id="adminFieldType">
+              <option value="movie">Movie</option>
+              <option value="series">Series</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label>Year</label>
+            <input id="adminFieldYear" type="number" min="1900" max="2099" placeholder="e.g. 2024" />
+          </div>
+          <div class="admin-field">
+            <label>Maturity Rating</label>
+            <select id="adminFieldRating">
+              <option value="">Auto</option>
+              <option value="G">G</option>
+              <option value="PG">PG</option>
+              <option value="PG-13">PG-13</option>
+              <option value="R">R</option>
+            </select>
+          </div>
+          <div class="admin-field full-width">
+            <label>Google Drive URL</label>
+            <input id="adminFieldUrl" type="url" required placeholder="https://drive.google.com/file/d/…/view" />
+          </div>
+          <div class="admin-field full-width">
+            <label>Poster URL (optional – TMDB or direct image link)</label>
+            <input id="adminFieldPoster" type="url" placeholder="https://image.tmdb.org/t/p/w342/…" />
+          </div>
+          <div class="admin-field full-width">
+            <label>Overview / Description (optional)</label>
+            <textarea id="adminFieldOverview" placeholder="Short description of the title…"></textarea>
+          </div>
+        </div>
+        <div class="admin-modal-actions">
+          <button type="button" class="admin-btn" id="adminModalCancel">Cancel</button>
+          <button type="submit" class="admin-btn primary">Save</button>
+        </div>
+      </form>
+    </dialog>
 
     <dialog id="detailModal" class="detail-modal">
       <form method="dialog" class="detail-card">
@@ -1464,6 +1817,8 @@ h3 {
   watchlist: "basement-theater.watchlist",
   history: "basement-theater.history",
   welcomeSeen: "basement-theater.welcome-seen",
+  adminOverrides: "basement-theater.admin-overrides",
+  adminUnlocked: "basement-theater.admin-unlocked",
 };
 
 const DEFAULT_PROFILES = [
@@ -1497,6 +1852,8 @@ const state = {
   favorites: loadJson(STORAGE_KEYS.favorites, {}),
   watchlist: loadJson(STORAGE_KEYS.watchlist, {}),
   history: loadJson(STORAGE_KEYS.history, {}),
+  adminOverrides: loadJson(STORAGE_KEYS.adminOverrides, { added: [], edited: {}, deleted: [] }),
+  adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
   activeCategory: "All",
   activeLetter: "All",
   query: "",
@@ -1554,6 +1911,8 @@ const els = {
   libraryTabButton: document.querySelector("#libraryTabButton"),
   favoritesTabButton: document.querySelector("#favoritesTabButton"),
   trashTabButton: document.querySelector("#trashTabButton"),
+  adminTabButton: document.querySelector("#adminTabButton"),
+  adminView: document.querySelector("#adminView"),
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
   welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
@@ -1604,6 +1963,7 @@ async function loadProtectedData() {
   state.activePublicPageSlug = getVisiblePublicPages()[0]?.slug || "home";
   els.authGate.classList.add("hidden");
   renderAll();
+  loadAnnouncement(); // Non-blocking — loads banner in background
 }
 
 async function verifyAccess(password) {
@@ -1715,6 +2075,14 @@ function bindEvents() {
   els.libraryTabButton.addEventListener("click", () => setView("library"));
   els.favoritesTabButton.addEventListener("click", () => setView("favorites"));
   els.trashTabButton.addEventListener("click", () => setView("trash"));
+  els.adminTabButton.addEventListener("click", () => setView("admin"));
+
+  // Double-click the brand logo to reveal the hidden admin tab
+  document.querySelector("#brandWordmark").addEventListener("dblclick", () => {
+    const isVisible = els.adminTabButton.style.display !== "none";
+    els.adminTabButton.style.display = isVisible ? "none" : "";
+    if (!isVisible) setView("admin");
+  });
 
   els.surpriseButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -1758,10 +2126,12 @@ function syncView() {
   const trashing = state.activeView === "trash";
   const library = state.activeView === "library";
 
+  const admin = state.activeView === "admin";
   els.libraryView.classList.toggle("hidden-view", !library);
   els.publicView.classList.toggle("hidden-view", !publicTabs);
   els.favoritesView.classList.toggle("hidden-view", !favorites);
   els.trashView.classList.toggle("hidden-view", !trashing);
+  els.adminView.classList.toggle("hidden-view", !admin);
   els.homeTabButton.classList.toggle("active", state.activeView === "home");
   els.announcementsTabButton.classList.toggle("active", state.activeView === "announcements");
   els.updatesTabButton.classList.toggle("active", state.activeView === "updates");
@@ -1770,12 +2140,14 @@ function syncView() {
   els.libraryTabButton.classList.toggle("active", library);
   els.favoritesTabButton.classList.toggle("active", favorites);
   els.trashTabButton.classList.toggle("active", trashing);
+  els.adminTabButton.classList.toggle("active", admin);
   els.randomPickButton.disabled = !library;
   els.randomPickButton.classList.toggle("disabled-button", !library);
   if (library) renderRows();
   if (publicTabs) renderPublicPage();
   if (favorites) renderFavorites();
   if (trashing) renderTrash();
+  if (admin) renderAdmin();
 }
 
 function rerenderActiveView() {
@@ -1881,7 +2253,12 @@ function isFavoriteItem(item, profile = getActiveProfile()) {
 
 function getLibraryItems() {
   const active = getActiveProfile();
-  return getAllowedItems(state.catalog?.items ?? [], active).filter((item) => !isFavoriteItem(item, active));
+  const overrides = state.adminOverrides;
+  const baseItems = (state.catalog?.items ?? [])
+    .filter((item) => !overrides.deleted.includes(item.url))
+    .map((item) => overrides.edited[item.url] ? { ...item, ...overrides.edited[item.url] } : item);
+  const allItems = [...overrides.added, ...baseItems];
+  return getAllowedItems(allItems, active).filter((item) => !isFavoriteItem(item, active));
 }
 
 function getFilteredItems() {
@@ -2368,12 +2745,31 @@ function renderTrashCard(item) {
   return `<article class="review-card"><div class="review-body"><div class="review-title">${escapeHtml(item.title)}</div><div class="review-meta">${escapeHtml(item.category)}${item.year ? ` • ${item.year}` : ""}</div><div class="review-meta">Reason: ${escapeHtml(item.reason || "Unknown")}</div><div class="review-meta">Status: ${escapeHtml(String(item.httpStatus ?? "n/a"))}</div><div class="review-actions"><a class="ghost-button review-link" href="${escapeHtml(item.checkedUrl || item.url || "#")}" target="_blank" rel="noreferrer">Open Checked Link</a></div></div></article>`;
 }
 
+// Shared IntersectionObserver for lazy-loading card poster images
+const cardImageObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    const poster = entry.target;
+    const url = poster.dataset.posterUrl;
+    if (url) {
+      poster.style.setProperty("--card-image", `url("${url}")`);
+    }
+    poster.classList.replace("img-loading", "img-loaded");
+    cardImageObserver.unobserve(poster);
+  });
+}, { rootMargin: "200px" });
+
 function bindCardInteractions(container) {
   container.querySelectorAll(".card").forEach((card) => {
     card.addEventListener("click", () => {
-      const item = state.catalog.items.find((entry) => entry.url === card.dataset.url);
+      const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
+      const item = allItems.find((entry) => entry.url === card.dataset.url);
       if (item) openModal(item);
     });
+  });
+  // Start lazy-loading poster images
+  container.querySelectorAll(".card-poster.img-loading").forEach((poster) => {
+    cardImageObserver.observe(poster);
   });
   container.querySelectorAll(".favorite-button").forEach((button) => button.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -2391,15 +2787,22 @@ function bindCardInteractions(container) {
   );
 }
 
+function optimizePosterUrl(url) {
+  if (!url) return null;
+  // TMDB: downsize from w500 to w342 for card-sized display
+  return url.replace("/t/p/w500/", "/t/p/w342/");
+}
+
 function renderCard(item) {
   const gradient = gradientFor(item.title);
   const active = getActiveProfile();
   const isFavorite = Boolean(state.favorites[active.id]?.[item.url]);
   const inWatchlist = Boolean(state.watchlist[active.id]?.[item.url]);
   const progress = state.progress[active.id]?.[item.url];
+  const posterUrl = optimizePosterUrl(item.posterUrl);
   return `
     <article class="card" data-url="${escapeHtml(item.url)}" tabindex="0">
-      <div class="card-poster" style='--card-gradient:${gradient};--card-image:${item.posterUrl ? `url("${escapeHtml(item.posterUrl)}")` : "none"}'>
+      <div class="card-poster img-loading" style='--card-gradient:${gradient}' data-poster-url="${posterUrl ? escapeHtml(posterUrl) : ""}">
         <div class="card-topline">
           <span class="card-kicker">${item.type === "series" ? "Series" : "Movie"}</span>
           <div class="card-icon-row">
@@ -2534,6 +2937,7 @@ function updateSurpriseButtons() {
 }
 
 function inferRating(item) {
+  if (item.manualRating) return item.manualRating;
   const text = `${item.title} ${item.category}`.toLowerCase();
   if (/(terrifier|saw|conjuring|annabelle|halloween|chucky|purge|texas chain|elm street|john wick|deadpool|south park|evil dead)/.test(text)) return "R";
   if (/(harry potter|spider man|marvel|transformers|ghostbusters|gravity falls|teen titans|dragon ball|pokemon detective pikachu|ready player one|superman|oppenheimer|8 mile)/.test(text)) return "PG-13";
@@ -2591,6 +2995,145 @@ function cleanImportedLabel(value) {
 }
 
 
+// ── GitHub / Announcement constants ──────────────────────────────────────────
+const GITHUB_OWNER = "eli4192012";
+const GITHUB_REPO = "Basement-Theater";
+const GITHUB_FILE = "index.html";
+
+// ── Announcement Banner ───────────────────────────────────────────────────────
+const ANNOUNCE_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/announcements.json`;
+const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
+
+async function loadAnnouncement() {
+  try {
+    const resp = await fetch(`${ANNOUNCE_URL}?_=${Date.now()}`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (!data.active || !data.message) return;
+
+    // Only show if user hasn't already dismissed this exact message
+    const dismissedKey = "basement-theater.announcement-dismissed";
+    if (localStorage.getItem(dismissedKey) === data.message) return;
+
+    const banner = document.querySelector("#announcementBanner");
+    const text = document.querySelector("#announcementText");
+    const icon = document.querySelector("#announcementIcon");
+    if (!banner || !text) return;
+
+    text.textContent = data.message;
+    icon.textContent = ANNOUNCE_ICONS[data.type] || "📢";
+    banner.className = `announcement-banner active type-${data.type || "info"}`;
+
+    document.querySelector("#announcementDismiss").onclick = () => {
+      localStorage.setItem(dismissedKey, data.message);
+      banner.classList.remove("active");
+    };
+  } catch {
+    // Silently fail — announcements are non-critical
+  }
+}
+
+function bindAdminAnnounceEvents() {
+  const announceBtn = document.querySelector("#adminAnnounceButton");
+  const clearBtn = document.querySelector("#adminClearAnnouncementButton");
+  if (announceBtn && !announceBtn._bound) {
+    announceBtn._bound = true;
+    announceBtn.addEventListener("click", publishAnnouncement);
+  }
+  if (clearBtn && !clearBtn._bound) {
+    clearBtn._bound = true;
+    clearBtn.addEventListener("click", clearAnnouncement);
+  }
+}
+
+async function pushAnnouncementJson(data) {
+  const pat = localStorage.getItem("basement-theater.github-pat");
+  if (!pat) throw new Error("No GitHub token saved. Use the Publish button first to save your token.");
+
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
+  const headers = {
+    "Authorization": `token ${pat}`,
+    "Accept": "application/vnd.github.v3+json",
+    "Content-Type": "application/json",
+  };
+
+  // Get current SHA
+  let sha;
+  try {
+    const getResp = await fetch(apiUrl, { headers });
+    if (getResp.status === 401) {
+      localStorage.removeItem("basement-theater.github-pat");
+      throw new Error("Invalid token — cleared. Re-enter via the Publish button.");
+    }
+    if (getResp.ok) {
+      const fileData = await getResp.json();
+      sha = fileData.sha;
+    }
+  } catch (e) {
+    if (e.message.includes("Invalid token")) throw e;
+    throw new Error("🏫 School network is blocking GitHub. Try on your phone hotspot or at home.");
+  }
+
+  const content = btoa(JSON.stringify(data, null, 2));
+  const body = { message: data.active ? "Post announcement" : "Clear announcement", content };
+  if (sha) body.sha = sha;
+
+  const putResp = await fetch(apiUrl, { method: "PUT", headers, body: JSON.stringify(body) });
+  if (!putResp.ok) {
+    const err = await putResp.json().catch(() => ({}));
+    throw new Error(`GitHub error: ${err.message || putResp.status}`);
+  }
+}
+
+async function publishAnnouncement() {
+  const message = document.querySelector("#adminAnnounceText").value.trim();
+  const type = document.querySelector("#adminAnnounceType").value;
+  const btn = document.querySelector("#adminAnnounceButton");
+  if (!message) { alert("Type an announcement first!"); return; }
+
+  btn.textContent = "⏳ Sending…";
+  btn.disabled = true;
+  try {
+    await pushAnnouncementJson({ active: true, message, type, postedAt: new Date().toISOString() });
+    btn.textContent = "✅ Live for everyone!";
+    updateAdminAnnouncementDisplay({ active: true, message, type });
+    // Also show the banner locally
+    localStorage.removeItem("basement-theater.announcement-dismissed");
+    await loadAnnouncement();
+    setTimeout(() => { btn.textContent = "📢 Announce to Everyone"; btn.disabled = false; }, 4000);
+  } catch (err) {
+    btn.textContent = `❌ ${err.message}`;
+    btn.disabled = false;
+  }
+}
+
+async function clearAnnouncement() {
+  const btn = document.querySelector("#adminClearAnnouncementButton");
+  btn.textContent = "⏳ Clearing…";
+  btn.disabled = true;
+  try {
+    await pushAnnouncementJson({ active: false, message: "", type: "info", postedAt: null });
+    btn.textContent = "✅ Cleared!";
+    updateAdminAnnouncementDisplay(null);
+    document.querySelector("#announcementBanner").classList.remove("active");
+    setTimeout(() => { btn.textContent = "✕ Clear"; btn.disabled = false; }, 3000);
+  } catch (err) {
+    btn.textContent = `❌ ${err.message}`;
+    btn.disabled = false;
+  }
+}
+
+function updateAdminAnnouncementDisplay(data) {
+  const el = document.querySelector("#adminCurrentAnnouncement");
+  if (!el) return;
+  if (data?.active && data?.message) {
+    el.style.display = "";
+    el.innerHTML = `<strong>Active:</strong> ${escapeHtml(data.message)} <span style="opacity:0.6;font-size:0.8em">[${data.type}]</span>`;
+  } else {
+    el.style.display = "none";
+  }
+}
+
 function maybeShowWelcome() {
   if (localStorage.getItem(STORAGE_KEYS.welcomeSeen)) return;
   if (!els.welcomeModal || els.welcomeModal.open) return;
@@ -2599,6 +3142,435 @@ function maybeShowWelcome() {
 
 function dismissWelcome() {
   localStorage.setItem(STORAGE_KEYS.welcomeSeen, "true");
+}
+
+// ── Admin Panel ───────────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = "html1234";
+
+function saveAdminOverrides() {
+  persistState(STORAGE_KEYS.adminOverrides, state.adminOverrides);
+}
+
+function renderAdmin() {
+  const gate = document.querySelector("#adminPasswordGate");
+  const content = document.querySelector("#adminPanelContent");
+  if (!gate || !content) return;
+
+  if (!state.adminUnlocked) {
+    gate.style.display = "";
+    content.style.display = "none";
+    bindAdminPasswordForm();
+    return;
+  }
+
+  gate.style.display = "none";
+  content.style.display = "";
+  renderAdminTable();
+  bindAdminPanelEvents();
+  bindAdminAnnounceEvents();
+  // Load and display current announcement state in admin
+  fetch(`${ANNOUNCE_URL}?_=${Date.now()}`).then(r => r.ok ? r.json() : null).then(data => {
+    if (data?.active) updateAdminAnnouncementDisplay(data);
+  }).catch(() => {});
+}
+
+function bindAdminPasswordForm() {
+  const form = document.querySelector("#adminPasswordForm");
+  if (!form || form._bound) return;
+  form._bound = true;
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const val = document.querySelector("#adminPasswordInput").value;
+    if (val === ADMIN_PASSWORD) {
+      state.adminUnlocked = true;
+      sessionStorage.setItem(STORAGE_KEYS.adminUnlocked, "1");
+      renderAdmin();
+    } else {
+      document.querySelector("#adminPasswordError").style.display = "";
+    }
+  });
+}
+
+function getAdminItems() {
+  const overrides = state.adminOverrides;
+  const baseItems = (state.catalog?.items ?? [])
+    .filter((item) => !overrides.deleted.includes(item.url))
+    .map((item) => overrides.edited[item.url] ? { ...item, ...overrides.edited[item.url], _edited: true } : item);
+  return [
+    ...overrides.added.map((item) => ({ ...item, _added: true })),
+    ...baseItems,
+  ];
+}
+
+function renderAdminTable() {
+  const query = (document.querySelector("#adminSearch")?.value || "").toLowerCase();
+  const categoryFilter = document.querySelector("#adminCategoryFilter")?.value || "";
+  const allItems = getAdminItems();
+  const categories = state.catalog?.categories ?? [];
+
+  // Populate category filter
+  const catSelect = document.querySelector("#adminCategoryFilter");
+  if (catSelect && catSelect.options.length <= 1) {
+    categories.forEach((cat) => {
+      const opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = cat;
+      catSelect.appendChild(opt);
+    });
+  }
+
+  const filtered = allItems.filter((item) => {
+    const matchesQuery = !query || `${item.title} ${item.category}`.toLowerCase().includes(query);
+    const matchesCat = !categoryFilter || item.category === categoryFilter;
+    return matchesQuery && matchesCat;
+  });
+
+  document.querySelector("#adminCatalogCount").textContent =
+    `${allItems.length} titles (${state.adminOverrides.added.length} added, ${Object.keys(state.adminOverrides.edited).length} edited, ${state.adminOverrides.deleted.length} deleted)`;
+  document.querySelector("#adminResultCount").textContent = `${filtered.length} shown`;
+
+  const tbody = document.querySelector("#adminTableBody");
+  tbody.innerHTML = filtered.map((item) => `
+    <tr class="${item._added ? "admin-added" : item._edited ? "admin-edited" : ""}">
+      <td><div class="admin-cell-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div></td>
+      <td>${escapeHtml(item.category)}</td>
+      <td>${escapeHtml(item.type === "series" ? "Series" : "Movie")}</td>
+      <td>${escapeHtml(String(item.year ?? "—"))}</td>
+      <td><div class="admin-cell-url" title="${escapeHtml(item.url)}">${escapeHtml(item.url)}</div></td>
+      <td>
+        <div class="admin-cell-actions">
+          <button class="admin-btn" data-admin-edit="${escapeHtml(item.url)}">Edit</button>
+          ${item._added
+            ? `<button class="admin-btn danger" data-admin-remove-added="${escapeHtml(item.url)}">Remove</button>`
+            : `<button class="admin-btn danger" data-admin-delete="${escapeHtml(item.url)}">Delete</button>`}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  // Bind row actions
+  tbody.querySelectorAll("[data-admin-edit]").forEach((btn) => {
+    btn.addEventListener("click", () => openAdminEditModal(btn.dataset.adminEdit));
+  });
+  tbody.querySelectorAll("[data-admin-delete]").forEach((btn) => {
+    btn.addEventListener("click", () => adminDeleteItem(btn.dataset.adminDelete));
+  });
+  tbody.querySelectorAll("[data-admin-remove-added]").forEach((btn) => {
+    btn.addEventListener("click", () => adminRemoveAdded(btn.dataset.adminRemoveAdded));
+  });
+}
+
+function bindAdminPanelEvents() {
+  const addBtn = document.querySelector("#adminAddButton");
+  const publishBtn = document.querySelector("#adminPublishButton");
+  const exportBtn = document.querySelector("#adminExportButton");
+  const resetBtn = document.querySelector("#adminResetButton");
+  const lockBtn = document.querySelector("#adminLockButton");
+  const searchInput = document.querySelector("#adminSearch");
+  const catFilter = document.querySelector("#adminCategoryFilter");
+
+  if (addBtn && !addBtn._bound) {
+    addBtn._bound = true;
+    addBtn.addEventListener("click", () => openAdminEditModal(null));
+  }
+  if (publishBtn && !publishBtn._bound) {
+    publishBtn._bound = true;
+    publishBtn.addEventListener("click", publishToGitHub);
+  }
+  if (exportBtn && !exportBtn._bound) {
+    exportBtn._bound = true;
+    exportBtn.addEventListener("click", adminExportCatalog);
+  }
+  if (resetBtn && !resetBtn._bound) {
+    resetBtn._bound = true;
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset all admin overrides? This removes all your adds, edits, and deletes.")) {
+        state.adminOverrides = { added: [], edited: {}, deleted: [] };
+        saveAdminOverrides();
+        renderAdminTable();
+        rerenderActiveView();
+      }
+    });
+  }
+  if (lockBtn && !lockBtn._bound) {
+    lockBtn._bound = true;
+    lockBtn.addEventListener("click", () => {
+      state.adminUnlocked = false;
+      sessionStorage.removeItem(STORAGE_KEYS.adminUnlocked);
+      setView("home");
+      els.adminTabButton.style.display = "none";
+    });
+  }
+  if (searchInput && !searchInput._bound) {
+    searchInput._bound = true;
+    searchInput.addEventListener("input", renderAdminTable);
+  }
+  if (catFilter && !catFilter._bound) {
+    catFilter._bound = true;
+    catFilter.addEventListener("change", renderAdminTable);
+  }
+}
+
+function openAdminEditModal(url) {
+  const modal = document.querySelector("#adminEditModal");
+  const form = document.querySelector("#adminEditForm");
+  const overrides = state.adminOverrides;
+  const categories = state.catalog?.categories ?? [];
+
+  // Populate category select
+  const catSelect = document.querySelector("#adminFieldCategory");
+  catSelect.innerHTML = categories.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+  let existingItem = null;
+  if (url) {
+    const added = overrides.added.find((i) => i.url === url);
+    const base = (state.catalog?.items ?? []).find((i) => i.url === url);
+    existingItem = added || (base ? { ...base, ...overrides.edited[url] } : null);
+  }
+
+  document.querySelector("#adminModalTitle").textContent = url ? "Edit Title" : "Add New Title";
+  document.querySelector("#adminFieldTitle").value = existingItem?.title || "";
+  document.querySelector("#adminFieldCategory").value = existingItem?.category || categories[0] || "";
+  document.querySelector("#adminFieldType").value = existingItem?.type || "movie";
+  document.querySelector("#adminFieldYear").value = existingItem?.year || "";
+  document.querySelector("#adminFieldRating").value = existingItem?.manualRating || "";
+  document.querySelector("#adminFieldUrl").value = existingItem?.url || "";
+  document.querySelector("#adminFieldPoster").value = existingItem?.posterUrl || "";
+  document.querySelector("#adminFieldOverview").value = existingItem?.overview || "";
+
+  if (!form._bound) {
+    form._bound = true;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      adminSaveItem(modal.dataset.editingUrl || null);
+      modal.close();
+    });
+    document.querySelector("#adminModalCancel").addEventListener("click", () => modal.close());
+  }
+
+  modal.dataset.editingUrl = url || "";
+  modal.showModal();
+}
+
+function adminSaveItem(editingUrl) {
+  const newData = {
+    title: document.querySelector("#adminFieldTitle").value.trim(),
+    category: document.querySelector("#adminFieldCategory").value,
+    type: document.querySelector("#adminFieldType").value,
+    year: Number(document.querySelector("#adminFieldYear").value) || null,
+    manualRating: document.querySelector("#adminFieldRating").value || undefined,
+    url: document.querySelector("#adminFieldUrl").value.trim(),
+    previewUrl: document.querySelector("#adminFieldUrl").value.trim().replace("/view", "/preview"),
+    posterUrl: document.querySelector("#adminFieldPoster").value.trim() || undefined,
+    overview: document.querySelector("#adminFieldOverview").value.trim() || undefined,
+    driveId: (document.querySelector("#adminFieldUrl").value.match(/\/d\/([^/]+)/) || [])[1] || "",
+    driveKind: "file",
+    rawTitle: document.querySelector("#adminFieldTitle").value.trim(),
+  };
+
+  const overrides = state.adminOverrides;
+
+  if (!editingUrl) {
+    // New item — add to added list
+    overrides.added = overrides.added.filter((i) => i.url !== newData.url);
+    overrides.added.unshift(newData);
+  } else {
+    const isAdded = overrides.added.some((i) => i.url === editingUrl);
+    if (isAdded) {
+      // Editing a previously added item
+      overrides.added = overrides.added.map((i) => i.url === editingUrl ? { ...i, ...newData } : i);
+    } else {
+      // Editing a base catalog item
+      overrides.edited[newData.url] = newData;
+      if (editingUrl !== newData.url) {
+        // URL changed — treat old as deleted, new as added
+        overrides.deleted.push(editingUrl);
+        delete overrides.edited[editingUrl];
+      }
+    }
+  }
+
+  saveAdminOverrides();
+  renderAdminTable();
+  rerenderActiveView();
+}
+
+function adminDeleteItem(url) {
+  if (!confirm("Remove this title from the library? You can reset overrides to get it back.")) return;
+  state.adminOverrides.deleted.push(url);
+  delete state.adminOverrides.edited[url];
+  saveAdminOverrides();
+  renderAdminTable();
+  rerenderActiveView();
+}
+
+function adminRemoveAdded(url) {
+  if (!confirm("Remove this added title?")) return;
+  state.adminOverrides.added = state.adminOverrides.added.filter((i) => i.url !== url);
+  saveAdminOverrides();
+  renderAdminTable();
+  rerenderActiveView();
+}
+
+// ── GitHub Publisher ──────────────────────────────────────────────────────────
+function adminGetMergedCatalog() {
+  const overrides = state.adminOverrides;
+  const baseItems = (state.catalog?.items ?? [])
+    .filter((item) => !overrides.deleted.includes(item.url))
+    .map((item) => overrides.edited[item.url] ? { ...item, ...overrides.edited[item.url] } : item);
+  const allItems = [...overrides.added, ...baseItems];
+  return { ...state.catalog, totalTitles: allItems.length, items: allItems };
+}
+
+function setPublishBtn(label, disabled) {
+  const btn = document.querySelector("#adminPublishButton");
+  if (!btn) return;
+  btn.textContent = label;
+  btn.disabled = disabled;
+}
+
+async function publishToGitHub() {
+  // Get or prompt for GitHub PAT (saved permanently in localStorage)
+  let pat = localStorage.getItem("basement-theater.github-pat");
+  if (!pat) {
+    pat = prompt(
+      "Enter your GitHub Personal Access Token (classic, repo scope).\n" +
+      "Create one at: github.com/settings/tokens\n\n" +
+      "It will be saved so you only need to do this once."
+    );
+    if (!pat) return;
+    localStorage.setItem("basement-theater.github-pat", pat.trim());
+    pat = pat.trim();
+  }
+
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+  const headers = {
+    "Authorization": `token ${pat}`,
+    "Accept": "application/vnd.github.v3+json",
+    "Content-Type": "application/json",
+  };
+
+  try {
+    setPublishBtn("⏳ Fetching from GitHub…", true);
+
+    // 1. Get current file SHA + content
+    let getResp;
+    try {
+      getResp = await fetch(apiUrl, { headers });
+    } catch (networkErr) {
+      throw new Error("🏫 School network is blocking GitHub. Try on your phone hotspot or at home.");
+    }
+    if (getResp.status === 401) {
+      localStorage.removeItem("basement-theater.github-pat");
+      throw new Error("Invalid token — it's been cleared. Click Publish again to re-enter.");
+    }
+    if (!getResp.ok) throw new Error(`GitHub API error ${getResp.status}`);
+    const fileData = await getResp.json();
+    const sha = fileData.sha;
+
+    // 2. Decode file content
+    // GitHub API only returns content inline for files ≤ 1MB.
+    // Our file is larger, so content will be "" — we fall back to download_url.
+    setPublishBtn("⏳ Downloading file…", true);
+    let currentContent;
+    if (fileData.content) {
+      const rawBase64 = fileData.content.replace(/\n/g, "");
+      const binaryStr = atob(rawBase64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      currentContent = new TextDecoder("utf-8").decode(bytes);
+    } else if (fileData.download_url) {
+      // Large file: fetch raw content directly
+      let dlResp;
+      try { dlResp = await fetch(fileData.download_url); }
+      catch { throw new Error("🏫 School network is blocking GitHub. Try on your phone hotspot or at home."); }
+      if (!dlResp.ok) throw new Error(`Failed to download file from GitHub: ${dlResp.status}`);
+      currentContent = await dlResp.text();
+    } else {
+      throw new Error("GitHub returned no file content and no download URL.");
+    }
+
+    // 3. Replace EMBEDDED_CATALOG by scanning bracket depth (works with any formatting/line endings)
+    const updatedCatalog = adminGetMergedCatalog();
+    const MARKER = "const EMBEDDED_CATALOG = ";
+    const markerIdx = currentContent.indexOf(MARKER);
+    if (markerIdx < 0) {
+      throw new Error("Could not locate EMBEDDED_CATALOG in the GitHub file. Make sure the GitHub repo has the right index.html.");
+    }
+    // Walk forward from the opening { to find the matching closing }
+    let depth = 0, endIdx = -1;
+    for (let i = markerIdx + MARKER.length; i < currentContent.length; i++) {
+      if (currentContent[i] === "{") depth++;
+      else if (currentContent[i] === "}") {
+        depth--;
+        if (depth === 0) { endIdx = i + 1; break; }
+      }
+    }
+    if (endIdx < 0) throw new Error("Could not parse the EMBEDDED_CATALOG boundaries.");
+    // Skip the trailing semicolon if present
+    if (currentContent[endIdx] === ";") endIdx++;
+    const newContent =
+      currentContent.slice(0, markerIdx) +
+      `const EMBEDDED_CATALOG = ${JSON.stringify(updatedCatalog)};` +
+      currentContent.slice(endIdx);
+
+    // 4. Encode to base64 (unicode-safe)
+    setPublishBtn("⏳ Uploading to GitHub…", true);
+    const encoded = new TextEncoder().encode(newContent);
+    let binary = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < encoded.length; i += chunk) {
+      binary += String.fromCharCode(...encoded.subarray(i, i + chunk));
+    }
+    const newBase64 = btoa(binary);
+
+    // 5. Push to GitHub
+    const putResp = await fetch(apiUrl, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({
+        message: `Update catalog via Basement Admin Panel (${new Date().toLocaleDateString()})`,
+        content: newBase64,
+        sha,
+      }),
+    });
+    if (!putResp.ok) {
+      const err = await putResp.json().catch(() => ({}));
+      throw new Error(`Push failed: ${err.message || putResp.status}`);
+    }
+
+    // 6. Success — reset overrides since they're now baked into the live file
+    state.adminOverrides = { added: [], edited: {}, deleted: [] };
+    saveAdminOverrides();
+    renderAdminTable();
+    setPublishBtn("✅ Published! Vercel is rebuilding…", false);
+    setTimeout(() => setPublishBtn("🚀 Publish to GitHub", false), 6000);
+
+  } catch (err) {
+    setPublishBtn(`❌ ${err.message}`, false);
+    setTimeout(() => setPublishBtn("🚀 Publish to GitHub", false), 6000);
+  }
+}
+
+function adminExportCatalog() {
+  const overrides = state.adminOverrides;
+  const baseItems = (state.catalog?.items ?? [])
+    .filter((item) => !overrides.deleted.includes(item.url))
+    .map((item) => overrides.edited[item.url] ? { ...item, ...overrides.edited[item.url] } : item);
+  const allItems = [...overrides.added, ...baseItems];
+  const exportData = {
+    ...state.catalog,
+    totalTitles: allItems.length,
+    items: allItems,
+    exportedAt: new Date().toISOString(),
+    exportNote: "Exported from Basement Admin Panel",
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "catalog.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 </script>
