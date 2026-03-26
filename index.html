@@ -1824,7 +1824,7 @@ h3 {
     <div class="app-backdrop"></div>
     <section id="authGate" class="auth-gate">
       <div class="auth-card">
-        <p class="eyebrow">Private Screening</p>
+        <p class="eyebrow">Clearance Required</p>
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
         <form id="passwordAccessForm" class="auth-form">
@@ -1875,7 +1875,7 @@ h3 {
             <section class="hero" id="heroPanel">
               <div class="hero-overlay"></div>
               <div class="hero-copy">
-                <p class="eyebrow">Featured Tonight</p>
+                <p class="eyebrow">Priority Transmission</p>
                 <h1 id="heroTitle">Loading your library...</h1>
                 <p id="heroMeta" class="hero-meta"></p>
                 <p id="heroDescription" class="hero-description"></p>
@@ -1892,7 +1892,7 @@ h3 {
             <section class="browse-panel">
               <section class="shelf-header">
                 <div>
-                  <p class="eyebrow">Browse</p>
+                  <p class="eyebrow">Archive Access</p>
                   <h2 id="resultsHeading">All titles</h2>
                 </div>
                 <div class="browse-tools">
@@ -1910,7 +1910,7 @@ h3 {
                 </div>
               </section>
               <section class="surprise-panel">
-                <p class="eyebrow">Surprise Me</p>
+                <p class="eyebrow">Random Dispatch</p>
                 <div class="surprise-buttons">
                   <button class="chip active" data-surprise-mode="all" type="button">All Movies</button>
                   <button class="chip" data-surprise-mode="category" type="button">This Category</button>
@@ -1919,15 +1919,15 @@ h3 {
               </section>
               <section id="statsPanel" class="stats-panel">
                 <div class="stat-card">
-                  <p class="eyebrow">Most Watched</p>
+                  <p class="eyebrow">Top Ops</p>
                   <p id="statsMostWatched"></p>
                 </div>
                 <div class="stat-card">
-                  <p class="eyebrow">Kid Preferences</p>
+                  <p class="eyebrow">Jr. Agent Prefs</p>
                   <p id="statsKidPrefs"></p>
                 </div>
                 <div class="stat-card">
-                  <p class="eyebrow">Total Watched</p>
+                  <p class="eyebrow">Field Hours Logged</p>
                   <p id="statsTotalHours"></p>
                 </div>
               </section>
@@ -1941,7 +1941,7 @@ h3 {
           <section id="favoritesView" class="hidden-view">
             <section class="review-header">
               <div>
-                <p class="eyebrow">Saved Picks</p>
+                <p class="eyebrow">Flagged Assets</p>
                 <h2>Favorites</h2>
               </div>
               <p id="favoritesCount" class="results-count"></p>
@@ -1953,7 +1953,7 @@ h3 {
           <section id="trashView" class="hidden-view">
             <section class="review-header">
               <div>
-                <p class="eyebrow">Trash Queue</p>
+                <p class="eyebrow">Decommission Queue</p>
                 <h2>Broken or Unplayable Link Candidates</h2>
               </div>
               <p id="trashCount" class="results-count"></p>
@@ -1966,7 +1966,7 @@ h3 {
         <section id="publicView" class="hidden-view">
           <section class="review-header">
             <div>
-              <p class="eyebrow">Imported From Doc</p>
+              <p class="eyebrow">Declassified Intel</p>
               <h2 id="publicPageTitle">Public Tabs</h2>
             </div>
             <p id="publicPageMeta" class="results-count"></p>
@@ -2182,7 +2182,7 @@ h3 {
         <div class="detail-header">
           <div class="detail-art" id="detailArt"></div>
           <div class="detail-copy">
-            <p class="eyebrow">Selected Title</p>
+            <p class="eyebrow">Active File</p>
             <h3 id="detailTitle"></h3>
             <p id="detailMeta" class="detail-meta"></p>
             <p id="detailDescription" class="detail-description"></p>
@@ -2199,12 +2199,12 @@ h3 {
       <form method="dialog" class="detail-card welcome-card">
         <button class="close-button" aria-label="Close welcome">x</button>
         <div class="welcome-copy">
-          <p class="eyebrow">Welcome</p>
+          <p class="eyebrow">Access Granted</p>
           <h3 id="welcomeTitle">How The Basement Premium Works</h3>
           <p id="welcomeIntro" class="detail-description">This app is your family movie shelf. Pick a profile, browse the library, and open titles straight from Google Drive.</p>
           <div class="welcome-grid">
             <div>
-              <span class="eyebrow">Library</span>
+              <span class="eyebrow">The Vault</span>
               <p id="welcomeLibraryText">Browse by category or A-Z. Titles with covers rise to the top, and the featured pick always uses a covered title.</p>
             </div>
             <div>
@@ -2220,11 +2220,11 @@ h3 {
               <p id="welcomePlayText">Click a poster for more details, then use Play or Preview to open the Drive link.</p>
             </div>
             <div>
-              <span class="eyebrow">Surprise Me</span>
+              <span class="eyebrow">Random Dispatch</span>
               <p id="welcomeSurpriseText">Use Shuffle for a random pick from everything, the current category, or kid-safe titles only.</p>
             </div>
             <div>
-              <span class="eyebrow">Trash Review</span>
+              <span class="eyebrow">Decommission Queue</span>
               <p id="welcomeTrashText">That tab is just a holding area for broken-link review. It does not affect the main library unless you choose to clean things up.</p>
             </div>
           </div>
@@ -2494,7 +2494,7 @@ function buildProfileBar() {
   profileBar.innerHTML = `
     <div class="profile-section">
       <div>
-        <p class="eyebrow">Profiles</p>
+        <p class="eyebrow">Agent Select</p>
         <div id="profileList" class="profile-list"></div>
       </div>
       <div class="profile-section-right">
