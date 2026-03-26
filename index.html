@@ -1885,6 +1885,7 @@ h3 {
   adminUnlocked: "basement-theater.admin-unlocked",
   latestAnnouncementId: "basement-theater.latest-announcement-id",
   reloadedAnnouncementId: "basement-theater.reloaded-announcement-id",
+  watchedAnnouncementId: "basement-theater.watched-announcement-id",
 };
 
 const DEFAULT_PROFILES = [
@@ -3144,7 +3145,6 @@ const GITHUB_FILE = "index.html";
 const ANNOUNCE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
 const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
 let announcementWatcherStarted = false;
-let announcementWatcherPrimed = false;
 
 function getAnnouncementId(data) {
   if (!data) return "";
@@ -3179,7 +3179,6 @@ async function loadAnnouncement() {
     // Only hide when this exact posted version was dismissed.
     const dismissedKey = "basement-theater.announcement-dismissed";
     const announcementId = sha || getAnnouncementId(data);
-    localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, announcementId);
     if (localStorage.getItem(dismissedKey) === announcementId) {
       banner.classList.remove("active");
       return;
@@ -3201,36 +3200,28 @@ async function loadAnnouncement() {
 function startAnnouncementWatcher() {
   if (announcementWatcherStarted) return;
   announcementWatcherStarted = true;
+  let watchedAnnouncementId = sessionStorage.getItem(STORAGE_KEYS.watchedAnnouncementId) || "";
 
   window.setInterval(async () => {
     try {
       const { data, sha } = await fetchAnnouncementState();
       const nextId = data.active ? (sha || getAnnouncementId(data)) : "";
-      const currentId = localStorage.getItem(STORAGE_KEYS.latestAnnouncementId) || "";
-      const reloadedId = sessionStorage.getItem(STORAGE_KEYS.reloadedAnnouncementId) || "";
-
-      if (!announcementWatcherPrimed) {
-        announcementWatcherPrimed = true;
-        if (nextId) localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
+      if (!watchedAnnouncementId) {
+        watchedAnnouncementId = nextId;
+        sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, watchedAnnouncementId);
         return;
       }
 
-      if (nextId && nextId !== currentId && nextId !== reloadedId) {
+      if (nextId && nextId !== watchedAnnouncementId) {
         sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
-        localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
+        sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, nextId);
         window.location.reload();
         return;
       }
 
-      if (!currentId && nextId && nextId !== reloadedId) {
-        sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
-        localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
-        window.location.reload();
-        return;
-      }
-
-      if (!nextId && currentId) {
-        localStorage.removeItem(STORAGE_KEYS.latestAnnouncementId);
+      if (!nextId && watchedAnnouncementId) {
+        watchedAnnouncementId = "";
+        sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, "");
       }
     } catch {
       // Keep watching quietly.
