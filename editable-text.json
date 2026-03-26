@@ -19,4 +19,17 @@
 
   "Home Tab": {
     "Title": "Home",
-    "Body": "This is the all in one app for proxies, movies, and games. We currently have about 1000 movies and rising, 45 proxies and adding, and hundreds of gam
+    "Body": "This is the all in one app for proxies, movies, and games. We currently have about 1000 movies and rising, 45 proxies and adding, and hundreds of games. We only will have a few updates at a time, because everytime we update the user have to redownload the file. We will continousisly update the app and only release the updates every month or two. So you won't have to continue to redownload it."
+  },
+
+  "Announcements Tab": {
+    "Title": "",
+    "Heading": "",
+    "Body": ""
+  },
+
+  "Proxy Corner Tab": {
+    "Title": "",
+    "Intro": ""
+  }
+}
