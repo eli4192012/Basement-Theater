@@ -1,5 +1,24 @@
-const { sendJson } = require("../_lib/access");
+const { createSessionToken, sendJson } = require("../_lib/access");
+const { appendLoginActivity, getSecurityConfig } = require("../_lib/supabase");
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
+
+async function verifyGoogleIdToken(idToken) {
+  const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+  if (!resp.ok) throw new Error("Could not verify Google sign-in.");
+  const data = await resp.json();
+  const expectedAudience = process.env.GOOGLE_CLIENT_ID || "";
+  if (!data.email || data.email_verified !== "true") {
+    throw new Error("Google account email is not verified.");
+  }
+  if (expectedAudience && data.aud !== expectedAudience) {
+    throw new Error("Google sign-in client does not match this app.");
+  }
+  return {
+    email: data.email,
+    name: data.name || data.email,
+    picture: data.picture || "",
+  };
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -10,6 +29,7 @@ module.exports = async function handler(req, res) {
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const password = String(body.password || "");
+    const idToken = String(body.googleCredential || body.idToken || "");
     if (!password) {
       sendJson(res, 400, { error: "Enter the password." });
       return;
@@ -20,14 +40,42 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    const security = await getSecurityConfig().catch(() => ({ requireGoogleSignIn: false }));
+    let googleUser = null;
+    if (security.requireGoogleSignIn) {
+      if (!idToken) {
+        sendJson(res, 400, { error: "Sign in with Google first." });
+        return;
+      }
+      googleUser = await verifyGoogleIdToken(idToken);
+    }
+
+    const user = googleUser || {
+      email: "basement-theater@local",
+      name: "Basement Theater",
+      picture: "",
+    };
+
+    const token = createSessionToken({
+      password,
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
+      googleVerified: Boolean(googleUser),
+      issuedAt: new Date().toISOString(),
+    });
+
+    await appendLoginActivity({
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
+      loggedInAt: new Date().toISOString(),
+    }).catch(() => null);
+
     sendJson(res, 200, {
       ok: true,
-      user: {
-        email: "basement-theater@local",
-        name: "Basement Theater",
-        picture: "",
-      },
-      token: password,
+      user,
+      token,
     });
   } catch (error) {
     sendJson(res, 401, { error: error.message || "Could not verify that password." });

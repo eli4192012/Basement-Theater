@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
         <style>
 :root {
   --bg: #120b09;
@@ -1823,6 +1824,11 @@ h3 {
         <p class="eyebrow">Clearance Required</p>
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
+        <div id="googleSigninWrap" class="hidden">
+          <p id="googleSigninHint" class="auth-message">Google sign-in is required before you enter the password.</p>
+          <div id="googleSigninSlot" class="google-signin-slot"></div>
+          <p id="googleSigninStatus" class="auth-message hidden"></p>
+        </div>
         <form id="passwordAccessForm" class="auth-form">
           <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" required />
           <button class="primary-button" type="submit">Enter Theater</button>
@@ -2114,6 +2120,30 @@ h3 {
                 </div>
               </div>
             </div>
+            <div class="admin-announce-section">
+              <h3 class="admin-announce-title">Security & Activity</h3>
+              <div class="admin-announce-form">
+                <div class="admin-field full-width" style="gap:10px">
+                  <label for="adminRequireGoogleCheckbox">Require Google Sign-In Before Password</label>
+                  <input id="adminRequireGoogleCheckbox" type="checkbox" />
+                </div>
+                <div class="admin-announce-row">
+                  <button class="admin-btn primary" id="adminSaveSecurityButton">Save Security</button>
+                  <button class="admin-btn" id="adminViewActivityButton">View Activity</button>
+                </div>
+                <div id="adminSecurityStatus" class="admin-current-announcement hidden"></div>
+                <div id="adminActivityPanel" class="hidden">
+                  <section class="review-header" style="margin-top:18px">
+                    <div>
+                      <p class="eyebrow">Secret Log</p>
+                      <h2>Login Activity</h2>
+                    </div>
+                    <p id="adminActivityCount" class="results-count"></p>
+                  </section>
+                  <section id="adminActivityList" class="review-grid"></section>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -2271,6 +2301,7 @@ const DEFAULT_EDITABLE_TEXTS = {
   welcomeTrashText: "That tab is just a holding area for broken-link review. It does not affect the main library unless you choose to clean things up.",
   // Home page overrides (empty = use catalog data)
   homeTitle: "",
+  homeStatus: "",
   homeBody: "",
   // Announcements page overrides
   announcementsPageTitle: "",
@@ -2294,6 +2325,9 @@ const state = {
     token: sessionStorage.getItem("basement-theater.password-token") || "",
     user: loadJson("basement-theater.password-user", null),
     config: null,
+    googleCredential: sessionStorage.getItem("basement-theater.google-credential") || "",
+    googleUser: loadJson("basement-theater.google-user", null),
+    hostedMode: false,
   },
   profiles: loadJson(STORAGE_KEYS.profiles, DEFAULT_PROFILES),
   activeProfileId: localStorage.getItem(STORAGE_KEYS.activeProfileId) || DEFAULT_PROFILES[0].id,
@@ -2305,6 +2339,8 @@ const state = {
   editableTextsSha: "",
   adminOverrides: loadJson(STORAGE_KEYS.adminOverrides, { added: [], edited: {}, deleted: [] }),
   adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
+  adminPassword: "",
+  adminActivity: [],
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -2322,6 +2358,10 @@ const els = {
   brandWordmark: document.querySelector("#brandWordmark"),
   authTitle: document.querySelector("#authTitle"),
   authMessage: document.querySelector("#authMessage"),
+  googleSigninWrap: document.querySelector("#googleSigninWrap"),
+  googleSigninHint: document.querySelector("#googleSigninHint"),
+  googleSigninSlot: document.querySelector("#googleSigninSlot"),
+  googleSigninStatus: document.querySelector("#googleSigninStatus"),
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
   passwordAccessInput: document.querySelector("#passwordAccessInput"),
   rows: document.querySelector("#rows"),
@@ -2382,6 +2422,13 @@ const els = {
   adminToggleTextEditorButton: document.querySelector("#adminToggleTextEditorButton"),
   adminSaveTextButton: document.querySelector("#adminSaveTextButton"),
   adminTextEditor: document.querySelector("#adminTextEditor"),
+  adminRequireGoogleCheckbox: document.querySelector("#adminRequireGoogleCheckbox"),
+  adminSaveSecurityButton: document.querySelector("#adminSaveSecurityButton"),
+  adminViewActivityButton: document.querySelector("#adminViewActivityButton"),
+  adminSecurityStatus: document.querySelector("#adminSecurityStatus"),
+  adminActivityPanel: document.querySelector("#adminActivityPanel"),
+  adminActivityCount: document.querySelector("#adminActivityCount"),
+  adminActivityList: document.querySelector("#adminActivityList"),
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
   welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
@@ -2417,15 +2464,36 @@ async function init() {
 
 async function bootstrapAuth() {
   setAuthMessage((state.editableTexts && state.editableTexts.authMessage) || DEFAULT_EDITABLE_TEXTS.authMessage);
+  await loadRuntimeConfig();
+  renderAuthOptions();
 
   if (state.auth.token) {
-    const verified = await verifyAccess(state.auth.token);
+    const verified = state.auth.hostedMode
+      ? await verifyStoredSession()
+      : await verifyAccess(state.auth.token);
     if (verified) {
       await loadProtectedData();
       return;
     }
   }
 
+}
+
+async function verifyStoredSession() {
+  try {
+    const resp = await fetch("/api/catalog", {
+      headers: { Authorization: `Bearer ${state.auth.token}` },
+      cache: "no-store",
+    });
+    if (!resp.ok) throw new Error("session invalid");
+    return true;
+  } catch {
+    state.auth.token = "";
+    state.auth.user = null;
+    sessionStorage.removeItem("basement-theater.password-token");
+    localStorage.removeItem("basement-theater.password-user");
+    return false;
+  }
 }
 
 async function loadProtectedData() {
@@ -2443,6 +2511,39 @@ async function loadProtectedData() {
 
 async function verifyAccess(password) {
   const cleaned = String(password || "").trim();
+  if (state.auth.hostedMode) {
+    try {
+      const resp = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password: cleaned,
+          googleCredential: state.auth.googleCredential || "",
+        }),
+      });
+      const payload = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setAuthMessage(payload.error || "Access denied.");
+        return false;
+      }
+
+      state.auth.token = payload.token || "";
+      state.auth.user = payload.user || null;
+      sessionStorage.setItem("basement-theater.password-token", state.auth.token);
+      localStorage.setItem("basement-theater.password-user", JSON.stringify(state.auth.user));
+      if (state.auth.googleCredential) {
+        sessionStorage.setItem("basement-theater.google-credential", state.auth.googleCredential);
+      }
+      if (state.auth.googleUser) {
+        localStorage.setItem("basement-theater.google-user", JSON.stringify(state.auth.googleUser));
+      }
+      return true;
+    } catch {
+      setAuthMessage("Hosted sign-in is unavailable right now.");
+      return false;
+    }
+  }
+
   if (cleaned !== STANDALONE_PASSWORD) {
     state.auth.token = "";
     state.auth.user = null;
@@ -2465,6 +2566,105 @@ async function verifyAccess(password) {
 
 function setAuthMessage(message) {
   els.authMessage.textContent = message;
+}
+
+async function loadRuntimeConfig() {
+  try {
+    const resp = await fetch("/api/config", { cache: "no-store" });
+    if (!resp.ok) throw new Error("config unavailable");
+    const config = await resp.json();
+    state.auth.config = config;
+    state.auth.hostedMode = true;
+  } catch {
+    state.auth.config = { googleClientId: "", requireGoogleSignIn: false };
+    state.auth.hostedMode = false;
+  }
+}
+
+function renderAuthOptions() {
+  const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
+  const clientId = state.auth.config?.googleClientId || "";
+  els.googleSigninWrap?.classList.toggle("hidden", !(state.auth.hostedMode && clientId));
+  if (els.googleSigninHint) {
+    els.googleSigninHint.textContent = requireGoogle
+      ? "Google sign-in is required before you enter the password."
+      : "Google sign-in is optional right now, but available for activity tracking.";
+  }
+  updateGoogleSigninStatus();
+  if (state.auth.hostedMode && clientId && window.google?.accounts?.id) {
+    initializeGoogleSignIn(clientId);
+  } else if (state.auth.hostedMode && clientId && !window.google?.accounts?.id) {
+    window.setTimeout(renderAuthOptions, 400);
+  }
+}
+
+function updateGoogleSigninStatus() {
+  if (!els.googleSigninStatus) return;
+  const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
+  const googleUser = state.auth.googleUser;
+  if (googleUser?.email) {
+    els.googleSigninStatus.classList.remove("hidden");
+    els.googleSigninStatus.textContent = `Google signed in: ${googleUser.email}`;
+    return;
+  }
+  if (requireGoogle) {
+    els.googleSigninStatus.classList.remove("hidden");
+    els.googleSigninStatus.textContent = "Sign in with Google to unlock the theater.";
+  } else {
+    els.googleSigninStatus.classList.add("hidden");
+    els.googleSigninStatus.textContent = "";
+  }
+}
+
+function initializeGoogleSignIn(clientId) {
+  if (!els.googleSigninSlot || !window.google?.accounts?.id) return;
+  if (els.googleSigninSlot.dataset.initialized === clientId) return;
+  els.googleSigninSlot.innerHTML = "";
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleGoogleCredential,
+    auto_select: false,
+  });
+  window.google.accounts.id.renderButton(els.googleSigninSlot, {
+    theme: "filled_black",
+    size: "large",
+    text: "signin_with",
+    shape: "pill",
+    width: 260,
+  });
+  els.googleSigninSlot.dataset.initialized = clientId;
+}
+
+function parseJwtPayload(token) {
+  try {
+    const [, payload] = String(token || "").split(".");
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+function handleGoogleCredential(response) {
+  const credential = String(response?.credential || "");
+  if (!credential) return;
+  state.auth.googleCredential = credential;
+  sessionStorage.setItem("basement-theater.google-credential", credential);
+  const payload = parseJwtPayload(credential);
+  state.auth.googleUser = payload
+    ? {
+        email: payload.email || "",
+        name: payload.name || payload.email || "",
+        picture: payload.picture || "",
+      }
+    : null;
+  localStorage.setItem("basement-theater.google-user", JSON.stringify(state.auth.googleUser));
+  updateGoogleSigninStatus();
+  if (state.auth.config?.requireGoogleSignIn) {
+    setAuthMessage("Google sign-in complete. Enter the shared password now.");
+  }
 }
 
 function renderAll() {
@@ -2588,6 +2788,11 @@ function bindEvents() {
   els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
   els.passwordAccessForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (state.auth.hostedMode && state.auth.config?.requireGoogleSignIn && !state.auth.googleCredential) {
+      setAuthMessage("Sign in with Google first, then enter the password.");
+      updateGoogleSigninStatus();
+      return;
+    }
     setAuthMessage("Checking your access...");
     const verified = await verifyAccess(els.passwordAccessInput.value);
     if (!verified) return;
@@ -2996,7 +3201,7 @@ function renderHomePage(page) {
   const hiddenHomeLines = new Set(["MY KING 👑 - ELI", "Mr wallace btw lmao"]);
   const catalogBody = entries.filter((entry) => ![entries[0], status, ...alertLines, ...activity].includes(entry) && !hiddenHomeLines.has(entry));
   const body = et.homeBody ? et.homeBody.split("\n").filter(Boolean) : catalogBody;
-  const cleanedStatus = status.replace(/^Status:\s*/i, "").trim();
+  const cleanedStatus = (et.homeStatus || status.replace(/^Status:\s*/i, "").trim()).trim();
   const activityLead = activity[0] || "";
   const activityCards = activity.slice(1);
 
@@ -3729,6 +3934,7 @@ function normalizeEditableTexts(raw) {
     welcomeSurpriseText:    get(raw["Welcome Popup"], "Surprise Me Text")                    ?? DEFAULT_EDITABLE_TEXTS.welcomeSurpriseText,
     welcomeTrashText:       get(raw["Welcome Popup"], "Trash Review Text")                   ?? DEFAULT_EDITABLE_TEXTS.welcomeTrashText,
     homeTitle:              get(raw["Home Tab"], "Title")                                    ?? "",
+    homeStatus:             get(raw["Home Tab"], "Status")                                   ?? "",
     homeBody:               get(raw["Home Tab"], "Body")                                     ?? "",
     announcementsPageTitle: get(raw["Announcements Tab"], "Title")                           ?? "",
     announcementsPageHeading: get(raw["Announcements Tab"], "Heading")                       ?? "",
@@ -4125,6 +4331,7 @@ function renderAdmin() {
   bindAdminAnnounceEvents();
   bindAdminTextEvents();
   fillAdminTextEditor();
+  renderSecurityPanel();
   // Load and display current announcement state in admin
   fetchAnnouncementState().then(({ data }) => {
     if (data?.active) updateAdminAnnouncementDisplay(data);
@@ -4140,6 +4347,7 @@ function bindAdminPasswordForm() {
     const val = document.querySelector("#adminPasswordInput").value;
     if (val === ADMIN_PASSWORD) {
       state.adminUnlocked = true;
+      state.adminPassword = val;
       sessionStorage.setItem(STORAGE_KEYS.adminUnlocked, "1");
       renderAdmin();
     } else {
@@ -4223,6 +4431,8 @@ function bindAdminPanelEvents() {
   const exportBtn = document.querySelector("#adminExportButton");
   const resetBtn = document.querySelector("#adminResetButton");
   const lockBtn = document.querySelector("#adminLockButton");
+  const saveSecurityBtn = els.adminSaveSecurityButton;
+  const viewActivityBtn = els.adminViewActivityButton;
   const searchInput = document.querySelector("#adminSearch");
   const catFilter = document.querySelector("#adminCategoryFilter");
 
@@ -4253,10 +4463,19 @@ function bindAdminPanelEvents() {
     lockBtn._bound = true;
     lockBtn.addEventListener("click", () => {
       state.adminUnlocked = false;
+      state.adminPassword = "";
       sessionStorage.removeItem(STORAGE_KEYS.adminUnlocked);
       setView("home");
       els.adminTabButton.style.display = "none";
     });
+  }
+  if (saveSecurityBtn && !saveSecurityBtn._bound) {
+    saveSecurityBtn._bound = true;
+    saveSecurityBtn.addEventListener("click", saveSecuritySettings);
+  }
+  if (viewActivityBtn && !viewActivityBtn._bound) {
+    viewActivityBtn._bound = true;
+    viewActivityBtn.addEventListener("click", loadAdminActivity);
   }
   if (searchInput && !searchInput._bound) {
     searchInput._bound = true;
@@ -4265,6 +4484,122 @@ function bindAdminPanelEvents() {
   if (catFilter && !catFilter._bound) {
     catFilter._bound = true;
     catFilter.addEventListener("change", renderAdminTable);
+  }
+}
+
+function setAdminSecurityStatus(message, isError = false) {
+  if (!els.adminSecurityStatus) return;
+  if (!message) {
+    els.adminSecurityStatus.classList.add("hidden");
+    els.adminSecurityStatus.textContent = "";
+    return;
+  }
+  els.adminSecurityStatus.classList.remove("hidden");
+  els.adminSecurityStatus.textContent = message;
+  els.adminSecurityStatus.style.color = isError ? "#fc8181" : "";
+}
+
+function getAdminHeaders() {
+  return {
+    Authorization: `Bearer ${state.auth.token}`,
+    "x-admin-password": state.adminPassword || ADMIN_PASSWORD,
+  };
+}
+
+async function renderSecurityPanel() {
+  const hosted = state.auth.hostedMode;
+  els.adminRequireGoogleCheckbox.disabled = !hosted;
+  els.adminSaveSecurityButton.disabled = !hosted;
+  els.adminViewActivityButton.disabled = !hosted;
+  if (!hosted) {
+    els.adminRequireGoogleCheckbox.checked = false;
+    setAdminSecurityStatus("Hosted security tools only work on the deployed app.", false);
+    return;
+  }
+
+  try {
+    const resp = await fetch("/api/auth/security", {
+      headers: { Authorization: `Bearer ${state.auth.token}` },
+      cache: "no-store",
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not load security settings.");
+    state.auth.config = { ...(state.auth.config || {}), ...payload };
+    els.adminRequireGoogleCheckbox.checked = Boolean(payload.requireGoogleSignIn);
+    setAdminSecurityStatus(payload.requireGoogleSignIn ? "Google sign-in is currently required." : "Password-only entry is currently allowed.");
+    renderAuthOptions();
+  } catch (error) {
+    setAdminSecurityStatus(error.message || "Could not load security settings.", true);
+  }
+}
+
+async function saveSecuritySettings() {
+  if (!state.auth.hostedMode) return;
+  const button = els.adminSaveSecurityButton;
+  button.disabled = true;
+  button.textContent = "Saving...";
+  try {
+    const resp = await fetch("/api/auth/security", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminHeaders(),
+      },
+      body: JSON.stringify({
+        requireGoogleSignIn: Boolean(els.adminRequireGoogleCheckbox.checked),
+      }),
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not save security settings.");
+    state.auth.config = { ...(state.auth.config || {}), ...payload };
+    setAdminSecurityStatus(payload.requireGoogleSignIn ? "Google sign-in is now required for everyone." : "Google sign-in is now optional.");
+    renderAuthOptions();
+    button.textContent = "Saved";
+  } catch (error) {
+    setAdminSecurityStatus(error.message || "Could not save security settings.", true);
+    button.textContent = "Try Again";
+  } finally {
+    window.setTimeout(() => {
+      if (els.adminSaveSecurityButton) {
+        els.adminSaveSecurityButton.disabled = false;
+        els.adminSaveSecurityButton.textContent = "Save Security";
+      }
+    }, 1500);
+  }
+}
+
+function renderAdminActivity() {
+  if (!els.adminActivityList) return;
+  const entries = state.adminActivity || [];
+  els.adminActivityCount.textContent = `${entries.length} login${entries.length === 1 ? "" : "s"}`;
+  els.adminActivityList.innerHTML = entries.length
+    ? entries.map((entry) => `
+        <article class="review-card">
+          <div class="review-body">
+            <div class="review-title">${escapeHtml(entry.email || "Unknown user")}</div>
+            <div class="review-meta">${escapeHtml(entry.name || "")}</div>
+            <div class="review-meta">Logged in: ${escapeHtml(new Date(entry.loggedInAt || Date.now()).toLocaleString())}</div>
+          </div>
+        </article>
+      `).join("")
+    : `<div class="empty-state">No one has logged in yet.</div>`;
+}
+
+async function loadAdminActivity() {
+  if (!state.auth.hostedMode) return;
+  els.adminActivityPanel.classList.remove("hidden");
+  els.adminActivityList.innerHTML = `<div class="empty-state">Loading activity...</div>`;
+  try {
+    const resp = await fetch("/api/auth/activity", {
+      headers: getAdminHeaders(),
+      cache: "no-store",
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not load activity.");
+    state.adminActivity = payload.logins || [];
+    renderAdminActivity();
+  } catch (error) {
+    els.adminActivityList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load activity.")}</div>`;
   }
 }
 
@@ -4523,3 +4858,5 @@ function adminExportCatalog() {
 </script>
   </body>
   </html>
+
+
