@@ -684,9 +684,10 @@ h3 {
 .public-doc-page {
   padding: 26px 24px 30px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #1f2125;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(36, 21, 18, 0.98), rgba(22, 11, 8, 0.99));
+  box-shadow: inset 0 1px 0 rgba(255, 235, 200, 0.04);
 }
 
 .public-doc-page.page-home,
@@ -707,84 +708,109 @@ h3 {
   gap: 0;
 }
 
+/* ── ANNOUNCEMENTS PAGE ─────────────────────────────── */
 .public-doc-page.page-announcements {
+  padding: 0;
   min-height: calc(100vh - 170px);
-  padding: 42px 40px 52px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.announcements-hero {
-  max-width: 860px;
+.ann-inner {
+  max-width: 820px;
   margin: 0 auto;
+  padding: 52px 40px 60px;
   text-align: center;
 }
 
-.announcements-title {
-  margin: 0;
-  color: #ffe900;
-  font-size: clamp(2.8rem, 6vw, 4.8rem);
-  font-weight: 900;
-  line-height: 1.06;
-}
-
-.announcements-divider {
-  width: min(100%, 620px);
-  height: 4px;
-  margin: 26px auto;
-  background: #ffe900;
-}
-
-.announcements-mini-divider {
-  width: min(100%, 240px);
-  height: 3px;
-  margin: 0 auto 30px;
-  background: #ffe900;
-}
-
-.announcements-callout {
-  margin: 0 0 18px;
-  color: #ffe900;
-  font-size: clamp(1.8rem, 4vw, 2.7rem);
-  font-weight: 900;
-  text-decoration: underline;
-}
-
-.announcements-body {
-  max-width: 920px;
-  margin: 0 auto;
-  color: #ffe900;
-  font-size: clamp(1.2rem, 2.7vw, 1.95rem);
+.ann-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: rgba(179, 58, 32, 0.18);
+  border: 1px solid rgba(215, 164, 76, 0.28);
+  color: var(--gold);
+  font-size: 0.68rem;
   font-weight: 800;
-  line-height: 1.35;
-  text-align: left;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
 }
 
-.announcements-body p {
+.ann-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.ann-title {
+  margin: 0 0 22px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3.2rem, 8vw, 5.6rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.ann-rule {
+  width: min(100%, 380px);
+  height: 1px;
+  margin: 0 auto 30px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.45;
+}
+
+.ann-heading {
+  margin: 0 0 22px;
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+.ann-body {
+  max-width: 680px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: clamp(0.98rem, 2.2vw, 1.18rem);
+  line-height: 1.7;
+}
+
+.ann-body p {
   margin: 0;
 }
 
-.announcements-update {
-  margin: 56px auto 0;
-  text-align: center;
+.ann-update-block {
+  margin-top: 44px;
+  padding: 24px 30px;
+  border-radius: 12px;
+  background: rgba(215, 164, 76, 0.05);
+  border: 1px solid rgba(215, 164, 76, 0.18);
+  border-top: 2px solid rgba(215, 164, 76, 0.4);
 }
 
-.announcements-update-title {
-  margin: 0 0 10px;
-  color: #ffe900;
-  font-size: clamp(2.4rem, 5vw, 4rem);
+.ann-update-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
   font-weight: 900;
-  text-decoration: underline;
+  color: var(--gold);
 }
 
-.announcements-update-time {
+.ann-update-time {
   margin: 0;
-  color: #ffe900;
-  font-size: clamp(1.6rem, 3.8vw, 2.6rem);
-  font-weight: 900;
-  line-height: 1.25;
-  text-decoration: underline;
+  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .public-doc-title {
@@ -803,16 +829,10 @@ h3 {
   color: #ff2f2f;
 }
 
-.public-doc-title.announcements {
-  color: #ffe900;
-}
-
-.public-doc-title.updates {
-  color: #ff2f2f;
-}
-
+.public-doc-title.announcements,
+.public-doc-title.updates,
 .public-doc-title.home {
-  color: #33e0ff;
+  color: var(--gold);
 }
 
 .public-doc-divider {
@@ -828,16 +848,11 @@ h3 {
   background: #ff2f2f;
 }
 
-.public-doc-divider.announcements {
-  background: #ffe900;
-}
-
-.public-doc-divider.updates {
-  background: #ff2f2f;
-}
-
+.public-doc-divider.announcements,
+.public-doc-divider.updates,
 .public-doc-divider.home {
-  background: #33e0ff;
+  background: var(--gold);
+  opacity: 0.4;
 }
 
 .public-doc-copy {
@@ -925,145 +940,220 @@ h3 {
   word-break: break-word;
 }
 
-.public-updates-list {
-  display: grid;
-  gap: 28px;
-  max-width: 860px;
+/* ── UPDATES / MISSION LOG PAGE ─────────────────────── */
+.public-doc-page.page-updates {
+  padding: 0;
+}
+
+.updates-header {
+  padding: 40px 40px 28px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(179, 58, 32, 0.07), transparent);
+}
+
+.updates-page-title {
+  margin: 0 0 10px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3rem, 7vw, 5rem);
+  letter-spacing: 0.06em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.updates-intro {
+  margin: 0 auto;
+  max-width: 580px;
+  color: var(--muted);
+  font-size: clamp(0.92rem, 2vw, 1.08rem);
+  line-height: 1.6;
+}
+
+.updates-timeline {
+  padding: 32px 40px 40px;
+  max-width: 820px;
   margin: 0 auto;
 }
 
-.public-update-block {
-  padding-bottom: 22px;
-  border-bottom: 2px solid rgba(255, 77, 77, 0.8);
-}
-
-.public-update-block:last-child {
-  border-bottom: 0;
-}
-
-.public-update-block h4 {
-  margin: 0 0 12px;
-  color: #ff2f2f;
-  font-size: 1.3rem;
-  font-weight: 900;
-}
-
-.public-update-block p {
-  margin: 0 0 8px;
-  color: #ff4e4e;
-  font-weight: 800;
-  line-height: 1.55;
-}
-
-.page-updates .public-doc-title.updates {
-  font-size: clamp(2.8rem, 6vw, 4.7rem);
-}
-
-.page-updates .public-doc-copy {
-  max-width: 900px;
-}
-
-.page-updates .public-doc-note {
-  color: #ff5a5a;
-  font-size: clamp(1.08rem, 2.2vw, 1.45rem);
-  line-height: 1.45;
-}
-
-.public-home-grid {
+.update-entry {
   display: grid;
+  grid-template-columns: 24px 1fr;
   gap: 16px;
-  max-width: 740px;
-  margin: 0 auto;
 }
 
+.update-entry-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3px;
+}
+
+.update-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid rgba(215, 164, 76, 0.35);
+  flex-shrink: 0;
+}
+
+.update-line {
+  width: 2px;
+  flex: 1;
+  min-height: 16px;
+  margin-top: 5px;
+  background: linear-gradient(180deg, rgba(179, 58, 32, 0.35), rgba(179, 58, 32, 0.08));
+}
+
+.update-entry:last-child .update-line {
+  display: none;
+}
+
+.update-entry-card {
+  padding: 0 0 28px;
+}
+
+.update-entry-heading {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.update-entry-line {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.update-entry-line:last-child {
+  margin-bottom: 0;
+}
+
+/* ── HOME PAGE ──────────────────────────────────────── */
 .public-doc-page.page-home {
+  padding: 0;
   min-height: calc(100vh - 170px);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.public-home-hero {
-  max-width: 760px;
-  margin: 0 auto;
+.home-banner {
+  padding: 48px 32px 36px;
   text-align: center;
+  background: linear-gradient(180deg, rgba(179, 58, 32, 0.1), transparent);
+  border-bottom: 1px solid var(--line);
 }
 
-.public-home-title {
-  margin: 0;
-  color: #33e0ff;
-  font-size: clamp(2.7rem, 7vw, 4.6rem);
-  font-weight: 900;
-  line-height: 1.05;
+.home-title {
+  margin: 0 0 18px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3.5rem, 9vw, 6rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--text);
 }
 
-.public-home-stars {
-  color: #ffd84a;
-}
-
-.public-home-status {
-  margin: 18px auto 28px;
+.home-status-pill {
   display: inline-flex;
   align-items: center;
+  gap: 9px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(46, 100, 60, 0.35);
+  border: 1px solid rgba(100, 210, 120, 0.22);
+  color: #a4dba8;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.home-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5ecb6a;
+  box-shadow: 0 0 8px rgba(94, 203, 106, 0.7);
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.home-alert-banner {
+  padding: 18px 32px;
+  background: rgba(179, 58, 32, 0.1);
+  border-bottom: 1px solid rgba(179, 58, 32, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 14px;
   justify-content: center;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 12px;
-  background: rgba(81, 149, 95, 0.9);
-  color: #dff6d2;
-  font-size: 1.2rem;
-  font-weight: 900;
 }
 
-.public-home-alert {
-  margin: 0 auto 24px;
-  display: grid;
-  gap: 4px;
-  color: #ff3030;
-  font-size: clamp(1.35rem, 3.8vw, 2.2rem);
-  font-weight: 500;
-  line-height: 1.18;
-  text-align: center;
+.home-alert-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
-.public-home-activity {
-  margin: 0 auto 28px;
-  display: grid;
-  gap: 6px;
-  color: #d7dbe3;
-  font-size: clamp(1.15rem, 3vw, 1.75rem);
-  text-align: center;
-}
-
-.public-home-activity-lead {
-  margin-bottom: 2px;
-  color: #d7dbe3;
-  font-weight: 500;
-}
-
-.public-home-activity-good {
-  display: inline-flex;
-  justify-self: center;
-  align-items: center;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 10px;
-  background: #d6efab;
-  color: #31785f;
-  font-weight: 900;
-}
-
-.public-home-body {
-  max-width: 720px;
-  margin: 0 auto;
-  color: #d7dbe3;
-  font-size: clamp(1.1rem, 2.5vw, 1.55rem);
-  line-height: 1.35;
-  text-align: center;
-}
-
-.public-home-body p {
+.home-alert-banner p {
   margin: 0;
+  color: #ffa07a;
+  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.home-activity-section {
+  padding: 26px 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.home-activity-label {
+  margin: 0 0 14px;
+  text-align: center;
+  color: var(--muted-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.home-activity-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.home-activity-card {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255, 233, 197, 0.04);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.87rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.home-body {
+  padding: 28px 32px 36px;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(0.95rem, 2.2vw, 1.12rem);
+  line-height: 1.7;
+}
+
+.home-body p {
+  margin: 0 0 10px;
+}
+
+.home-body p:last-child {
+  margin-bottom: 0;
 }
 
 .game-stash-hero {
@@ -2908,24 +2998,29 @@ function renderHomePage(page) {
   const body = et.homeBody ? et.homeBody.split("\n").filter(Boolean) : catalogBody;
   const cleanedStatus = status.replace(/^Status:\s*/i, "").trim();
   const activityLead = activity[0] || "";
-  const activityGood = activity[1] || "";
-  const activityRest = activity.slice(2);
+  const activityCards = activity.slice(1);
 
   return `
     <section class="public-doc-page page-home">
-      <div class="public-home-hero">
-        <h3 class="public-home-title"><span class="public-home-stars">⭐</span> ${escapeHtml(title)} <span class="public-home-stars">⭐</span></h3>
-        ${cleanedStatus ? `<div class="public-home-status">Status: ${escapeHtml(cleanedStatus)}</div>` : ""}
-        ${alertLines.length ? `<div class="public-home-alert">${alertLines.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
-        ${activity.length ? `
-          <div class="public-home-activity">
-            ${activityLead ? `<div class="public-home-activity-lead">${escapeHtml(activityLead)}</div>` : ""}
-            ${activityGood ? `<div class="public-home-activity-good">${escapeHtml(activityGood)}</div>` : ""}
-            ${activityRest.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}
-          </div>
-        ` : ""}
-        ${body.length ? `<div class="public-home-body">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
+      <div class="home-banner">
+        <h2 class="home-title">${escapeHtml(title)}</h2>
+        ${cleanedStatus ? `<div class="home-status-pill"><span class="home-status-dot"></span>Status: ${escapeHtml(cleanedStatus)}</div>` : ""}
       </div>
+      ${alertLines.length ? `
+        <div class="home-alert-banner">
+          <span class="home-alert-icon">📣</span>
+          <div>${alertLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>
+        </div>
+      ` : ""}
+      ${activity.length ? `
+        <div class="home-activity-section">
+          ${activityLead ? `<p class="home-activity-label">${escapeHtml(activityLead)}</p>` : ""}
+          <div class="home-activity-cards">
+            ${activityCards.map((line) => `<div class="home-activity-card">${escapeHtml(line)}</div>`).join("")}
+          </div>
+        </div>
+      ` : ""}
+      ${body.length ? `<div class="home-body">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
     </section>
   `;
 }
@@ -2941,16 +3036,16 @@ function renderAnnouncementsPage(page) {
 
   return `
     <section class="public-doc-page page-announcements">
-      <div class="announcements-hero">
-        <h3 class="announcements-title">📣 ${escapeHtml(title)} 📣</h3>
-        <div class="announcements-divider"></div>
-        <div class="announcements-mini-divider"></div>
-        <p class="announcements-callout">${escapeHtml(heading)}</p>
-        ${body ? `<div class="announcements-body"><p>${escapeHtml(body)}</p></div>` : ""}
+      <div class="ann-inner">
+        <div class="ann-badge"><span class="ann-badge-dot"></span>Live Announcement</div>
+        <h2 class="ann-title">${escapeHtml(title)}</h2>
+        <div class="ann-rule"></div>
+        ${heading ? `<p class="ann-heading">${escapeHtml(heading)}</p>` : ""}
+        ${body ? `<div class="ann-body"><p>${escapeHtml(body)}</p></div>` : ""}
         ${updateTitle || updateTime ? `
-          <div class="announcements-update">
-            ${updateTitle ? `<h4 class="announcements-update-title">${escapeHtml(updateTitle)}</h4>` : ""}
-            ${updateTime ? `<p class="announcements-update-time">${escapeHtml(updateTime)}</p>` : ""}
+          <div class="ann-update-block">
+            ${updateTitle ? `<h4 class="ann-update-title">${escapeHtml(updateTitle)}</h4>` : ""}
+            ${updateTime ? `<p class="ann-update-time">${escapeHtml(updateTime)}</p>` : ""}
           </div>
         ` : ""}
       </div>
@@ -3024,22 +3119,23 @@ function renderUpdatesPage(page) {
 
   return `
     <section class="public-doc-page page-updates">
-      <h3 class="public-doc-title updates">${escapeHtml(title)}</h3>
-      <div class="public-doc-divider updates"></div>
-      <div class="public-doc-copy">
-        ${intro ? `<p class="public-doc-note">${escapeHtml(intro)}</p>` : ""}
+      <div class="updates-header">
+        <h2 class="updates-page-title">${escapeHtml(title)}</h2>
+        ${intro ? `<p class="updates-intro">${escapeHtml(intro)}</p>` : ""}
       </div>
-      <div class="public-updates-list">
-        ${blocks
-          .map(
-            (block) => `
-              <section class="public-update-block">
-                ${block.heading ? `<h4>${escapeHtml(block.heading)}</h4>` : ""}
-                ${block.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
-              </section>
-            `,
-          )
-          .join("")}
+      <div class="updates-timeline">
+        ${blocks.map((block) => `
+          <div class="update-entry">
+            <div class="update-entry-marker">
+              <span class="update-dot"></span>
+              <div class="update-line"></div>
+            </div>
+            <div class="update-entry-card">
+              ${block.heading ? `<h4 class="update-entry-heading">${escapeHtml(block.heading)}</h4>` : ""}
+              ${block.lines.map((line) => `<p class="update-entry-line">${escapeHtml(line)}</p>`).join("")}
+            </div>
+          </div>
+        `).join("")}
       </div>
     </section>
   `;
