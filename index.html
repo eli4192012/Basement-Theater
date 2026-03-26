@@ -3141,7 +3141,7 @@ const GITHUB_REPO = "Basement-Theater";
 const GITHUB_FILE = "index.html";
 
 // ── Announcement Banner ───────────────────────────────────────────────────────
-const ANNOUNCE_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/announcements.json`;
+const ANNOUNCE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
 const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
 let announcementWatcherStarted = false;
 let announcementWatcherPrimed = false;
@@ -3151,11 +3151,21 @@ function getAnnouncementId(data) {
   return String(data.postedAt || data.message || "");
 }
 
+async function fetchAnnouncementState() {
+  const resp = await fetch(`${ANNOUNCE_URL}?ref=main&_= ${Date.now()}`.replace(" ", ""));
+  if (!resp.ok) throw new Error(`Announcement fetch failed: ${resp.status}`);
+  const payload = await resp.json();
+  const rawBase64 = String(payload.content || "").replace(/\n/g, "");
+  const binary = atob(rawBase64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const data = JSON.parse(new TextDecoder("utf-8").decode(bytes));
+  return { data, sha: payload.sha || "" };
+}
+
 async function loadAnnouncement() {
   try {
-    const resp = await fetch(`${ANNOUNCE_URL}?_=${Date.now()}`);
-    if (!resp.ok) return;
-    const data = await resp.json();
+    const { data, sha } = await fetchAnnouncementState();
     const banner = document.querySelector("#announcementBanner");
     const text = document.querySelector("#announcementText");
     const icon = document.querySelector("#announcementIcon");
@@ -3168,7 +3178,7 @@ async function loadAnnouncement() {
 
     // Only hide when this exact posted version was dismissed.
     const dismissedKey = "basement-theater.announcement-dismissed";
-    const announcementId = getAnnouncementId(data);
+    const announcementId = sha || getAnnouncementId(data);
     localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, announcementId);
     if (localStorage.getItem(dismissedKey) === announcementId) {
       banner.classList.remove("active");
@@ -3194,10 +3204,8 @@ function startAnnouncementWatcher() {
 
   window.setInterval(async () => {
     try {
-      const resp = await fetch(`${ANNOUNCE_URL}?_=${Date.now()}`);
-      if (!resp.ok) return;
-      const data = await resp.json();
-      const nextId = data.active ? getAnnouncementId(data) : "";
+      const { data, sha } = await fetchAnnouncementState();
+      const nextId = data.active ? (sha || getAnnouncementId(data)) : "";
       const currentId = localStorage.getItem(STORAGE_KEYS.latestAnnouncementId) || "";
       const reloadedId = sessionStorage.getItem(STORAGE_KEYS.reloadedAnnouncementId) || "";
 
@@ -3390,7 +3398,7 @@ function renderAdmin() {
   bindAdminPanelEvents();
   bindAdminAnnounceEvents();
   // Load and display current announcement state in admin
-  fetch(`${ANNOUNCE_URL}?_=${Date.now()}`).then(r => r.ok ? r.json() : null).then(data => {
+  fetchAnnouncementState().then(({ data }) => {
     if (data?.active) updateAdminAnnouncementDisplay(data);
   }).catch(() => {});
 }
