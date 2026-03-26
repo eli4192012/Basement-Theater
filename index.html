@@ -3691,13 +3691,43 @@ function fillAdminTextEditor() {
   set("#adminTextWelcomePlayText", texts.welcomePlayText);
   set("#adminTextWelcomeSurpriseText", texts.welcomeSurpriseText);
   set("#adminTextWelcomeTrashText", texts.welcomeTrashText);
-  set("#adminTextHomeTitle", texts.homeTitle);
-  set("#adminTextHomeBody", texts.homeBody);
-  set("#adminTextAnnouncementsPageTitle", texts.announcementsPageTitle);
-  set("#adminTextAnnouncementsPageHeading", texts.announcementsPageHeading);
-  set("#adminTextAnnouncementsPageBody", texts.announcementsPageBody);
-  set("#adminTextProxyTitle", texts.proxyTitle);
-  set("#adminTextProxyIntro", texts.proxyIntro);
+
+  // For page-specific fields: if an override is saved, show it.
+  // Otherwise derive the current catalog text so the user sees what's live.
+  function getCatalogPageTexts(slug) {
+    const page = getPublicPage(slug);
+    if (!page) return {};
+    const rawEntries = (page.sections || []).flatMap((s) => s.entries || []);
+    const entries = rawEntries.map((e) => cleanImportedLabel(e.text)).filter(Boolean);
+    return { entries, rawEntries };
+  }
+
+  // Home page
+  const homeData = getCatalogPageTexts("home");
+  const homeEntries = homeData.entries || [];
+  const hiddenHomeLines = new Set(["MY KING 👑 - ELI", "Mr wallace btw lmao"]);
+  const homeStatus = homeEntries.find((e) => /^Status:/i.test(e)) || "";
+  const homeAlerts = homeEntries.filter((e) => /announcement/i.test(e) || /go to the announcements/i.test(e));
+  const homeActivityIdx = homeEntries.findIndex((e) => /Average Activity/i.test(e));
+  const homeActivity = homeActivityIdx >= 0 ? homeEntries.slice(homeActivityIdx, homeActivityIdx + 5) : [];
+  const catalogHomeTitle = homeEntries[0] || "The Basement";
+  const catalogHomeBody = homeEntries.filter((e) => ![homeEntries[0], homeStatus, ...homeAlerts, ...homeActivity].includes(e) && !hiddenHomeLines.has(e)).join("
+");
+  set("#adminTextHomeTitle", texts.homeTitle || catalogHomeTitle);
+  set("#adminTextHomeBody", texts.homeBody || catalogHomeBody);
+
+  // Announcements page
+  const annData = getCatalogPageTexts("announcements");
+  const annEntries = annData.entries || [];
+  set("#adminTextAnnouncementsPageTitle", texts.announcementsPageTitle || annEntries[0] || "Announcements");
+  set("#adminTextAnnouncementsPageHeading", texts.announcementsPageHeading || annEntries[1] || "");
+  set("#adminTextAnnouncementsPageBody", texts.announcementsPageBody !== "" ? texts.announcementsPageBody : (annEntries[2] || ""));
+
+  // Proxy page
+  const proxyData = getCatalogPageTexts("proxy-corner");
+  const proxyTexts = proxyData.entries || [];
+  set("#adminTextProxyTitle", texts.proxyTitle || proxyTexts[0] || "Proxy Corner");
+  set("#adminTextProxyIntro", texts.proxyIntro || proxyTexts[1] || "");
 }
 
 function collectAdminTextEditor() {
