@@ -206,6 +206,17 @@ body {
   justify-content: center;
 }
 
+.auth-google-wrap {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.auth-google-button {
+  justify-self: center;
+  min-width: 260px;
+}
+
 .topbar-actions {
   align-items: center;
   gap: 12px;
@@ -1824,8 +1835,9 @@ h3 {
         <p class="eyebrow">Clearance Required</p>
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
-        <div id="googleSigninWrap" class="hidden">
+        <div id="googleSigninWrap" class="auth-google-wrap">
           <p id="googleSigninHint" class="auth-message">Step 1: Sign in with your email. Step 2: Enter the shared password.</p>
+          <button id="googleSigninManualButton" class="ghost-button auth-google-button" type="button">Sign In With Email</button>
           <div id="googleSigninSlot" class="google-signin-slot"></div>
           <p id="googleSigninStatus" class="auth-message hidden"></p>
         </div>
@@ -2360,6 +2372,7 @@ const els = {
   authTitle: document.querySelector("#authTitle"),
   authMessage: document.querySelector("#authMessage"),
   googleSigninWrap: document.querySelector("#googleSigninWrap"),
+  googleSigninManualButton: document.querySelector("#googleSigninManualButton"),
   googleSigninHint: document.querySelector("#googleSigninHint"),
   googleSigninSlot: document.querySelector("#googleSigninSlot"),
   googleSigninStatus: document.querySelector("#googleSigninStatus"),
@@ -2585,7 +2598,9 @@ async function loadRuntimeConfig() {
 function renderAuthOptions() {
   const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
   const clientId = state.auth.config?.googleClientId || "";
-  els.googleSigninWrap?.classList.toggle("hidden", !(state.auth.hostedMode && clientId));
+  const showGoogle = Boolean(state.auth.hostedMode && clientId);
+  els.googleSigninWrap?.classList.toggle("hidden", !showGoogle);
+  els.googleSigninManualButton?.classList.toggle("hidden", !showGoogle || Boolean(state.auth.googleUser?.email));
   if (els.passwordAccessInput) {
     els.passwordAccessInput.disabled = Boolean(requireGoogle && !state.auth.googleUser?.email);
   }
@@ -2609,14 +2624,17 @@ function updateGoogleSigninStatus() {
   if (googleUser?.email) {
     els.googleSigninStatus.classList.remove("hidden");
     els.googleSigninStatus.textContent = `Google signed in: ${googleUser.email}`;
+    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Email Connected";
     return;
   }
   if (requireGoogle) {
     els.googleSigninStatus.classList.remove("hidden");
     els.googleSigninStatus.textContent = "Sign in with Google to unlock the theater.";
+    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Sign In With Email";
   } else {
     els.googleSigninStatus.classList.add("hidden");
     els.googleSigninStatus.textContent = "";
+    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Sign In With Email";
   }
 }
 
@@ -2803,6 +2821,13 @@ function bindEvents() {
     const verified = await verifyAccess(els.passwordAccessInput.value);
     if (!verified) return;
     await loadProtectedData();
+  });
+  els.googleSigninManualButton?.addEventListener("click", () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      setAuthMessage("Email sign-in is still loading. Try again in a second.");
+    }
   });
 }
 
