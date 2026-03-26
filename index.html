@@ -3009,23 +3009,30 @@ async function loadAnnouncement() {
     const resp = await fetch(`${ANNOUNCE_URL}?_=${Date.now()}`);
     if (!resp.ok) return;
     const data = await resp.json();
-    if (!data.active || !data.message) return;
-
-    // Only show if user hasn't already dismissed this exact message
-    const dismissedKey = "basement-theater.announcement-dismissed";
-    if (localStorage.getItem(dismissedKey) === data.message) return;
-
     const banner = document.querySelector("#announcementBanner");
     const text = document.querySelector("#announcementText");
     const icon = document.querySelector("#announcementIcon");
     if (!banner || !text) return;
+
+    if (!data.active || !data.message) {
+      banner.classList.remove("active");
+      return;
+    }
+
+    // Only hide when this exact posted version was dismissed.
+    const dismissedKey = "basement-theater.announcement-dismissed";
+    const announcementId = String(data.postedAt || data.message);
+    if (localStorage.getItem(dismissedKey) === announcementId) {
+      banner.classList.remove("active");
+      return;
+    }
 
     text.textContent = data.message;
     icon.textContent = ANNOUNCE_ICONS[data.type] || "📢";
     banner.className = `announcement-banner active type-${data.type || "info"}`;
 
     document.querySelector("#announcementDismiss").onclick = () => {
-      localStorage.setItem(dismissedKey, data.message);
+      localStorage.setItem(dismissedKey, announcementId);
       banner.classList.remove("active");
     };
   } catch {
@@ -3074,7 +3081,15 @@ async function pushAnnouncementJson(data) {
     throw new Error("🏫 School network is blocking GitHub. Try on your phone hotspot or at home.");
   }
 
-  const content = btoa(JSON.stringify(data, null, 2));
+  // Unicode-safe base64 so announcements with emoji still publish correctly.
+  const json = JSON.stringify(data, null, 2);
+  const encoded = new TextEncoder().encode(json);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < encoded.length; i += chunk) {
+    binary += String.fromCharCode(...encoded.subarray(i, i + chunk));
+  }
+  const content = btoa(binary);
   const body = { message: data.active ? "Post announcement" : "Clear announcement", content };
   if (sha) body.sha = sha;
 
