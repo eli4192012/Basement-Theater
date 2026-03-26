@@ -3295,9 +3295,10 @@ function optimizePosterUrl(url) {
   if (!url) return null;
   // TMDB: downsize from w500 to w342 for card-sized display
   const optimized = url.replace("/t/p/w500/", "/t/p/w342/");
-  // Route through Vercel proxy so school content filters don't block image.tmdb.org
+  // Route through wsrv.nl image proxy — avoids school filters blocking image.tmdb.org
   if (optimized.startsWith("https://image.tmdb.org/")) {
-    return "/api/img?url=" + encodeURIComponent(optimized);
+    const path = optimized.replace("https://", "");
+    return "https://wsrv.nl/?url=" + path + "&w=342&output=jpg";
   }
   return optimized;
 }
