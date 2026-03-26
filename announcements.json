@@ -1,6 +1,6 @@
 {
-  "active": true,
-  "message": "test",
-  "type": "hype",
-  "postedAt": "2026-03-26T01:34:12.727Z"
+  "active": false,
+  "message": "",
+  "type": "info",
+  "postedAt": null
 }
