@@ -3517,7 +3517,7 @@ function getAnnouncementId(data) {
 }
 
 async function fetchAnnouncementState() {
-  const resp = await fetch(`${ANNOUNCE_URL}?ref=main&_=${Date.now()}`);
+  const resp = await fetchWithTimeout(`${ANNOUNCE_URL}?ref=main&_=${Date.now()}`);
   if (!resp.ok) throw new Error(`Announcement fetch failed: ${resp.status}`);
   const payload = await resp.json();
   const rawBase64 = String(payload.content || "").replace(/\n/g, "");
@@ -3594,8 +3594,14 @@ function startAnnouncementWatcher() {
   }, 10000);
 }
 
+function fetchWithTimeout(url, options = {}, ms = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 async function fetchEditableTextState() {
-  const resp = await fetch(`${EDITABLE_TEXT_URL}?ref=main&_=${Date.now()}`);
+  const resp = await fetchWithTimeout(`${EDITABLE_TEXT_URL}?ref=main&_=${Date.now()}`, {}, 5000);
   if (resp.status === 404) return { data: { ...DEFAULT_EDITABLE_TEXTS }, sha: "" };
   if (!resp.ok) throw new Error(`Editable text fetch failed: ${resp.status}`);
   const payload = await resp.json();
