@@ -3294,7 +3294,12 @@ function bindCardInteractions(container) {
 function optimizePosterUrl(url) {
   if (!url) return null;
   // TMDB: downsize from w500 to w342 for card-sized display
-  return url.replace("/t/p/w500/", "/t/p/w342/");
+  const optimized = url.replace("/t/p/w500/", "/t/p/w342/");
+  // Route through Vercel proxy so school content filters don't block image.tmdb.org
+  if (optimized.startsWith("https://image.tmdb.org/")) {
+    return "/api/img?url=" + encodeURIComponent(optimized);
+  }
+  return optimized;
 }
 
 function renderCard(item) {
