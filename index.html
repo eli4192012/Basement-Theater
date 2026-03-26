@@ -3477,7 +3477,7 @@ function getAnnouncementId(data) {
 }
 
 async function fetchAnnouncementState() {
-  const resp = await fetch(`${ANNOUNCE_URL}?ref=main&_= ${Date.now()}`.replace(" ", ""));
+  const resp = await fetch(`${ANNOUNCE_URL}?ref=main&_=${Date.now()}`);
   if (!resp.ok) throw new Error(`Announcement fetch failed: ${resp.status}`);
   const payload = await resp.json();
   const rawBase64 = String(payload.content || "").replace(/\n/g, "");
@@ -3624,10 +3624,11 @@ function bindAdminTextEvents() {
   if (toggleBtn && !toggleBtn._bound) {
     toggleBtn._bound = true;
     toggleBtn.addEventListener("click", () => {
-      const open = els.adminTextEditor.classList.toggle("hidden");
-      els.adminSaveTextButton.classList.toggle("hidden", open);
-      toggleBtn.textContent = open ? "Turn On Text Editing" : "Hide Text Editing";
-      if (!open) fillAdminTextEditor();
+      els.adminTextEditor.classList.toggle("hidden");
+      const isHidden = els.adminTextEditor.classList.contains("hidden");
+      els.adminSaveTextButton.classList.toggle("hidden", isHidden);
+      toggleBtn.textContent = isHidden ? "Turn On Text Editing" : "Hide Text Editing";
+      if (!isHidden) fillAdminTextEditor();
     });
   }
   if (saveBtn && !saveBtn._bound) {
@@ -3638,32 +3639,34 @@ function bindAdminTextEvents() {
 
 function fillAdminTextEditor() {
   const texts = { ...DEFAULT_EDITABLE_TEXTS, ...(state.editableTexts || {}) };
-  document.querySelector("#adminTextBrandWordmark").value = texts.brandWordmark || "";
-  document.querySelector("#adminTextAuthTitle").value = texts.authTitle || "";
-  document.querySelector("#adminTextAuthMessage").value = texts.authMessage || "";
-  document.querySelector("#adminTextWelcomeTitle").value = texts.welcomeTitle || "";
-  document.querySelector("#adminTextWelcomeIntro").value = texts.welcomeIntro || "";
-  document.querySelector("#adminTextWelcomeLibraryText").value = texts.welcomeLibraryText || "";
-  document.querySelector("#adminTextWelcomeProfilesText").value = texts.welcomeProfilesText || "";
-  document.querySelector("#adminTextWelcomeFavoritesText").value = texts.welcomeFavoritesText || "";
-  document.querySelector("#adminTextWelcomePlayText").value = texts.welcomePlayText || "";
-  document.querySelector("#adminTextWelcomeSurpriseText").value = texts.welcomeSurpriseText || "";
-  document.querySelector("#adminTextWelcomeTrashText").value = texts.welcomeTrashText || "";
+  const set = (id, val) => { const el = document.querySelector(id); if (el) el.value = val || ""; };
+  set("#adminTextBrandWordmark", texts.brandWordmark);
+  set("#adminTextAuthTitle", texts.authTitle);
+  set("#adminTextAuthMessage", texts.authMessage);
+  set("#adminTextWelcomeTitle", texts.welcomeTitle);
+  set("#adminTextWelcomeIntro", texts.welcomeIntro);
+  set("#adminTextWelcomeLibraryText", texts.welcomeLibraryText);
+  set("#adminTextWelcomeProfilesText", texts.welcomeProfilesText);
+  set("#adminTextWelcomeFavoritesText", texts.welcomeFavoritesText);
+  set("#adminTextWelcomePlayText", texts.welcomePlayText);
+  set("#adminTextWelcomeSurpriseText", texts.welcomeSurpriseText);
+  set("#adminTextWelcomeTrashText", texts.welcomeTrashText);
 }
 
 function collectAdminTextEditor() {
+  const get = (id, fallback) => document.querySelector(id)?.value.trim() || fallback;
   return {
-    brandWordmark: document.querySelector("#adminTextBrandWordmark").value.trim() || DEFAULT_EDITABLE_TEXTS.brandWordmark,
-    authTitle: document.querySelector("#adminTextAuthTitle").value.trim() || DEFAULT_EDITABLE_TEXTS.authTitle,
-    authMessage: document.querySelector("#adminTextAuthMessage").value.trim() || DEFAULT_EDITABLE_TEXTS.authMessage,
-    welcomeTitle: document.querySelector("#adminTextWelcomeTitle").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeTitle,
-    welcomeIntro: document.querySelector("#adminTextWelcomeIntro").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeIntro,
-    welcomeLibraryText: document.querySelector("#adminTextWelcomeLibraryText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeLibraryText,
-    welcomeProfilesText: document.querySelector("#adminTextWelcomeProfilesText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeProfilesText,
-    welcomeFavoritesText: document.querySelector("#adminTextWelcomeFavoritesText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeFavoritesText,
-    welcomePlayText: document.querySelector("#adminTextWelcomePlayText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomePlayText,
-    welcomeSurpriseText: document.querySelector("#adminTextWelcomeSurpriseText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeSurpriseText,
-    welcomeTrashText: document.querySelector("#adminTextWelcomeTrashText").value.trim() || DEFAULT_EDITABLE_TEXTS.welcomeTrashText,
+    brandWordmark: get("#adminTextBrandWordmark", DEFAULT_EDITABLE_TEXTS.brandWordmark),
+    authTitle: get("#adminTextAuthTitle", DEFAULT_EDITABLE_TEXTS.authTitle),
+    authMessage: get("#adminTextAuthMessage", DEFAULT_EDITABLE_TEXTS.authMessage),
+    welcomeTitle: get("#adminTextWelcomeTitle", DEFAULT_EDITABLE_TEXTS.welcomeTitle),
+    welcomeIntro: get("#adminTextWelcomeIntro", DEFAULT_EDITABLE_TEXTS.welcomeIntro),
+    welcomeLibraryText: get("#adminTextWelcomeLibraryText", DEFAULT_EDITABLE_TEXTS.welcomeLibraryText),
+    welcomeProfilesText: get("#adminTextWelcomeProfilesText", DEFAULT_EDITABLE_TEXTS.welcomeProfilesText),
+    welcomeFavoritesText: get("#adminTextWelcomeFavoritesText", DEFAULT_EDITABLE_TEXTS.welcomeFavoritesText),
+    welcomePlayText: get("#adminTextWelcomePlayText", DEFAULT_EDITABLE_TEXTS.welcomePlayText),
+    welcomeSurpriseText: get("#adminTextWelcomeSurpriseText", DEFAULT_EDITABLE_TEXTS.welcomeSurpriseText),
+    welcomeTrashText: get("#adminTextWelcomeTrashText", DEFAULT_EDITABLE_TEXTS.welcomeTrashText),
   };
 }
 
@@ -3807,9 +3810,12 @@ async function pushAnnouncementJson(data) {
 }
 
 async function publishAnnouncement() {
-  const message = document.querySelector("#adminAnnounceText").value.trim();
-  const type = document.querySelector("#adminAnnounceType").value;
+  const msgEl = document.querySelector("#adminAnnounceText");
+  const typeEl = document.querySelector("#adminAnnounceType");
   const btn = document.querySelector("#adminAnnounceButton");
+  if (!msgEl || !typeEl || !btn) return;
+  const message = msgEl.value.trim();
+  const type = typeEl.value;
   if (!message) { alert("Type an announcement first!"); return; }
 
   btn.textContent = "⏳ Sending…";
