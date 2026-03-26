@@ -549,6 +549,40 @@ h3 {
   font-size: 0.95rem;
 }
 
+.browse-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sort-select {
+  min-height: 38px;
+  min-width: 180px;
+  padding: 0 14px;
+  background: var(--chip);
+  color: var(--text);
+  border: 1px solid rgba(255, 221, 168, 0.14);
+  border-radius: 999px;
+  font: inherit;
+}
+
+.sort-select:focus {
+  outline: 1px solid var(--gold);
+  border-color: var(--gold);
+}
+
 .genre-chips,
 .letter-chips {
   display: flex;
@@ -633,6 +667,24 @@ h3 {
 .public-doc-page.page-game-stash,
 .public-doc-page.page-proxy-corner {
   color: #f2f4f8;
+}
+
+.public-view-announcements .review-header,
+.public-view-announcements .review-note,
+.public-view-announcements #publicPageMeta {
+  display: none;
+}
+
+.public-view-announcements .public-sections {
+  gap: 0;
+}
+
+.public-doc-page.page-announcements {
+  min-height: calc(100vh - 170px);
+  padding: 42px 40px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .public-doc-title {
@@ -1561,7 +1613,19 @@ h3 {
                 <p class="eyebrow">Browse</p>
                 <h2 id="resultsHeading">All titles</h2>
               </div>
-              <p id="resultsCount" class="results-count"></p>
+              <div class="browse-tools">
+                <label class="sort-control" for="sortSelect">
+                  <span>Sort</span>
+                  <select id="sortSelect" class="sort-select">
+                    <option value="recommended">Recommended</option>
+                    <option value="newest">Newest Release</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="rating">Top Rated</option>
+                    <option value="az">A-Z</option>
+                  </select>
+                </label>
+                <p id="resultsCount" class="results-count"></p>
+              </div>
             </section>
             <section class="surprise-panel">
               <p class="eyebrow">Surprise Me</p>
@@ -1856,6 +1920,7 @@ const state = {
   adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
   activeCategory: "All",
   activeLetter: "All",
+  activeSort: "recommended",
   query: "",
   featuredIndex: 0,
   activeView: "home",
@@ -1878,6 +1943,7 @@ const els = {
   searchInput: document.querySelector("#searchInput"),
   genreChips: document.querySelector("#genreChips"),
   letterChips: document.querySelector("#letterChips"),
+  sortSelect: document.querySelector("#sortSelect"),
   resultsHeading: document.querySelector("#resultsHeading"),
   resultsCount: document.querySelector("#resultsCount"),
   heroPanel: document.querySelector("#heroPanel"),
@@ -2036,6 +2102,11 @@ function buildProfileBar() {
 function bindEvents() {
   els.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLowerCase();
+    rerenderActiveView();
+  });
+
+  els.sortSelect?.addEventListener("change", (event) => {
+    state.activeSort = event.target.value;
     rerenderActiveView();
   });
 
@@ -2295,11 +2366,67 @@ function getWatchlistItems() {
   return items.filter((item) => watchlist[item.url]).slice(0, 12);
 }
 
-function sortItemsByCover(items) {
+function getPopularityScore(item) {
+  return Object.values(state.history).reduce((total, history) => {
+    return total + history.filter((entry) => entry.url === item.url).length;
+  }, 0);
+}
+
+function getRatingScore(item) {
+  const value = Number(item.tmdbRating ?? item.vote_average ?? 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function getNewestScore(item) {
+  const value = Number(item.year ?? 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function compareCoverPresence(a, b) {
+  const aHasCover = Number(Boolean(a.posterUrl || a.backdropUrl));
+  const bHasCover = Number(Boolean(b.posterUrl || b.backdropUrl));
+  return bHasCover - aHasCover;
+}
+
+function sortItems(items, mode = state.activeSort) {
   return items.slice().sort((a, b) => {
-    const aHasCover = Number(Boolean(a.posterUrl || a.backdropUrl));
-    const bHasCover = Number(Boolean(b.posterUrl || b.backdropUrl));
-    if (aHasCover !== bHasCover) return bHasCover - aHasCover;
+    const coverDiff = compareCoverPresence(a, b);
+    if (coverDiff) return coverDiff;
+
+    if (mode === "newest") {
+      const newestDiff = getNewestScore(b) - getNewestScore(a);
+      if (newestDiff) return newestDiff;
+      const ratingDiff = getRatingScore(b) - getRatingScore(a);
+      if (ratingDiff) return ratingDiff;
+      return a.title.localeCompare(b.title);
+    }
+
+    if (mode === "popular") {
+      const popularityDiff = getPopularityScore(b) - getPopularityScore(a);
+      if (popularityDiff) return popularityDiff;
+      const newestDiff = getNewestScore(b) - getNewestScore(a);
+      if (newestDiff) return newestDiff;
+      return a.title.localeCompare(b.title);
+    }
+
+    if (mode === "rating") {
+      const ratingDiff = getRatingScore(b) - getRatingScore(a);
+      if (ratingDiff) return ratingDiff;
+      const popularityDiff = getPopularityScore(b) - getPopularityScore(a);
+      if (popularityDiff) return popularityDiff;
+      return a.title.localeCompare(b.title);
+    }
+
+    if (mode === "az") {
+      return a.title.localeCompare(b.title);
+    }
+
+    const popularityDiff = getPopularityScore(b) - getPopularityScore(a);
+    if (popularityDiff) return popularityDiff;
+    const ratingDiff = getRatingScore(b) - getRatingScore(a);
+    if (ratingDiff) return ratingDiff;
+    const newestDiff = getNewestScore(b) - getNewestScore(a);
+    if (newestDiff) return newestDiff;
     return a.title.localeCompare(b.title);
   });
 }
@@ -2369,11 +2496,13 @@ function renderPublicPage() {
     els.publicPageTitle.textContent = "Public Tabs";
     els.publicPageMeta.textContent = "No imported pages yet";
     els.publicSections.innerHTML = `<div class="empty-state">Import the public doc to see its tabs here.</div>`;
+    els.publicView.classList.remove("public-view-announcements");
     return;
   }
 
   els.publicPageTitle.textContent = cleanImportedLabel(activePage.title);
   els.publicPageMeta.textContent = cleanImportedLabel(activePage.title);
+  els.publicView.classList.toggle("public-view-announcements", activePage.slug === "announcements");
   els.publicSections.innerHTML = renderCuratedPublicPage(activePage);
 }
 
@@ -2665,12 +2794,20 @@ function renderRows() {
 
   const heading = state.activeCategory === "All" ? "All titles" : state.activeCategory;
   const suffix = state.activeLetter === "All" ? "" : ` • ${state.activeLetter}`;
+  const sortLabels = {
+    recommended: "Recommended",
+    newest: "Newest Release",
+    popular: "Most Popular",
+    rating: "Top Rated",
+    az: "A-Z",
+  };
   els.resultsHeading.textContent = `${heading}${suffix}`;
-  els.resultsCount.textContent = `${filtered.length} title${filtered.length === 1 ? "" : "s"}`;
+  els.resultsCount.textContent = `${filtered.length} title${filtered.length === 1 ? "" : "s"} • ${sortLabels[state.activeSort] || "Recommended"}`;
+  if (els.sortSelect) els.sortSelect.value = state.activeSort;
 
   const categoryRows = Object.keys(grouped)
     .map((category) => {
-      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
+      const cards = sortItems(grouped[category]).map(renderCard).join("");
       return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
     })
     .join("");
@@ -2684,7 +2821,7 @@ function renderCustomRow(title, items) {
     title === "Continue Watching"
       ? `<button type="button" class="ghost-button row-action-button" data-row-action="clear-continue">Clear</button>`
       : "";
-  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><div class="row-header-actions">${actionButton}<p class="results-count">${items.length} titles</p></div></div><div class="row-grid">${sortItemsByCover(items).map(renderCard).join("")}</div></section>`;
+  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><div class="row-header-actions">${actionButton}<p class="results-count">${items.length} titles</p></div></div><div class="row-grid">${sortItems(items).map(renderCard).join("")}</div></section>`;
 }
 
 function renderFavorites() {
@@ -2707,7 +2844,7 @@ function renderFavorites() {
 
   els.favoritesRows.innerHTML = Object.keys(grouped)
     .map((category) => {
-      const cards = sortItemsByCover(grouped[category]).map(renderCard).join("");
+      const cards = sortItems(grouped[category]).map(renderCard).join("");
       return `<section class="row"><div class="row-header"><h4>${escapeHtml(category)}</h4><p class="results-count">${grouped[category].length} titles</p></div><div class="row-grid">${cards}</div></section>`;
     })
     .join("");
