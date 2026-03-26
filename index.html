@@ -1883,6 +1883,8 @@ h3 {
   welcomeSeen: "basement-theater.welcome-seen",
   adminOverrides: "basement-theater.admin-overrides",
   adminUnlocked: "basement-theater.admin-unlocked",
+  latestAnnouncementId: "basement-theater.latest-announcement-id",
+  reloadedAnnouncementId: "basement-theater.reloaded-announcement-id",
 };
 
 const DEFAULT_PROFILES = [
@@ -2030,6 +2032,7 @@ async function loadProtectedData() {
   els.authGate.classList.add("hidden");
   renderAll();
   loadAnnouncement(); // Non-blocking — loads banner in background
+  startAnnouncementWatcher();
 }
 
 async function verifyAccess(password) {
@@ -3140,6 +3143,12 @@ const GITHUB_FILE = "index.html";
 // ── Announcement Banner ───────────────────────────────────────────────────────
 const ANNOUNCE_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/announcements.json`;
 const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
+let announcementWatcherStarted = false;
+
+function getAnnouncementId(data) {
+  if (!data) return "";
+  return String(data.postedAt || data.message || "");
+}
 
 async function loadAnnouncement() {
   try {
@@ -3158,7 +3167,8 @@ async function loadAnnouncement() {
 
     // Only hide when this exact posted version was dismissed.
     const dismissedKey = "basement-theater.announcement-dismissed";
-    const announcementId = String(data.postedAt || data.message);
+    const announcementId = getAnnouncementId(data);
+    localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, announcementId);
     if (localStorage.getItem(dismissedKey) === announcementId) {
       banner.classList.remove("active");
       return;
@@ -3175,6 +3185,39 @@ async function loadAnnouncement() {
   } catch {
     // Silently fail — announcements are non-critical
   }
+}
+
+function startAnnouncementWatcher() {
+  if (announcementWatcherStarted) return;
+  announcementWatcherStarted = true;
+
+  window.setInterval(async () => {
+    try {
+      const resp = await fetch(`${ANNOUNCE_URL}?_=${Date.now()}`);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const nextId = data.active ? getAnnouncementId(data) : "";
+      const currentId = localStorage.getItem(STORAGE_KEYS.latestAnnouncementId) || "";
+      const reloadedId = sessionStorage.getItem(STORAGE_KEYS.reloadedAnnouncementId) || "";
+
+      if (!currentId) {
+        if (nextId) localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
+        return;
+      }
+
+      if (nextId && nextId !== currentId && nextId !== reloadedId) {
+        sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
+        localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
+        window.location.reload();
+      }
+
+      if (!nextId && currentId) {
+        localStorage.removeItem(STORAGE_KEYS.latestAnnouncementId);
+      }
+    } catch {
+      // Keep watching quietly.
+    }
+  }, 15000);
 }
 
 function bindAdminAnnounceEvents() {
