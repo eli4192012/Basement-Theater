@@ -687,6 +687,78 @@ h3 {
   justify-content: center;
 }
 
+.announcements-hero {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.announcements-title {
+  margin: 0;
+  color: #ffe900;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  font-weight: 900;
+  line-height: 1.06;
+}
+
+.announcements-divider {
+  width: min(100%, 620px);
+  height: 4px;
+  margin: 26px auto;
+  background: #ffe900;
+}
+
+.announcements-mini-divider {
+  width: min(100%, 240px);
+  height: 3px;
+  margin: 0 auto 30px;
+  background: #ffe900;
+}
+
+.announcements-callout {
+  margin: 0 0 18px;
+  color: #ffe900;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  font-weight: 900;
+  text-decoration: underline;
+}
+
+.announcements-body {
+  max-width: 920px;
+  margin: 0 auto;
+  color: #ffe900;
+  font-size: clamp(1.2rem, 2.7vw, 1.95rem);
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.announcements-body p {
+  margin: 0;
+}
+
+.announcements-update {
+  margin: 56px auto 0;
+  text-align: center;
+}
+
+.announcements-update-title {
+  margin: 0 0 10px;
+  color: #ffe900;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 900;
+  text-decoration: underline;
+}
+
+.announcements-update-time {
+  margin: 0;
+  color: #ffe900;
+  font-size: clamp(1.6rem, 3.8vw, 2.6rem);
+  font-weight: 900;
+  line-height: 1.25;
+  text-decoration: underline;
+}
+
 .public-doc-title {
   margin: 0;
   text-align: center;
@@ -827,14 +899,14 @@ h3 {
 
 .public-updates-list {
   display: grid;
-  gap: 18px;
-  max-width: 760px;
+  gap: 28px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
 .public-update-block {
-  padding-bottom: 16px;
-  border-bottom: 1px dashed rgba(255, 77, 77, 0.55);
+  padding-bottom: 22px;
+  border-bottom: 2px solid rgba(255, 77, 77, 0.8);
 }
 
 .public-update-block:last-child {
@@ -844,7 +916,8 @@ h3 {
 .public-update-block h4 {
   margin: 0 0 12px;
   color: #ff2f2f;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  font-weight: 900;
 }
 
 .public-update-block p {
@@ -854,6 +927,20 @@ h3 {
   line-height: 1.55;
 }
 
+.page-updates .public-doc-title.updates {
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+}
+
+.page-updates .public-doc-copy {
+  max-width: 900px;
+}
+
+.page-updates .public-doc-note {
+  color: #ff5a5a;
+  font-size: clamp(1.08rem, 2.2vw, 1.45rem);
+  line-height: 1.45;
+}
+
 .public-home-grid {
   display: grid;
   gap: 16px;
@@ -861,28 +948,94 @@ h3 {
   margin: 0 auto;
 }
 
-.public-home-panel {
-  padding: 16px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.public-doc-page.page-home {
+  min-height: calc(100vh - 170px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.public-home-hero {
+  max-width: 760px;
+  margin: 0 auto;
   text-align: center;
 }
 
+.public-home-title {
+  margin: 0;
+  color: #33e0ff;
+  font-size: clamp(2.7rem, 7vw, 4.6rem);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.public-home-stars {
+  color: #ffd84a;
+}
+
 .public-home-status {
-  color: #8aff95;
+  margin: 18px auto 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: rgba(81, 149, 95, 0.9);
+  color: #dff6d2;
+  font-size: 1.2rem;
   font-weight: 900;
 }
 
 .public-home-alert {
-  color: #ff4e4e;
-  font-weight: 900;
+  margin: 0 auto 24px;
+  display: grid;
+  gap: 4px;
+  color: #ff3030;
+  font-size: clamp(1.35rem, 3.8vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.18;
+  text-align: center;
 }
 
 .public-home-activity {
+  margin: 0 auto 28px;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   color: #d7dbe3;
+  font-size: clamp(1.15rem, 3vw, 1.75rem);
+  text-align: center;
+}
+
+.public-home-activity-lead {
+  margin-bottom: 2px;
+  color: #d7dbe3;
+  font-weight: 500;
+}
+
+.public-home-activity-good {
+  display: inline-flex;
+  justify-self: center;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: #d6efab;
+  color: #31785f;
+  font-weight: 900;
+}
+
+.public-home-body {
+  max-width: 720px;
+  margin: 0 auto;
+  color: #d7dbe3;
+  font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+  line-height: 1.35;
+  text-align: center;
+}
+
+.public-home-body p {
+  margin: 0;
 }
 
 .game-stash-hero {
@@ -2556,16 +2709,25 @@ function renderHomePage(page) {
   const activity = activityIndex >= 0 ? entries.slice(activityIndex, activityIndex + 5) : [];
   const hiddenHomeLines = new Set(["MY KING 👑 - ELI", "Mr wallace btw lmao"]);
   const body = entries.filter((entry) => ![title, status, ...alertLines, ...activity].includes(entry) && !hiddenHomeLines.has(entry));
+  const cleanedStatus = status.replace(/^Status:\s*/i, "").trim();
+  const activityLead = activity[0] || "";
+  const activityGood = activity[1] || "";
+  const activityRest = activity.slice(2);
 
   return `
     <section class="public-doc-page page-home">
-      <h3 class="public-doc-title home">${escapeHtml(title)}</h3>
-      <div class="public-doc-divider home"></div>
-      <div class="public-home-grid">
-        ${status ? `<div class="public-home-panel public-home-status">${escapeHtml(status)}</div>` : ""}
-        ${alertLines.length ? `<div class="public-home-panel public-home-alert">${alertLines.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
-        ${activity.length ? `<div class="public-home-panel public-home-activity">${activity.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
-        ${body.length ? `<div class="public-home-panel">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
+      <div class="public-home-hero">
+        <h3 class="public-home-title"><span class="public-home-stars">⭐</span> ${escapeHtml(title)} <span class="public-home-stars">⭐</span></h3>
+        ${cleanedStatus ? `<div class="public-home-status">Status: ${escapeHtml(cleanedStatus)}</div>` : ""}
+        ${alertLines.length ? `<div class="public-home-alert">${alertLines.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}</div>` : ""}
+        ${activity.length ? `
+          <div class="public-home-activity">
+            ${activityLead ? `<div class="public-home-activity-lead">${escapeHtml(activityLead)}</div>` : ""}
+            ${activityGood ? `<div class="public-home-activity-good">${escapeHtml(activityGood)}</div>` : ""}
+            ${activityRest.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}
+          </div>
+        ` : ""}
+        ${body.length ? `<div class="public-home-body">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
       </div>
     </section>
   `;
@@ -2581,13 +2743,18 @@ function renderAnnouncementsPage(page) {
 
   return `
     <section class="public-doc-page page-announcements">
-      <h3 class="public-doc-title announcements">${escapeHtml(title)}</h3>
-      <div class="public-doc-divider announcements"></div>
-      <div class="public-doc-copy">
-        <p><span class="public-doc-callout">${escapeHtml(heading)}</span></p>
-        ${body ? `<p class="public-doc-note">${escapeHtml(body)}</p>` : ""}
-        ${updateTitle ? `<h3 class="public-doc-title announcements" style="font-size:2rem;margin-top:26px;">${escapeHtml(updateTitle)}</h3>` : ""}
-        ${updateTime ? `<p class="public-doc-note">${escapeHtml(updateTime)}</p>` : ""}
+      <div class="announcements-hero">
+        <h3 class="announcements-title">📣 ${escapeHtml(title)} 📣</h3>
+        <div class="announcements-divider"></div>
+        <div class="announcements-mini-divider"></div>
+        <p class="announcements-callout">${escapeHtml(heading)}</p>
+        ${body ? `<div class="announcements-body"><p>${escapeHtml(body)}</p></div>` : ""}
+        ${updateTitle || updateTime ? `
+          <div class="announcements-update">
+            ${updateTitle ? `<h4 class="announcements-update-title">${escapeHtml(updateTitle)}</h4>` : ""}
+            ${updateTime ? `<p class="announcements-update-time">${escapeHtml(updateTime)}</p>` : ""}
+          </div>
+        ` : ""}
       </div>
     </section>
   `;
