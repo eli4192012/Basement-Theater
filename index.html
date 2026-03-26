@@ -3705,6 +3705,39 @@ function fetchWithTimeout(url, options = {}, ms = 5000) {
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
+// Converts the human-readable editable-text.json format into the flat internal keys.
+// Handles both the new nested format and the old flat format gracefully.
+function normalizeEditableTexts(raw) {
+  if (!raw || typeof raw !== "object") return { ...DEFAULT_EDITABLE_TEXTS };
+  const get = (obj, ...keys) => {
+    for (const k of keys) if (obj && obj[k] !== undefined) return obj[k];
+    return undefined;
+  };
+  // New nested format uses readable section names; old flat format uses camelCase keys directly.
+  const isNested = !!(raw["Home Tab"] || raw["Announcements Tab"] || raw["Password Screen"] || raw["App Title"] !== undefined);
+  if (!isNested) return { ...DEFAULT_EDITABLE_TEXTS, ...raw };
+  return {
+    brandWordmark:          get(raw, "App Title")                                            ?? DEFAULT_EDITABLE_TEXTS.brandWordmark,
+    authTitle:              get(raw["Password Screen"], "Title")                             ?? DEFAULT_EDITABLE_TEXTS.authTitle,
+    authMessage:            get(raw["Password Screen"], "Message")                           ?? DEFAULT_EDITABLE_TEXTS.authMessage,
+    welcomeTitle:           get(raw["Welcome Popup"], "Title")                               ?? DEFAULT_EDITABLE_TEXTS.welcomeTitle,
+    welcomeIntro:           get(raw["Welcome Popup"], "Intro")                               ?? DEFAULT_EDITABLE_TEXTS.welcomeIntro,
+    welcomeLibraryText:     get(raw["Welcome Popup"], "Library Text")                        ?? DEFAULT_EDITABLE_TEXTS.welcomeLibraryText,
+    welcomeProfilesText:    get(raw["Welcome Popup"], "Profiles Text")                       ?? DEFAULT_EDITABLE_TEXTS.welcomeProfilesText,
+    welcomeFavoritesText:   get(raw["Welcome Popup"], "Favorites Text")                      ?? DEFAULT_EDITABLE_TEXTS.welcomeFavoritesText,
+    welcomePlayText:        get(raw["Welcome Popup"], "Play Text")                           ?? DEFAULT_EDITABLE_TEXTS.welcomePlayText,
+    welcomeSurpriseText:    get(raw["Welcome Popup"], "Surprise Me Text")                    ?? DEFAULT_EDITABLE_TEXTS.welcomeSurpriseText,
+    welcomeTrashText:       get(raw["Welcome Popup"], "Trash Review Text")                   ?? DEFAULT_EDITABLE_TEXTS.welcomeTrashText,
+    homeTitle:              get(raw["Home Tab"], "Title")                                    ?? "",
+    homeBody:               get(raw["Home Tab"], "Body")                                     ?? "",
+    announcementsPageTitle: get(raw["Announcements Tab"], "Title")                           ?? "",
+    announcementsPageHeading: get(raw["Announcements Tab"], "Heading")                       ?? "",
+    announcementsPageBody:  get(raw["Announcements Tab"], "Body")                            ?? "",
+    proxyTitle:             get(raw["Proxy Corner Tab"], "Title")                            ?? "",
+    proxyIntro:             get(raw["Proxy Corner Tab"], "Intro")                            ?? "",
+  };
+}
+
 async function fetchEditableTextState() {
   const resp = await fetchWithTimeout(`${EDITABLE_TEXT_URL}?ref=main&_=${Date.now()}`, {}, 5000);
   if (resp.status === 404) return { data: { ...DEFAULT_EDITABLE_TEXTS }, sha: "" };
@@ -3714,8 +3747,9 @@ async function fetchEditableTextState() {
   const binary = atob(rawBase64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const data = JSON.parse(new TextDecoder("utf-8").decode(bytes));
-  return { data: { ...DEFAULT_EDITABLE_TEXTS, ...(data || {}) }, sha: payload.sha || "" };
+  const raw = JSON.parse(new TextDecoder("utf-8").decode(bytes));
+  const data = normalizeEditableTexts(raw);
+  return { data, sha: payload.sha || "" };
 }
 
 async function loadEditableTexts() {
