@@ -1,6 +1,6 @@
 const STORAGE_BUCKET = "basement-theater-meta";
 const DEFAULT_SECURITY_CONFIG = {
-  requireGoogleSignIn: false,
+  requireGoogleSignIn: true,
 };
 
 function getSupabaseEnv() {

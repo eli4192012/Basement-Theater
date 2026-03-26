@@ -2577,7 +2577,7 @@ async function loadRuntimeConfig() {
     state.auth.config = config;
     state.auth.hostedMode = true;
   } catch {
-    state.auth.config = { googleClientId: "", requireGoogleSignIn: false };
+    state.auth.config = { googleClientId: "", requireGoogleSignIn: true };
     state.auth.hostedMode = false;
   }
 }
@@ -2586,6 +2586,9 @@ function renderAuthOptions() {
   const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
   const clientId = state.auth.config?.googleClientId || "";
   els.googleSigninWrap?.classList.toggle("hidden", !(state.auth.hostedMode && clientId));
+  if (els.passwordAccessInput) {
+    els.passwordAccessInput.disabled = Boolean(requireGoogle && !state.auth.googleUser?.email);
+  }
   if (els.googleSigninHint) {
     els.googleSigninHint.textContent = requireGoogle
       ? "Google sign-in is required before you enter the password."
@@ -2624,7 +2627,8 @@ function initializeGoogleSignIn(clientId) {
   window.google.accounts.id.initialize({
     client_id: clientId,
     callback: handleGoogleCredential,
-    auto_select: false,
+    auto_select: true,
+    cancel_on_tap_outside: false,
   });
   window.google.accounts.id.renderButton(els.googleSigninSlot, {
     theme: "filled_black",
@@ -2633,6 +2637,9 @@ function initializeGoogleSignIn(clientId) {
     shape: "pill",
     width: 260,
   });
+  if (Boolean(state.auth.config?.requireGoogleSignIn)) {
+    window.google.accounts.id.prompt();
+  }
   els.googleSigninSlot.dataset.initialized = clientId;
 }
 
@@ -2663,6 +2670,7 @@ function handleGoogleCredential(response) {
     : null;
   localStorage.setItem("basement-theater.google-user", JSON.stringify(state.auth.googleUser));
   updateGoogleSigninStatus();
+  renderAuthOptions();
   if (state.auth.config?.requireGoogleSignIn) {
     setAuthMessage("Google sign-in complete. Enter the shared password now.");
   }
