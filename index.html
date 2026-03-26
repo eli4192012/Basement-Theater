@@ -1711,7 +1711,7 @@ h3 {
               </div>
               <div class="admin-actions">
                 <button class="admin-btn primary" id="adminAddButton">+ Add Title</button>
-                <button class="admin-btn" id="adminPublishButton" style="background:#1a6b35;border-color:#1a6b35;color:#fff">🚀 Publish to GitHub</button>
+                <button class="admin-btn" id="adminPublishButton" style="background:#1a6b35;border-color:#1a6b35;color:#fff">🚀 Commit Catalog to GitHub</button>
                 <button class="admin-btn" id="adminExportButton">⬇ Export JSON</button>
                 <button class="admin-btn danger" id="adminResetButton">Reset Overrides</button>
                 <button class="admin-btn" id="adminLockButton">🔒 Lock</button>
@@ -1750,7 +1750,7 @@ h3 {
                     <option value="info">📘 Info (blue)</option>
                     <option value="warning">⚠️ Warning (red)</option>
                   </select>
-                  <button class="admin-btn primary" id="adminAnnounceButton">📢 Announce to Everyone</button>
+                  <button class="admin-btn primary" id="adminAnnounceButton">📢 Commit Announcement to GitHub</button>
                   <button class="admin-btn danger" id="adminClearAnnouncementButton">✕ Clear</button>
                 </div>
               </div>
@@ -3144,6 +3144,7 @@ const GITHUB_FILE = "index.html";
 const ANNOUNCE_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/announcements.json`;
 const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
 let announcementWatcherStarted = false;
+let announcementWatcherPrimed = false;
 
 function getAnnouncementId(data) {
   if (!data) return "";
@@ -3200,7 +3201,8 @@ function startAnnouncementWatcher() {
       const currentId = localStorage.getItem(STORAGE_KEYS.latestAnnouncementId) || "";
       const reloadedId = sessionStorage.getItem(STORAGE_KEYS.reloadedAnnouncementId) || "";
 
-      if (!currentId) {
+      if (!announcementWatcherPrimed) {
+        announcementWatcherPrimed = true;
         if (nextId) localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
         return;
       }
@@ -3209,6 +3211,14 @@ function startAnnouncementWatcher() {
         sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
         localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
         window.location.reload();
+        return;
+      }
+
+      if (!currentId && nextId && nextId !== reloadedId) {
+        sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
+        localStorage.setItem(STORAGE_KEYS.latestAnnouncementId, nextId);
+        window.location.reload();
+        return;
       }
 
       if (!nextId && currentId) {
@@ -3233,9 +3243,25 @@ function bindAdminAnnounceEvents() {
   }
 }
 
+function getGitHubPat() {
+  let pat = localStorage.getItem("basement-theater.github-pat");
+  if (pat) return pat;
+
+  pat = prompt(
+    "Enter your GitHub Personal Access Token (classic, repo scope).\n" +
+    "Create one at: github.com/settings/tokens\n\n" +
+    "It will be saved in this browser for future catalog and announcement commits."
+  );
+  if (!pat) return "";
+  pat = pat.trim();
+  if (!pat) return "";
+  localStorage.setItem("basement-theater.github-pat", pat);
+  return pat;
+}
+
 async function pushAnnouncementJson(data) {
-  const pat = localStorage.getItem("basement-theater.github-pat");
-  if (!pat) throw new Error("No GitHub token saved. Use the Publish button first to save your token.");
+  const pat = getGitHubPat();
+  if (!pat) throw new Error("GitHub token required to commit the announcement.");
 
   const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
   const headers = {
@@ -3290,12 +3316,12 @@ async function publishAnnouncement() {
   btn.disabled = true;
   try {
     await pushAnnouncementJson({ active: true, message, type, postedAt: new Date().toISOString() });
-    btn.textContent = "✅ Live for everyone!";
+    btn.textContent = "✅ Announcement committed!";
     updateAdminAnnouncementDisplay({ active: true, message, type });
     // Also show the banner locally
     localStorage.removeItem("basement-theater.announcement-dismissed");
     await loadAnnouncement();
-    setTimeout(() => { btn.textContent = "📢 Announce to Everyone"; btn.disabled = false; }, 4000);
+    setTimeout(() => { btn.textContent = "📢 Commit Announcement to GitHub"; btn.disabled = false; }, 4000);
   } catch (err) {
     btn.textContent = `❌ ${err.message}`;
     btn.disabled = false;
@@ -3308,7 +3334,7 @@ async function clearAnnouncement() {
   btn.disabled = true;
   try {
     await pushAnnouncementJson({ active: false, message: "", type: "info", postedAt: null });
-    btn.textContent = "✅ Cleared!";
+    btn.textContent = "✅ Clear committed!";
     updateAdminAnnouncementDisplay(null);
     document.querySelector("#announcementBanner").classList.remove("active");
     setTimeout(() => { btn.textContent = "✕ Clear"; btn.disabled = false; }, 3000);
@@ -3625,18 +3651,8 @@ function setPublishBtn(label, disabled) {
 }
 
 async function publishToGitHub() {
-  // Get or prompt for GitHub PAT (saved permanently in localStorage)
-  let pat = localStorage.getItem("basement-theater.github-pat");
-  if (!pat) {
-    pat = prompt(
-      "Enter your GitHub Personal Access Token (classic, repo scope).\n" +
-      "Create one at: github.com/settings/tokens\n\n" +
-      "It will be saved so you only need to do this once."
-    );
-    if (!pat) return;
-    localStorage.setItem("basement-theater.github-pat", pat.trim());
-    pat = pat.trim();
-  }
+  const pat = getGitHubPat();
+  if (!pat) return;
 
   const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
   const headers = {
@@ -3738,12 +3754,12 @@ async function publishToGitHub() {
     state.adminOverrides = { added: [], edited: {}, deleted: [] };
     saveAdminOverrides();
     renderAdminTable();
-    setPublishBtn("✅ Published! Vercel is rebuilding…", false);
-    setTimeout(() => setPublishBtn("🚀 Publish to GitHub", false), 6000);
+    setPublishBtn("✅ Catalog committed! Vercel is rebuilding…", false);
+    setTimeout(() => setPublishBtn("🚀 Commit Catalog to GitHub", false), 6000);
 
   } catch (err) {
     setPublishBtn(`❌ ${err.message}`, false);
-    setTimeout(() => setPublishBtn("🚀 Publish to GitHub", false), 6000);
+    setTimeout(() => setPublishBtn("🚀 Commit Catalog to GitHub", false), 6000);
   }
 }
 
