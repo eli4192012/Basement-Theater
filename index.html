@@ -2637,7 +2637,7 @@ async function loadRuntimeConfig() {
 function renderAuthOptions() {
   const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
   const clientId = state.auth.config?.googleClientId || "";
-  const showGoogle = Boolean(state.auth.hostedMode && clientId);
+  const showGoogle = Boolean(requireGoogle || clientId || state.auth.googleUser?.email);
   els.googleSigninWrap?.classList.toggle("hidden", !showGoogle);
   els.googleSigninManualButton?.classList.toggle("hidden", !showGoogle || Boolean(state.auth.googleUser?.email));
   if (els.passwordAccessInput) {
@@ -2659,6 +2659,7 @@ function renderAuthOptions() {
 function updateGoogleSigninStatus() {
   if (!els.googleSigninStatus) return;
   const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
+  const googleReady = Boolean(window.google?.accounts?.id);
   const googleUser = state.auth.googleUser;
   if (googleUser?.email) {
     els.googleSigninStatus.classList.remove("hidden");
@@ -2671,17 +2672,19 @@ function updateGoogleSigninStatus() {
   }
   if (requireGoogle) {
     els.googleSigninStatus.classList.remove("hidden");
-    els.googleSigninStatus.textContent = "Sign in with Google to unlock the theater.";
+    els.googleSigninStatus.textContent = googleReady
+      ? "Sign in with Google to unlock the theater."
+      : "Google sign-in is loading...";
     if (els.googleSigninManualButton) {
       els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
-      els.googleSigninManualButton.disabled = false;
+      els.googleSigninManualButton.disabled = !googleReady;
     }
   } else {
     els.googleSigninStatus.classList.add("hidden");
     els.googleSigninStatus.textContent = "";
     if (els.googleSigninManualButton) {
       els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
-      els.googleSigninManualButton.disabled = false;
+      els.googleSigninManualButton.disabled = !googleReady;
     }
   }
 }
