@@ -3717,8 +3717,7 @@ function fillAdminTextEditor() {
   const homeActivityIdx = homeEntries.findIndex((e) => /Average Activity/i.test(e));
   const homeActivity = homeActivityIdx >= 0 ? homeEntries.slice(homeActivityIdx, homeActivityIdx + 5) : [];
   const catalogHomeTitle = homeEntries[0] || "The Basement";
-  const catalogHomeBody = homeEntries.filter((e) => ![homeEntries[0], homeStatus, ...homeAlerts, ...homeActivity].includes(e) && !hiddenHomeLines.has(e)).join("
-");
+  const catalogHomeBody = homeEntries.filter((e) => ![homeEntries[0], homeStatus, ...homeAlerts, ...homeActivity].includes(e) && !hiddenHomeLines.has(e)).join("\n");
   set("#adminTextHomeTitle", texts.homeTitle || catalogHomeTitle);
   set("#adminTextHomeBody", texts.homeBody || catalogHomeBody);
 
