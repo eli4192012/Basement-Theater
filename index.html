@@ -202,7 +202,7 @@ body {
 }
 
 .google-signin-slot {
-  display: flex;
+  display: none;
   justify-content: center;
 }
 
@@ -214,7 +214,43 @@ body {
 
 .auth-google-button {
   justify-self: center;
-  min-width: 260px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 270px;
+  min-height: 56px;
+  padding: 0 24px;
+  border-radius: 6px;
+  border: 1px solid #d7d7d7;
+  background: #ffffff;
+  color: #5f6368;
+  font-size: 0.98rem;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.auth-google-button:hover {
+  background: #f8f9fa;
+  border-color: #c7c7c7;
+  color: #3c4043;
+}
+
+.auth-google-button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.auth-google-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: conic-gradient(from 220deg, #4285f4 0 25%, #34a853 25% 50%, #fbbc05 50% 75%, #ea4335 75% 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.95rem;
 }
 
 .topbar-actions {
@@ -1837,7 +1873,10 @@ h3 {
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
         <div id="googleSigninWrap" class="auth-google-wrap">
           <p id="googleSigninHint" class="auth-message">Step 1: Sign in with your email. Step 2: Enter the shared password.</p>
-          <button id="googleSigninManualButton" class="ghost-button auth-google-button" type="button">Sign In With Email</button>
+          <button id="googleSigninManualButton" class="auth-google-button" type="button">
+            <span class="auth-google-mark">G</span>
+            <span>Sign in with Google</span>
+          </button>
           <div id="googleSigninSlot" class="google-signin-slot"></div>
           <p id="googleSigninStatus" class="auth-message hidden"></p>
         </div>
@@ -2624,17 +2663,26 @@ function updateGoogleSigninStatus() {
   if (googleUser?.email) {
     els.googleSigninStatus.classList.remove("hidden");
     els.googleSigninStatus.textContent = `Google signed in: ${googleUser.email}`;
-    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Email Connected";
+    if (els.googleSigninManualButton) {
+      els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Email Connected</span>`;
+      els.googleSigninManualButton.disabled = true;
+    }
     return;
   }
   if (requireGoogle) {
     els.googleSigninStatus.classList.remove("hidden");
     els.googleSigninStatus.textContent = "Sign in with Google to unlock the theater.";
-    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Sign In With Email";
+    if (els.googleSigninManualButton) {
+      els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
+      els.googleSigninManualButton.disabled = false;
+    }
   } else {
     els.googleSigninStatus.classList.add("hidden");
     els.googleSigninStatus.textContent = "";
-    if (els.googleSigninManualButton) els.googleSigninManualButton.textContent = "Sign In With Email";
+    if (els.googleSigninManualButton) {
+      els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
+      els.googleSigninManualButton.disabled = false;
+    }
   }
 }
 
