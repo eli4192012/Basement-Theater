@@ -1,7 +1,8 @@
-const { requireAdminPassword, requireAllowedUser, sendJson } = require("../_lib/access");
+const { handleCors, requireAdminPassword, requireAllowedUser, sendJson } = require("../_lib/access");
 const { getSecurityConfig, setSecurityConfig } = require("../_lib/supabase");
 
 module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
   if (req.method === "GET") {
     try {
       await requireAllowedUser(req);

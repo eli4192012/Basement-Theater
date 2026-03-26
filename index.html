@@ -2287,6 +2287,7 @@ const DEFAULT_PROFILES = [
 const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
+const REMOTE_API_ORIGIN = "https://basement-theater-app.vercel.app";
 const DEFAULT_EDITABLE_TEXTS = {
   brandWordmark: "THE BASEMENT PREMIUM",
   authTitle: "Enter The Password To Open The Basement Premium",
@@ -2481,7 +2482,7 @@ async function bootstrapAuth() {
 
 async function verifyStoredSession() {
   try {
-    const resp = await fetch("/api/catalog", {
+    const resp = await fetch(apiUrl("/api/catalog"), {
       headers: { Authorization: `Bearer ${state.auth.token}` },
       cache: "no-store",
     });
@@ -2513,7 +2514,7 @@ async function verifyAccess(password) {
   const cleaned = String(password || "").trim();
   if (state.auth.hostedMode) {
     try {
-      const resp = await fetch("/api/auth/verify", {
+      const resp = await fetch(apiUrl("/api/auth/verify"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2570,7 +2571,7 @@ function setAuthMessage(message) {
 
 async function loadRuntimeConfig() {
   try {
-    const resp = await fetch("/api/config", { cache: "no-store" });
+    const resp = await fetch(apiUrl("/api/config"), { cache: "no-store" });
     if (!resp.ok) throw new Error("config unavailable");
     const config = await resp.json();
     state.auth.config = config;
@@ -4518,7 +4519,7 @@ async function renderSecurityPanel() {
   }
 
   try {
-    const resp = await fetch("/api/auth/security", {
+    const resp = await fetch(apiUrl("/api/auth/security"), {
       headers: { Authorization: `Bearer ${state.auth.token}` },
       cache: "no-store",
     });
@@ -4539,7 +4540,7 @@ async function saveSecuritySettings() {
   button.disabled = true;
   button.textContent = "Saving...";
   try {
-    const resp = await fetch("/api/auth/security", {
+    const resp = await fetch(apiUrl("/api/auth/security"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -4590,7 +4591,7 @@ async function loadAdminActivity() {
   els.adminActivityPanel.classList.remove("hidden");
   els.adminActivityList.innerHTML = `<div class="empty-state">Loading activity...</div>`;
   try {
-    const resp = await fetch("/api/auth/activity", {
+    const resp = await fetch(apiUrl("/api/auth/activity"), {
       headers: getAdminHeaders(),
       cache: "no-store",
     });
@@ -4858,5 +4859,7 @@ function adminExportCatalog() {
 </script>
   </body>
   </html>
+
+
 
 

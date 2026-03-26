@@ -1,4 +1,4 @@
-const { createSessionToken, sendJson } = require("../_lib/access");
+const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
 const { appendLoginActivity, getSecurityConfig } = require("../_lib/supabase");
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
@@ -21,6 +21,7 @@ async function verifyGoogleIdToken(idToken) {
 }
 
 module.exports = async function handler(req, res) {
+  if (handleCors(req, res)) return;
   if (req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed." });
     return;

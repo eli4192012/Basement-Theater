@@ -83,7 +83,23 @@ function requireAdminPassword(req) {
   }
 }
 
+function setCorsHeaders(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Admin-Password");
+}
+
+function handleCors(req, res) {
+  setCorsHeaders(res);
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return true;
+  }
+  return false;
+}
+
 function sendJson(res, statusCode, payload) {
+  setCorsHeaders(res);
   res.status(statusCode).json(payload);
 }
 
@@ -91,6 +107,7 @@ module.exports = {
   PRIVATE_DIR,
   ADMIN_PASSWORD,
   createSessionToken,
+  handleCors,
   readPrivateJson,
   requireAdminPassword,
   requireAllowedUser,
