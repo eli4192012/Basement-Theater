@@ -2339,6 +2339,7 @@ const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
 const REMOTE_API_ORIGIN = "https://basement-theater-app.vercel.app";
+const GOOGLE_CLIENT_ID_FALLBACK = "419869093852-vhu7cc7rkjpcfpgvjkt6iehl0qdaosrt.apps.googleusercontent.com";
 const DEFAULT_EDITABLE_TEXTS = {
   brandWordmark: "THE BASEMENT PREMIUM",
   authTitle: "Enter The Password To Open The Basement Premium",
@@ -2626,10 +2627,13 @@ async function loadRuntimeConfig() {
     const resp = await fetch(apiUrl("/api/config"), { cache: "no-store" });
     if (!resp.ok) throw new Error("config unavailable");
     const config = await resp.json();
+    if (!config.googleClientId) {
+      config.googleClientId = GOOGLE_CLIENT_ID_FALLBACK;
+    }
     state.auth.config = config;
     state.auth.hostedMode = true;
   } catch {
-    state.auth.config = { googleClientId: "", requireGoogleSignIn: true };
+    state.auth.config = { googleClientId: GOOGLE_CLIENT_ID_FALLBACK, requireGoogleSignIn: true };
     state.auth.hostedMode = false;
   }
 }
