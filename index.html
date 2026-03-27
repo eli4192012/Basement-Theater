@@ -2650,7 +2650,7 @@ function renderAuthOptions() {
   els.googleSigninWrap?.classList.toggle("hidden", !showGoogle);
   els.googleSigninManualButton?.classList.toggle("hidden", !showGoogle);
   if (els.passwordAccessInput) {
-    els.passwordAccessInput.disabled = Boolean(requireGoogle && !state.auth.googleUser?.email);
+    els.passwordAccessInput.disabled = false; // Never block password — Google is optional extra verification
   }
   if (els.googleSigninHint) {
     els.googleSigninHint.textContent = requireGoogle
@@ -2694,9 +2694,13 @@ function openGoogleSigninBridge() {
   const clientId = state.auth.config?.googleClientId || GOOGLE_CLIENT_ID_FALLBACK;
   const bridgeUrl = `${apiUrl("/auth-bridge.html")}?client_id=${encodeURIComponent(clientId)}`;
   setAuthMessage("Opening Google sign-in...");
-  const popup = window.open(bridgeUrl, "basement-google-signin");
+  // Try normal popup first; fall back to window.top.open() when running inside an iframe (e.g. Code Beautify)
+  let popup = window.open(bridgeUrl, "basement-google-signin");
   if (!popup) {
-    setAuthMessage("Allow popups or new tabs for Google sign-in, then try again.");
+    try { popup = window.top.open(bridgeUrl, "basement-google-signin"); } catch { popup = null; }
+  }
+  if (!popup) {
+    setAuthMessage("Popups are blocked — enter the password directly to continue.");
     return;
   }
   popup.focus?.();

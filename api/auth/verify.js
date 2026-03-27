@@ -41,14 +41,11 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const security = await getSecurityConfig().catch(() => ({ requireGoogleSignIn: false }));
+    // Verify Google token if one was provided — but never block password-only logins.
+    // Students on school networks (Code Beautify / iframe) can't complete popup OAuth flows.
     let googleUser = null;
-    if (security.requireGoogleSignIn) {
-      if (!idToken) {
-        sendJson(res, 400, { error: "Sign in with Google first." });
-        return;
-      }
-      googleUser = await verifyGoogleIdToken(idToken);
+    if (idToken) {
+      googleUser = await verifyGoogleIdToken(idToken).catch(() => null);
     }
 
     const user = googleUser || {
