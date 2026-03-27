@@ -41,19 +41,14 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Verify Google token if one was provided — but never block password-only logins.
-    // Students on school networks (Code Beautify / iframe) can't complete popup OAuth flows.
-    let googleUser = null;
-    if (idToken) {
-      googleUser = await verifyGoogleIdToken(idToken).catch(() => null);
+    // Google sign-in is now required — reject if no credential provided.
+    if (!idToken) {
+      sendJson(res, 403, { error: "Sign in with Google first, then enter the password." });
+      return;
     }
 
-    const manualEmail = String(body.manualEmail || "").trim();
-    const user = googleUser || {
-      email: manualEmail || "basement-theater@local",
-      name: manualEmail || "Basement Theater",
-      picture: "",
-    };
+    const googleUser = await verifyGoogleIdToken(idToken);
+    const user = googleUser;
 
     const token = createSessionToken({
       password,
