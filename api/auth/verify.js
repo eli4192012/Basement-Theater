@@ -48,9 +48,10 @@ module.exports = async function handler(req, res) {
       googleUser = await verifyGoogleIdToken(idToken).catch(() => null);
     }
 
+    const manualEmail = String(body.manualEmail || "").trim();
     const user = googleUser || {
-      email: "basement-theater@local",
-      name: "Basement Theater",
+      email: manualEmail || "basement-theater@local",
+      name: manualEmail || "Basement Theater",
       picture: "",
     };
 

@@ -1881,6 +1881,7 @@ h3 {
           <p id="googleSigninStatus" class="auth-message hidden"></p>
         </div>
         <form id="passwordAccessForm" class="auth-form">
+          <input id="emailAccessInput" class="auth-input" type="email" placeholder="Your school email" autocomplete="email" required />
           <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" required />
           <button class="primary-button" type="submit">Enter Theater</button>
         </form>
@@ -2421,6 +2422,7 @@ const els = {
   googleSigninSlot: document.querySelector("#googleSigninSlot"),
   googleSigninStatus: document.querySelector("#googleSigninStatus"),
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
+  emailAccessInput: document.querySelector("#emailAccessInput"),
   passwordAccessInput: document.querySelector("#passwordAccessInput"),
   rows: document.querySelector("#rows"),
   publicSections: document.querySelector("#publicSections"),
@@ -2577,6 +2579,7 @@ async function verifyAccess(password) {
         body: JSON.stringify({
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
+          manualEmail: state.auth.manualEmail || "",
         }),
       });
       const payload = await resp.json().catch(() => ({}));
@@ -2865,11 +2868,14 @@ function bindEvents() {
   els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
   els.passwordAccessForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (state.auth.hostedMode && state.auth.config?.requireGoogleSignIn && !state.auth.googleCredential) {
-      setAuthMessage("Sign in with Google first, then enter the password.");
-      updateGoogleSigninStatus();
+    const email = (els.emailAccessInput?.value || "").trim();
+    if (!email) {
+      setAuthMessage("Please enter your school email first.");
+      els.emailAccessInput?.focus();
       return;
     }
+    // Store the manually-entered email so verifyAccess can attach it to the session
+    state.auth.manualEmail = email;
     setAuthMessage("Checking your access...");
     const verified = await verifyAccess(els.passwordAccessInput.value);
     if (!verified) return;
