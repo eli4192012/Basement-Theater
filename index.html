@@ -1881,6 +1881,7 @@ h3 {
         </div>
         <form id="passwordAccessForm" class="auth-form hidden">
           <p id="googleSigninHint" class="auth-message" style="margin-bottom:10px;"></p>
+          <input id="emailAccessInput" class="auth-input" type="email" placeholder="Your school email" autocomplete="email" />
           <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" required />
           <button class="primary-button" type="submit">Enter Theater</button>
         </form>
@@ -2421,6 +2422,7 @@ const els = {
   googleSigninSlot: document.querySelector("#googleSigninSlot"),
   googleSigninStatus: document.querySelector("#googleSigninStatus"),
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
+  emailAccessInput: document.querySelector("#emailAccessInput"),
   passwordAccessInput: document.querySelector("#passwordAccessInput"),
   rows: document.querySelector("#rows"),
   publicSections: document.querySelector("#publicSections"),
@@ -2577,6 +2579,7 @@ async function verifyAccess(password) {
         body: JSON.stringify({
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
+          manualEmail: state.auth.manualEmail || "",
         }),
       });
       const payload = await resp.json().catch(() => ({}));
@@ -2644,16 +2647,33 @@ async function loadRuntimeConfig() {
 }
 
 function renderAuthOptions() {
+  const onVercel = window.location.origin === REMOTE_API_ORIGIN;
   const googleUser = state.auth.googleUser;
-  const signedIn = Boolean(googleUser?.email);
-  // Password form only shows after Google sign-in is complete
-  els.passwordAccessForm?.classList.toggle("hidden", !signedIn);
-  // Google button section always visible until signed in
-  els.googleSigninWrap?.classList.toggle("hidden", signedIn);
-  if (els.googleSigninHint) {
-    els.googleSigninHint.textContent = signedIn
-      ? `Signed in as ${googleUser.email} — enter the shared password to continue.`
-      : "";
+  const googleSignedIn = Boolean(googleUser?.email);
+
+  if (onVercel) {
+    // On Vercel: require Google sign-in first, then show password form
+    els.googleSigninWrap?.classList.toggle("hidden", googleSignedIn);
+    els.passwordAccessForm?.classList.toggle("hidden", !googleSignedIn);
+    if (els.emailAccessInput) els.emailAccessInput.style.display = "none";
+    if (els.googleSigninHint) {
+      els.googleSigninHint.textContent = googleSignedIn
+        ? `Signed in as ${googleUser.email} — enter the shared password to continue.`
+        : "";
+    }
+  } else {
+    // Local HTML file: Google popup may still work, but fall back to email + password
+    els.googleSigninWrap?.classList.remove("hidden");
+    els.passwordAccessForm?.classList.toggle("hidden", false);
+    if (els.emailAccessInput) {
+      els.emailAccessInput.style.display = googleSignedIn ? "none" : "";
+      els.emailAccessInput.required = !googleSignedIn;
+    }
+    if (els.googleSigninHint) {
+      els.googleSigninHint.textContent = googleSignedIn
+        ? `Signed in as ${googleUser.email}`
+        : "Sign in with Google above, or enter your school email manually.";
+    }
   }
   updateGoogleSigninStatus();
 }
@@ -2852,10 +2872,20 @@ function bindEvents() {
   els.welcomeDismissButton?.addEventListener("click", dismissWelcome);
   els.passwordAccessForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    // Require Google sign-in before password
-    if (!state.auth.googleCredential) {
+    const onVercel = window.location.origin === REMOTE_API_ORIGIN;
+    if (onVercel && !state.auth.googleCredential) {
       setAuthMessage("Please sign in with Google first.");
       return;
+    }
+    if (!onVercel && !state.auth.googleCredential) {
+      // Local file fallback: require manual email
+      const email = (els.emailAccessInput?.value || "").trim();
+      if (!email) {
+        setAuthMessage("Please enter your school email or sign in with Google.");
+        els.emailAccessInput?.focus();
+        return;
+      }
+      state.auth.manualEmail = email;
     }
     setAuthMessage("Checking your access...");
     const verified = await verifyAccess(els.passwordAccessInput.value);

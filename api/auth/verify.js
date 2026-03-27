@@ -41,14 +41,23 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    // Google sign-in is now required — reject if no credential provided.
-    if (!idToken) {
-      sendJson(res, 403, { error: "Sign in with Google first, then enter the password." });
+    // Verify Google token if provided; fall back to manual email for local HTML file usage.
+    let googleUser = null;
+    if (idToken) {
+      googleUser = await verifyGoogleIdToken(idToken);
+    }
+
+    const manualEmail = String(body.manualEmail || "").trim();
+    if (!googleUser && !manualEmail) {
+      sendJson(res, 403, { error: "Sign in with Google or enter your school email first." });
       return;
     }
 
-    const googleUser = await verifyGoogleIdToken(idToken);
-    const user = googleUser;
+    const user = googleUser || {
+      email: manualEmail,
+      name: manualEmail,
+      picture: "",
+    };
 
     const token = createSessionToken({
       password,
