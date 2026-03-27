@@ -2546,16 +2546,20 @@ async function verifyStoredSession() {
       headers: { Authorization: `Bearer ${state.auth.token}` },
       cache: "no-store",
     });
-    if (!resp.ok) throw new Error("session invalid");
+    // Only reject on an explicit auth failure — not on network errors or Vercel being blocked
+    if (resp.status === 401 || resp.status === 403) {
+      state.auth.token = "";
+      state.auth.user = null;
+      state.auth.manualEmail = "";
+      sessionStorage.removeItem("basement-theater.password-token");
+      sessionStorage.removeItem("basement-theater.manual-email");
+      localStorage.removeItem("basement-theater.password-user");
+      return false;
+    }
     return true;
   } catch {
-    state.auth.token = "";
-    state.auth.user = null;
-    state.auth.manualEmail = "";
-    sessionStorage.removeItem("basement-theater.password-token");
-    sessionStorage.removeItem("basement-theater.manual-email");
-    localStorage.removeItem("basement-theater.password-user");
-    return false;
+    // Network error (Vercel blocked, offline, etc.) — keep the user logged in
+    return true;
   }
 }
 
@@ -3930,7 +3934,8 @@ function startAnnouncementWatcher() {
       if (nextId && nextId !== watchedAnnouncementId) {
         sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
         sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, nextId);
-        window.location.reload();
+        watchedAnnouncementId = nextId;
+        loadAnnouncement();
         return;
       }
 
@@ -4159,7 +4164,7 @@ async function publishEditableTexts() {
     state.editableTextsSha = JSON.stringify(nextTexts);
     applyEditableTexts();
     btn.textContent = "Saved Live";
-    window.setTimeout(() => window.location.reload(), 800);
+    window.setTimeout(() => applyEditableTexts(), 800);
   } catch (error) {
     btn.textContent = "Save Text Live";
     alert(error.message || "Could not save live text.");
