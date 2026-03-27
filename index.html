@@ -202,7 +202,7 @@ body {
 }
 
 .google-signin-slot {
-  display: flex;
+  display: none;
   justify-content: center;
 }
 
@@ -2643,7 +2643,7 @@ function renderAuthOptions() {
   const clientId = state.auth.config?.googleClientId || "";
   const showGoogle = Boolean(requireGoogle || clientId || state.auth.googleUser?.email);
   els.googleSigninWrap?.classList.toggle("hidden", !showGoogle);
-  els.googleSigninManualButton?.classList.toggle("hidden", true);
+  els.googleSigninManualButton?.classList.toggle("hidden", !showGoogle);
   if (els.passwordAccessInput) {
     els.passwordAccessInput.disabled = Boolean(requireGoogle && !state.auth.googleUser?.email);
   }
@@ -2653,17 +2653,11 @@ function renderAuthOptions() {
       : "Sign in with your email first if you want activity tracking, then enter the password.";
   }
   updateGoogleSigninStatus();
-  if (clientId && window.google?.accounts?.id) {
-    initializeGoogleSignIn(clientId);
-  } else if (clientId && !window.google?.accounts?.id) {
-    window.setTimeout(renderAuthOptions, 400);
-  }
 }
 
 function updateGoogleSigninStatus() {
   if (!els.googleSigninStatus) return;
   const requireGoogle = Boolean(state.auth.config?.requireGoogleSignIn);
-  const googleReady = Boolean(window.google?.accounts?.id);
   const googleUser = state.auth.googleUser;
   if (googleUser?.email) {
     els.googleSigninStatus.classList.remove("hidden");
@@ -2676,41 +2670,38 @@ function updateGoogleSigninStatus() {
   }
   if (requireGoogle) {
     els.googleSigninStatus.classList.remove("hidden");
-    els.googleSigninStatus.textContent = googleReady
-      ? "Sign in with Google to unlock the theater."
-      : "Google sign-in is loading...";
+    els.googleSigninStatus.textContent = "Sign in with Google to unlock the theater.";
     if (els.googleSigninManualButton) {
       els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
-      els.googleSigninManualButton.disabled = !googleReady;
+      els.googleSigninManualButton.disabled = false;
     }
   } else {
     els.googleSigninStatus.classList.add("hidden");
     els.googleSigninStatus.textContent = "";
     if (els.googleSigninManualButton) {
       els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
-      els.googleSigninManualButton.disabled = !googleReady;
+      els.googleSigninManualButton.disabled = false;
     }
   }
 }
 
-function initializeGoogleSignIn(clientId) {
-  if (!els.googleSigninSlot || !window.google?.accounts?.id) return;
-  if (els.googleSigninSlot.dataset.initialized === clientId) return;
-  els.googleSigninSlot.innerHTML = "";
-  window.google.accounts.id.initialize({
-    client_id: clientId,
-    callback: handleGoogleCredential,
-    auto_select: false,
-    cancel_on_tap_outside: true,
-  });
-  window.google.accounts.id.renderButton(els.googleSigninSlot, {
-    theme: "filled_black",
-    size: "large",
-    text: "continue_with",
-    shape: "pill",
-    width: 260,
-  });
-  els.googleSigninSlot.dataset.initialized = clientId;
+function openGoogleSigninBridge() {
+  const clientId = state.auth.config?.googleClientId || GOOGLE_CLIENT_ID_FALLBACK;
+  const bridgeUrl = `${apiUrl("/auth-bridge.html")}?client_id=${encodeURIComponent(clientId)}`;
+  const width = 520;
+  const height = 680;
+  const left = Math.max(0, Math.round((window.screen.width - width) / 2));
+  const top = Math.max(0, Math.round((window.screen.height - height) / 2));
+  const popup = window.open(
+    bridgeUrl,
+    "basement-google-signin",
+    `popup=yes,width=${width},height=${height},left=${left},top=${top}`
+  );
+  if (!popup) {
+    setAuthMessage("Allow popups for Google sign-in, then try again.");
+    return;
+  }
+  popup.focus?.();
 }
 
 function parseJwtPayload(token) {
@@ -2789,6 +2780,11 @@ function buildProfileBar() {
 }
 
 function bindEvents() {
+  window.addEventListener("message", (event) => {
+    if (event.origin !== REMOTE_API_ORIGIN) return;
+    if (event.data?.type !== "basement-google-credential") return;
+    handleGoogleCredential({ credential: event.data.credential });
+  });
   els.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLowerCase();
     rerenderActiveView();
@@ -2878,11 +2874,7 @@ function bindEvents() {
     await loadProtectedData();
   });
   els.googleSigninManualButton?.addEventListener("click", () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
-    } else {
-      setAuthMessage("Email sign-in is still loading. Try again in a second.");
-    }
+    openGoogleSigninBridge();
   });
 }
 
