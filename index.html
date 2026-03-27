@@ -4387,7 +4387,8 @@ function bindAdminPasswordForm() {
   const form = document.querySelector("#adminPasswordForm");
   if (!form || form._bound) return;
   form._bound = true;
-  form.addEventListener("submit",    event.preventDefault();
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
     const val = document.querySelector("#adminPasswordInput").value;
     if (val === ADMIN_PASSWORD) {
       state.adminUnlocked = true;
