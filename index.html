@@ -2878,10 +2878,15 @@ function bindEvents() {
       return;
     }
     if (!onVercel && !state.auth.googleCredential) {
-      // Local file fallback: require manual email
-      const email = (els.emailAccessInput?.value || "").trim();
+      // Local file fallback: require manual school email ending in @rsdmo.org
+      const email = (els.emailAccessInput?.value || "").trim().toLowerCase();
       if (!email) {
         setAuthMessage("Please enter your school email or sign in with Google.");
+        els.emailAccessInput?.focus();
+        return;
+      }
+      if (!email.endsWith("@rsdmo.org")) {
+        setAuthMessage("Please use your @rsdmo.org school email.");
         els.emailAccessInput?.focus();
         return;
       }

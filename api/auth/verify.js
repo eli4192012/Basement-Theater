@@ -47,9 +47,13 @@ module.exports = async function handler(req, res) {
       googleUser = await verifyGoogleIdToken(idToken);
     }
 
-    const manualEmail = String(body.manualEmail || "").trim();
+    const manualEmail = String(body.manualEmail || "").trim().toLowerCase();
     if (!googleUser && !manualEmail) {
       sendJson(res, 403, { error: "Sign in with Google or enter your school email first." });
+      return;
+    }
+    if (!googleUser && manualEmail && !manualEmail.endsWith("@rsdmo.org")) {
+      sendJson(res, 403, { error: "Please use your @rsdmo.org school email." });
       return;
     }
 
