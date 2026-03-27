@@ -1,19 +1,17 @@
 const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
 const { appendLoginActivity } = require("../_lib/supabase");
-const path = require("path");
-const fs = require("fs");
 
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
-function getAllowedEmails() {
-  try {
-    const filePath = path.join(__dirname, "../../allowed-emails.json");
-    const raw = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(raw).map((e) => String(e).trim().toLowerCase());
-  } catch {
-    return [];
-  }
-}
+const ALLOWED_EMAILS = [
+  "elithomas0419@gmail.com",
+  "elong091@rsdmo.org",
+  "emasterson059@rsdmo.org",
+  "knolley062@rsdmo.org",
+  "spillay084@rsdmo.org",
+  "blansing045@rsdmo.org",
+  "dlombardo162@rsdmo.org"
+];
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -27,23 +25,17 @@ module.exports = async function handler(req, res) {
     const password = String(body.password || "");
     const email = String(body.manualEmail || "").trim().toLowerCase();
 
-    if (!password) {
-      sendJson(res, 400, { error: "Enter the password." });
-      return;
-    }
-
     if (!email) {
       sendJson(res, 403, { error: "Please enter your email." });
       return;
     }
 
-    const allowedEmails = getAllowedEmails();
-    if (!allowedEmails.includes(email)) {
+    if (!ALLOWED_EMAILS.includes(email)) {
       sendJson(res, 403, { error: "That email isn't on the access list." });
       return;
     }
 
-    if (password !== APP_PASSWORD) {
+    if (!password || password !== APP_PASSWORD) {
       sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }
