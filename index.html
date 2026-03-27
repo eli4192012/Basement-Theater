@@ -2193,6 +2193,19 @@ h3 {
                   </section>
                   <section id="adminActivityList" class="review-grid"></section>
                 </div>
+                <div class="admin-announce-row" style="margin-top:10px">
+                  <button class="admin-btn" id="adminViewFailedButton">View Failed Attempts</button>
+                </div>
+                <div id="adminFailedPanel" class="hidden">
+                  <section class="review-header" style="margin-top:18px">
+                    <div>
+                      <p class="eyebrow">Last 24 Hours</p>
+                      <h2>Failed Login Attempts</h2>
+                    </div>
+                    <p id="adminFailedCount" class="results-count"></p>
+                  </section>
+                  <section id="adminFailedList" class="review-grid"></section>
+                </div>
               </div>
             </div>
           </div>
@@ -2313,7 +2326,7 @@ h3 {
     </dialog>
 
     <script type="module">
-﻿const STORAGE_KEYS = {
+const STORAGE_KEYS = {
   profiles: "basement-theater.profiles",
   activeProfileId: "basement-theater.active-profile-id",
   progress: "basement-theater.progress",
@@ -2339,6 +2352,7 @@ const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
 const REMOTE_API_ORIGIN = "https://basement-theater-app.vercel.app";
+function apiUrl(path) { return `${REMOTE_API_ORIGIN}${path}`; }
 const GOOGLE_CLIENT_ID_FALLBACK = "419869093852-vhu7cc7rkjpcfpgvjkt6iehl0qdaosrt.apps.googleusercontent.com";
 const DEFAULT_EDITABLE_TEXTS = {
   brandWordmark: "THE BASEMENT PREMIUM",
@@ -2394,6 +2408,7 @@ const state = {
   adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
   adminPassword: "",
   adminActivity: [],
+  adminFailedAttempts: [],
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -2483,6 +2498,10 @@ const els = {
   adminActivityPanel: document.querySelector("#adminActivityPanel"),
   adminActivityCount: document.querySelector("#adminActivityCount"),
   adminActivityList: document.querySelector("#adminActivityList"),
+  adminViewFailedButton: document.querySelector("#adminViewFailedButton"),
+  adminFailedPanel: document.querySelector("#adminFailedPanel"),
+  adminFailedCount: document.querySelector("#adminFailedCount"),
+  adminFailedList: document.querySelector("#adminFailedList"),
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
   welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
@@ -4241,7 +4260,7 @@ async function pushJsonFileToGitHub(path, data, commitMessage) {
     const getResp = await fetch(apiUrl, { headers });
     if (getResp.status === 401) {
       localStorage.removeItem("basement-theater.github-pat");
-      throw new Error("Invalid token â€” cleared. Re-enter it and try again.");
+      throw new Error(“Invalid token — cleared. Re-enter it and try again.”);
     }
     if (getResp.ok) {
       const fileData = await getResp.json();
@@ -4251,7 +4270,7 @@ async function pushJsonFileToGitHub(path, data, commitMessage) {
     }
   } catch (e) {
     if (e.message.includes("Invalid token") || e.message.includes("GitHub error")) throw e;
-    throw new Error("ðŸ« School network is blocking GitHub. Try on your phone hotspot or at home.");
+    throw new Error("🏫 School network is blocking GitHub. Try on your phone hotspot or at home.");
   }
 
   const json = JSON.stringify(data, null, 2);
@@ -4555,6 +4574,10 @@ function bindAdminPanelEvents() {
     viewActivityBtn._bound = true;
     viewActivityBtn.addEventListener("click", loadAdminActivity);
   }
+  if (els.adminViewFailedButton && !els.adminViewFailedButton._bound) {
+    els.adminViewFailedButton._bound = true;
+    els.adminViewFailedButton.addEventListener("click", loadAdminFailedAttempts);
+  }
   if (searchInput && !searchInput._bound) {
     searchInput._bound = true;
     searchInput.addEventListener("input", renderAdminTable);
@@ -4589,6 +4612,7 @@ async function renderSecurityPanel() {
   els.adminRequireGoogleCheckbox.disabled = !hosted;
   els.adminSaveSecurityButton.disabled = !hosted;
   els.adminViewActivityButton.disabled = !hosted;
+  if (els.adminViewFailedButton) els.adminViewFailedButton.disabled = !hosted;
   if (!hosted) {
     els.adminRequireGoogleCheckbox.checked = false;
     setAdminSecurityStatus("Hosted security tools only work on the deployed app.", false);
@@ -4678,6 +4702,42 @@ async function loadAdminActivity() {
     renderAdminActivity();
   } catch (error) {
     els.adminActivityList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load activity.")}</div>`;
+  }
+}
+
+function renderAdminFailedAttempts() {
+  if (!els.adminFailedList) return;
+  const entries = state.adminFailedAttempts || [];
+  els.adminFailedCount.textContent = `${entries.length} attempt${entries.length === 1 ? "" : "s"} in the last 24h`;
+  els.adminFailedList.innerHTML = entries.length
+    ? entries.map((entry) => `
+        <article class="review-card">
+          <div class="review-body">
+            <div class="review-title" style="color:var(--accent-strong)">${escapeHtml(entry.email || "No email")}</div>
+            <div class="review-meta">Password tried: <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">${escapeHtml(entry.password || "")}</code></div>
+            ${entry.ip ? `<div class="review-meta">IP: ${escapeHtml(entry.ip)}</div>` : ""}
+            <div class="review-meta">At: ${escapeHtml(new Date(entry.attemptedAt || Date.now()).toLocaleString())}</div>
+          </div>
+        </article>
+      `).join("")
+    : `<div class="empty-state">No failed attempts in the last 24 hours.</div>`;
+}
+
+async function loadAdminFailedAttempts() {
+  if (!state.auth.hostedMode) return;
+  els.adminFailedPanel.classList.remove("hidden");
+  els.adminFailedList.innerHTML = `<div class="empty-state">Loading...</div>`;
+  try {
+    const resp = await fetch(apiUrl("/api/auth/failed-attempts"), {
+      headers: getAdminHeaders(),
+      cache: "no-store",
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not load failed attempts.");
+    state.adminFailedAttempts = payload.attempts || [];
+    renderAdminFailedAttempts();
+  } catch (error) {
+    els.adminFailedList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load failed attempts.")}</div>`;
   }
 }
 

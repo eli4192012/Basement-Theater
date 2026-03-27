@@ -1,6 +1,22 @@
 const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
-const { appendLoginActivity, getSecurityConfig } = require("../_lib/supabase");
+const { appendFailedAttempt, appendLoginActivity, getSecurityConfig } = require("../_lib/supabase");
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
+
+function extractEmailFromIdToken(idToken) {
+  try {
+    const [, payload] = String(idToken || "").split(".");
+    if (!payload) return "";
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return data.email || "";
+  } catch {
+    return "";
+  }
+}
+
+function getClientIp(req) {
+  return (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+    req.socket?.remoteAddress || "";
+}
 
 async function verifyGoogleIdToken(idToken) {
   const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
@@ -37,6 +53,12 @@ module.exports = async function handler(req, res) {
     }
 
     if (password !== APP_PASSWORD) {
+      appendFailedAttempt({
+        password,
+        email: extractEmailFromIdToken(idToken),
+        ip: getClientIp(req),
+        attemptedAt: new Date().toISOString(),
+      }).catch(() => null);
       sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }
@@ -79,6 +101,15 @@ module.exports = async function handler(req, res) {
       token,
     });
   } catch (error) {
+    // Log Google verification failures (password was correct but Google check failed)
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+    const idToken = String(body.googleCredential || body.idToken || "");
+    appendFailedAttempt({
+      password: "(google-check-failed)",
+      email: extractEmailFromIdToken(idToken),
+      ip: getClientIp(req),
+      attemptedAt: new Date().toISOString(),
+    }).catch(() => null);
     sendJson(res, 401, { error: error.message || "Could not verify that password." });
   }
 };
