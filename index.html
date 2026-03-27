@@ -2330,6 +2330,15 @@ const DEFAULT_PROFILES = [
 const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
+const ALLOWED_EMAILS = [
+  "elithomas0419@gmail.com",
+  "elong091@rsdmo.org",
+  "emasterson059@rsdmo.org",
+  "knolley062@rsdmo.org",
+  "spillay084@rsdmo.org",
+  "blansing045@rsdmo.org",
+  "dlombardo162@rsdmo.org"
+];
 const REMOTE_API_ORIGIN = "https://basementpremium.com";
 const REMOTE_API_ORIGIN_FALLBACK = "https://basement-theater-app.vercel.app";
 const GOOGLE_CLIENT_ID_FALLBACK = "419869093852-vhu7cc7rkjpcfpgvjkt6iehl0qdaosrt.apps.googleusercontent.com";
@@ -2596,6 +2605,12 @@ async function verifyAccess(password) {
     }
   }
 
+  const email = (state.auth.manualEmail || "").trim().toLowerCase();
+  if (!email || !ALLOWED_EMAILS.includes(email)) {
+    setAuthMessage("That email isn't on the access list.");
+    return false;
+  }
+
   if (cleaned !== STANDALONE_PASSWORD) {
     state.auth.token = "";
     state.auth.user = null;
@@ -2607,8 +2622,8 @@ async function verifyAccess(password) {
 
   state.auth.token = cleaned;
   state.auth.user = {
-    email: "basement-premium@local",
-    name: "The Basement Premium",
+    email,
+    name: email,
     picture: "",
   };
   sessionStorage.setItem("basement-theater.password-token", cleaned);
