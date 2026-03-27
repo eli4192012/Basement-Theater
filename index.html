@@ -2386,6 +2386,7 @@ const state = {
     config: null,
     googleCredential: sessionStorage.getItem("basement-theater.google-credential") || "",
     googleUser: loadJson("basement-theater.google-user", null),
+    manualEmail: sessionStorage.getItem("basement-theater.manual-email") || "",
     hostedMode: false,
   },
   profiles: loadJson(STORAGE_KEYS.profiles, DEFAULT_PROFILES),
@@ -2550,7 +2551,9 @@ async function verifyStoredSession() {
   } catch {
     state.auth.token = "";
     state.auth.user = null;
+    state.auth.manualEmail = "";
     sessionStorage.removeItem("basement-theater.password-token");
+    sessionStorage.removeItem("basement-theater.manual-email");
     localStorage.removeItem("basement-theater.password-user");
     return false;
   }
@@ -2829,6 +2832,7 @@ function bindEvents() {
       return;
     }
     state.auth.manualEmail = email;
+    sessionStorage.setItem("basement-theater.manual-email", email);
     setAuthMessage("Checking your access...");
     const verified = await verifyAccess(els.passwordAccessInput.value);
     if (!verified) return;
@@ -4024,7 +4028,7 @@ function startEditableTextWatcher() {
       if (nextSha !== currentSha) {
         state.editableTexts = data;
         state.editableTextsSha = sha;
-        window.location.reload();
+        applyEditableTexts();
       }
     } catch {
       // Keep polling quietly.
