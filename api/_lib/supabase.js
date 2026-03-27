@@ -27,7 +27,9 @@ function getHeaders(contentType) {
   return headers;
 }
 
+let bucketReady = false;
 async function ensureBucket() {
+  if (bucketReady) return;
   const { url } = getSupabaseEnv();
   const resp = await fetch(`${url}/storage/v1/bucket`, {
     method: "POST",
@@ -39,7 +41,10 @@ async function ensureBucket() {
     }),
   });
 
-  if (resp.ok || resp.status === 409 || resp.status === 400) return;
+  if (resp.ok || resp.status === 409 || resp.status === 400) {
+    bucketReady = true;
+    return;
+  }
   const text = await resp.text().catch(() => "");
   throw new Error(`Could not ensure Supabase bucket (${resp.status}): ${text}`);
 }
@@ -122,9 +127,40 @@ async function getLoginActivity() {
   return readJsonObject("login-activity.json", { logins: [] });
 }
 
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+async function appendFailedAttempt(entry) {
+  const existing = await readJsonObject("failed-attempts.json", { attempts: [] });
+  const cutoff = new Date(Date.now() - TWENTY_FOUR_HOURS).toISOString();
+  const next = {
+    attempts: [
+      {
+        password: entry.password || "",
+        email: entry.email || "",
+        ip: entry.ip || "",
+        attemptedAt: entry.attemptedAt || new Date().toISOString(),
+      },
+      ...(existing.attempts || []).filter((a) => (a.attemptedAt || "") >= cutoff),
+    ].slice(0, 200),
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonObject("failed-attempts.json", next);
+  return next;
+}
+
+async function getFailedAttempts() {
+  const data = await readJsonObject("failed-attempts.json", { attempts: [] });
+  const cutoff = new Date(Date.now() - TWENTY_FOUR_HOURS).toISOString();
+  return {
+    attempts: (data.attempts || []).filter((a) => (a.attemptedAt || "") >= cutoff),
+  };
+}
+
 module.exports = {
   DEFAULT_SECURITY_CONFIG,
+  appendFailedAttempt,
   appendLoginActivity,
+  getFailedAttempts,
   getLoginActivity,
   getSecurityConfig,
   setSecurityConfig,

@@ -2185,6 +2185,19 @@ h3 {
                   </section>
                   <section id="adminActivityList" class="review-grid"></section>
                 </div>
+                <div class="admin-announce-row" style="margin-top:10px">
+                  <button class="admin-btn" id="adminViewFailedButton">View Failed Attempts</button>
+                </div>
+                <div id="adminFailedPanel" class="hidden">
+                  <section class="review-header" style="margin-top:18px">
+                    <div>
+                      <p class="eyebrow">Last 24 Hours</p>
+                      <h2>Failed Login Attempts</h2>
+                    </div>
+                    <p id="adminFailedCount" class="results-count"></p>
+                  </section>
+                  <section id="adminFailedList" class="review-grid"></section>
+                </div>
               </div>
             </div>
           </div>
@@ -2401,6 +2414,7 @@ const state = {
   adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
   adminPassword: "",
   adminActivity: [],
+  adminFailedAttempts: [],
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -2490,6 +2504,10 @@ const els = {
   adminActivityPanel: document.querySelector("#adminActivityPanel"),
   adminActivityCount: document.querySelector("#adminActivityCount"),
   adminActivityList: document.querySelector("#adminActivityList"),
+  adminViewFailedButton: document.querySelector("#adminViewFailedButton"),
+  adminFailedPanel: document.querySelector("#adminFailedPanel"),
+  adminFailedCount: document.querySelector("#adminFailedCount"),
+  adminFailedList: document.querySelector("#adminFailedList"),
   detailActions: document.querySelector(".detail-actions"),
   topbarActions: document.querySelector(".topbar-actions"),
   welcomeDismissButton: document.querySelector("#welcomeDismissButton"),
@@ -4530,6 +4548,10 @@ function bindAdminPanelEvents() {
     catFilter._bound = true;
     catFilter.addEventListener("change", renderAdminTable);
   }
+  if (els.adminViewFailedButton && !els.adminViewFailedButton._bound) {
+    els.adminViewFailedButton._bound = true;
+    els.adminViewFailedButton.addEventListener("click", loadAdminFailedAttempts);
+  }
 }
 
 function setAdminSecurityStatus(message, isError = false) {
@@ -4556,6 +4578,7 @@ async function renderSecurityPanel() {
   els.adminRequireGoogleCheckbox.disabled = !hosted;
   els.adminSaveSecurityButton.disabled = !hosted;
   els.adminViewActivityButton.disabled = !hosted;
+  if (els.adminViewFailedButton) els.adminViewFailedButton.disabled = !hosted;
   if (!hosted) {
     els.adminRequireGoogleCheckbox.checked = false;
     setAdminSecurityStatus("Hosted security tools only work on the deployed app.", false);
@@ -4645,6 +4668,42 @@ async function loadAdminActivity() {
     renderAdminActivity();
   } catch (error) {
     els.adminActivityList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load activity.")}</div>`;
+  }
+}
+
+function renderAdminFailedAttempts() {
+  if (!els.adminFailedList) return;
+  const entries = state.adminFailedAttempts || [];
+  els.adminFailedCount.textContent = `${entries.length} attempt${entries.length === 1 ? "" : "s"} in the last 24h`;
+  els.adminFailedList.innerHTML = entries.length
+    ? entries.map((entry) => `
+        <article class="review-card">
+          <div class="review-body">
+            <div class="review-title" style="color:var(--accent-strong)">${escapeHtml(entry.email || "No email")}</div>
+            <div class="review-meta">Password tried: <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">${escapeHtml(entry.password || "")}</code></div>
+            ${entry.ip ? `<div class="review-meta">IP: ${escapeHtml(entry.ip)}</div>` : ""}
+            <div class="review-meta">At: ${escapeHtml(new Date(entry.attemptedAt || Date.now()).toLocaleString())}</div>
+          </div>
+        </article>
+      `).join("")
+    : `<div class="empty-state">No failed attempts in the last 24 hours.</div>`;
+}
+
+async function loadAdminFailedAttempts() {
+  if (!state.auth.hostedMode) return;
+  els.adminFailedPanel.classList.remove("hidden");
+  els.adminFailedList.innerHTML = `<div class="empty-state">Loading...</div>`;
+  try {
+    const resp = await fetch(apiUrl("/api/auth/failed-attempts"), {
+      headers: getAdminHeaders(),
+      cache: "no-store",
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not load failed attempts.");
+    state.adminFailedAttempts = payload.attempts || [];
+    renderAdminFailedAttempts();
+  } catch (error) {
+    els.adminFailedList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load failed attempts.")}</div>`;
   }
 }
 

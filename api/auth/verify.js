@@ -1,5 +1,5 @@
 const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
-const { appendLoginActivity } = require("../_lib/supabase");
+const { appendFailedAttempt, appendLoginActivity } = require("../_lib/supabase");
 
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
@@ -12,6 +12,11 @@ const ALLOWED_EMAILS = [
   "blansing045@rsdmo.org",
   "dlombardo162@rsdmo.org"
 ];
+
+function getClientIp(req) {
+  return (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+    req.socket?.remoteAddress || "";
+}
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -31,11 +36,23 @@ module.exports = async function handler(req, res) {
     }
 
     if (!ALLOWED_EMAILS.includes(email)) {
+      appendFailedAttempt({
+        password,
+        email,
+        ip: getClientIp(req),
+        attemptedAt: new Date().toISOString(),
+      }).catch(() => null);
       sendJson(res, 403, { error: "That email isn't on the access list." });
       return;
     }
 
     if (!password || password !== APP_PASSWORD) {
+      appendFailedAttempt({
+        password,
+        email,
+        ip: getClientIp(req),
+        attemptedAt: new Date().toISOString(),
+      }).catch(() => null);
       sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }
