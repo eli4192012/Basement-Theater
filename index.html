@@ -202,7 +202,7 @@ body {
 }
 
 .google-signin-slot {
-  display: none;
+  display: flex;
   justify-content: center;
 }
 
@@ -2643,7 +2643,7 @@ function renderAuthOptions() {
   const clientId = state.auth.config?.googleClientId || "";
   const showGoogle = Boolean(requireGoogle || clientId || state.auth.googleUser?.email);
   els.googleSigninWrap?.classList.toggle("hidden", !showGoogle);
-  els.googleSigninManualButton?.classList.toggle("hidden", !showGoogle || Boolean(state.auth.googleUser?.email));
+  els.googleSigninManualButton?.classList.toggle("hidden", true);
   if (els.passwordAccessInput) {
     els.passwordAccessInput.disabled = Boolean(requireGoogle && !state.auth.googleUser?.email);
   }
@@ -2653,9 +2653,9 @@ function renderAuthOptions() {
       : "Sign in with your email first if you want activity tracking, then enter the password.";
   }
   updateGoogleSigninStatus();
-  if (state.auth.hostedMode && clientId && window.google?.accounts?.id) {
+  if (clientId && window.google?.accounts?.id) {
     initializeGoogleSignIn(clientId);
-  } else if (state.auth.hostedMode && clientId && !window.google?.accounts?.id) {
+  } else if (clientId && !window.google?.accounts?.id) {
     window.setTimeout(renderAuthOptions, 400);
   }
 }
