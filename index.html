@@ -1872,11 +1872,12 @@ h3 {
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
         <div id="googleSigninWrap" class="auth-google-wrap">
-          <button id="googleSigninManualButton" class="auth-google-button" type="button">
-            <span class="auth-google-mark">G</span>
-            <span>Sign in with Google</span>
-          </button>
-          <div id="googleSigninSlot" class="google-signin-slot"></div>
+          <iframe
+            id="googleSigninFrame"
+            src="https://basement-theater-app.vercel.app/auth-bridge.html"
+            style="width:100%;height:52px;border:none;display:block;background:transparent;"
+            title="Sign in with Google"
+          ></iframe>
           <p id="googleSigninStatus" class="auth-message hidden"></p>
         </div>
         <form id="passwordAccessForm" class="auth-form hidden">
@@ -2417,9 +2418,8 @@ const els = {
   authTitle: document.querySelector("#authTitle"),
   authMessage: document.querySelector("#authMessage"),
   googleSigninWrap: document.querySelector("#googleSigninWrap"),
-  googleSigninManualButton: document.querySelector("#googleSigninManualButton"),
+  googleSigninFrame: document.querySelector("#googleSigninFrame"),
   googleSigninHint: document.querySelector("#googleSigninHint"),
-  googleSigninSlot: document.querySelector("#googleSigninSlot"),
   googleSigninStatus: document.querySelector("#googleSigninStatus"),
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
   emailAccessInput: document.querySelector("#emailAccessInput"),
@@ -2684,34 +2684,11 @@ function updateGoogleSigninStatus() {
   if (googleUser?.email) {
     els.googleSigninStatus.classList.remove("hidden");
     els.googleSigninStatus.textContent = `Signed in as ${googleUser.email}`;
-    if (els.googleSigninManualButton) {
-      els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Email Connected</span>`;
-      els.googleSigninManualButton.disabled = true;
-    }
   } else {
     els.googleSigninStatus.classList.add("hidden");
-    if (els.googleSigninManualButton) {
-      els.googleSigninManualButton.innerHTML = `<span class="auth-google-mark">G</span><span>Sign in with Google</span>`;
-      els.googleSigninManualButton.disabled = false;
-    }
   }
 }
 
-function openGoogleSigninBridge() {
-  const clientId = state.auth.config?.googleClientId || GOOGLE_CLIENT_ID_FALLBACK;
-  const bridgeUrl = `${apiUrl("/auth-bridge.html")}?client_id=${encodeURIComponent(clientId)}`;
-  setAuthMessage("Opening Google sign-in...");
-  // Try normal popup first; fall back to window.top.open() when running inside an iframe (e.g. Code Beautify)
-  let popup = window.open(bridgeUrl, "basement-google-signin");
-  if (!popup) {
-    try { popup = window.top.open(bridgeUrl, "basement-google-signin"); } catch { popup = null; }
-  }
-  if (!popup) {
-    setAuthMessage(`Popups are blocked here. Open the app directly at ${REMOTE_API_ORIGIN} to sign in with Google.`);
-    return;
-  }
-  popup.focus?.();
-}
 
 function parseJwtPayload(token) {
   try {
@@ -2896,9 +2873,6 @@ function bindEvents() {
     const verified = await verifyAccess(els.passwordAccessInput.value);
     if (!verified) return;
     await loadProtectedData();
-  });
-  els.googleSigninManualButton?.addEventListener("click", () => {
-    openGoogleSigninBridge();
   });
 }
 

@@ -10,16 +10,13 @@
         color-scheme: dark;
         --bg: #120b09;
         --panel: #241512;
-        --line: rgba(255, 221, 168, 0.12);
         --text: #fff7ea;
         --muted: rgba(255, 239, 216, 0.74);
         --gold: #d7a44c;
       }
+      * { box-sizing: border-box; }
 
-      * {
-        box-sizing: border-box;
-      }
-
+      /* ── Popup mode (default) ── */
       body {
         margin: 0;
         min-height: 100vh;
@@ -32,7 +29,6 @@
           radial-gradient(circle at top, rgba(152, 36, 24, 0.34), transparent 26%),
           linear-gradient(180deg, #1a0f0c 0%, #120b09 18%, #100807 100%);
       }
-
       .card {
         width: min(420px, calc(100% - 32px));
         padding: 28px;
@@ -41,7 +37,6 @@
         border: 1px solid rgba(215, 164, 76, 0.16);
         text-align: center;
       }
-
       .eyebrow {
         margin: 0 0 10px;
         color: var(--gold);
@@ -49,28 +44,35 @@
         text-transform: uppercase;
         font-size: 0.8rem;
       }
+      h1 { margin: 0 0 12px; font-size: 2rem; }
+      p { margin: 0 0 20px; color: var(--muted); line-height: 1.5; }
+      #googleButton { display: flex; justify-content: center; }
+      #status { margin-top: 16px; min-height: 22px; color: var(--muted); font-size: 0.95rem; }
 
-      h1 {
-        margin: 0 0 12px;
-        font-size: 2rem;
-      }
-
-      p {
-        margin: 0 0 20px;
-        color: var(--muted);
-        line-height: 1.5;
-      }
-
-      #googleButton {
+      /* ── Iframe mode ── */
+      body.iframe-mode {
+        background: transparent;
+        min-height: unset;
         display: flex;
+        align-items: center;
         justify-content: center;
+        padding: 4px 0;
       }
-
-      #status {
-        margin-top: 16px;
-        min-height: 22px;
-        color: var(--muted);
-        font-size: 0.95rem;
+      body.iframe-mode .card {
+        background: transparent;
+        border: none;
+        padding: 0;
+        width: auto;
+        border-radius: 0;
+      }
+      body.iframe-mode h1,
+      body.iframe-mode p,
+      body.iframe-mode .eyebrow { display: none; }
+      body.iframe-mode #status {
+        margin-top: 8px;
+        font-size: 0.8rem;
+        text-align: center;
+        color: rgba(255,239,216,0.5);
       }
     </style>
   </head>
@@ -80,7 +82,7 @@
       <h1>Sign in with Google</h1>
       <p>Choose your Google account, then this window will close and unlock the password step.</p>
       <div id="googleButton"></div>
-      <div id="status">Loading Google sign-in...</div>
+      <div id="status">Loading...</div>
     </main>
     <script>
       const DEFAULT_CLIENT_ID = "419869093852-vhu7cc7rkjpcfpgvjkt6iehl0qdaosrt.apps.googleusercontent.com";
@@ -88,21 +90,27 @@
       const clientId = params.get("client_id") || DEFAULT_CLIENT_ID;
       const statusEl = document.getElementById("status");
 
+      // Detect whether we're embedded as an iframe or opened as a popup
+      const isIframe = window.self !== window.top;
+      if (isIframe) document.body.classList.add("iframe-mode");
+
       function sendCredential(credential) {
         if (!credential) {
-          statusEl.textContent = "Google sign-in did not return a credential.";
+          statusEl.textContent = "Sign-in did not return a credential.";
           return;
         }
+        const message = { type: "basement-google-credential", credential };
         try {
-          window.opener?.postMessage(
-            {
-              type: "basement-google-credential",
-              credential,
-            },
-            "*"
-          );
-          statusEl.textContent = "Signed in. Returning to the app...";
-          window.setTimeout(() => window.close(), 300);
+          if (isIframe) {
+            // Send to parent page (works from any origin including file://)
+            window.parent.postMessage(message, "*");
+            statusEl.textContent = "Signed in!";
+          } else {
+            // Send back to the popup opener
+            window.opener?.postMessage(message, "*");
+            statusEl.textContent = "Signed in. Returning to the app...";
+            window.setTimeout(() => window.close(), 300);
+          }
         } catch (error) {
           statusEl.textContent = error?.message || "Could not return to the app.";
         }
@@ -126,7 +134,7 @@
           shape: "rectangular",
           width: 280,
         });
-        statusEl.textContent = "Ready.";
+        statusEl.textContent = isIframe ? "" : "Ready.";
       }
 
       renderGoogleButton();
