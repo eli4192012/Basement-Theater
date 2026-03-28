@@ -383,42 +383,106 @@ body {
 
 .hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
-  gap: 30px;
+  display: flex;
+  align-items: flex-end;
   min-height: 72vh;
   margin-bottom: 24px;
   padding: clamp(28px, 5vw, 56px);
   overflow: hidden;
   border-radius: 18px;
-  background:
-    linear-gradient(90deg, rgba(20, 8, 5, 0.92) 0%, rgba(20, 8, 5, 0.76) 38%, rgba(20, 8, 5, 0.24) 100%),
-    radial-gradient(circle at top right, rgba(215, 164, 76, 0.14), transparent 26%),
-    var(--hero-gradient, linear-gradient(135deg, #6f1f16, #2a1714));
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(215, 164, 76, 0.16);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  border: 1px solid rgba(215, 164, 76, 0.12);
 }
 
+/* full-bleed backdrop — JS sets --hero-image on this element */
+.hero-art {
+  position: absolute !important;
+  inset: 0 !important;
+  min-height: unset !important;
+  border-radius: 18px !important;
+  background:
+    var(--hero-image, none),
+    var(--hero-gradient, linear-gradient(135deg, #6f1f16, #2a1714)) !important;
+  background-size: cover, cover !important;
+  background-position: center 22%, center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: none !important;
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* cinematic gradient overlay — heavy on left, fades out right */
 .hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 223, 168, 0.04), rgba(0, 0, 0, 0.56)),
-    linear-gradient(0deg, rgba(18, 11, 9, 1) 0%, rgba(18, 11, 9, 0) 28%);
+    linear-gradient(90deg, rgba(8,3,2,0.95) 0%, rgba(8,3,2,0.8) 35%, rgba(8,3,2,0.25) 65%, rgba(8,3,2,0.05) 100%),
+    linear-gradient(0deg, rgba(8,3,2,0.9) 0%, rgba(8,3,2,0.4) 20%, rgba(8,3,2,0) 45%);
+  z-index: 1;
 }
 
 .hero-copy,
-.hero-art,
 .browse-panel,
 .rows,
 .shelf-header {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .hero-copy {
-  align-self: end;
-  max-width: 720px;
+  max-width: min(54%, 640px);
+  padding-bottom: 8px;
+}
+
+/* dot navigation */
+.hero-dots {
+  position: absolute;
+  bottom: 22px;
+  right: 26px;
+  display: flex;
+  gap: 7px;
+  z-index: 3;
+  align-items: center;
+}
+
+.hero-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.hero-dot.active {
+  background: var(--gold);
+  transform: scale(1.4);
+}
+
+.hero-dot:hover:not(.active) {
+  background: rgba(255,255,255,0.55);
+}
+
+/* genre pill badges on hero */
+.hero-genre-pills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.hero-genre-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(215,164,76,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(215,164,76,0.3);
 }
 
 .eyebrow {
@@ -537,41 +601,7 @@ h3 {
   background: rgba(92, 42, 31, 0.62);
 }
 
-.hero-art {
-  position: relative;
-  min-height: 420px;
-  border-radius: 18px;
-  background:
-    var(--hero-image, none),
-    linear-gradient(180deg, rgba(255, 240, 214, 0.05), rgba(0, 0, 0, 0.5)),
-    var(--hero-gradient, linear-gradient(135deg, #6f1f16, #2a1714));
-  background-size: contain, cover, cover;
-  background-position: center, center, center;
-  background-repeat: no-repeat;
-  box-shadow: inset 0 0 0 1px rgba(255, 228, 179, 0.08);
-}
-
-.hero-art::after {
-  content: "";
-  position: absolute;
-  inset: 14px;
-  border: 1px solid rgba(255, 220, 170, 0.12);
-  border-radius: 12px;
-}
-
-.hero-badge {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(39, 18, 13, 0.7);
-  color: rgba(255, 232, 196, 0.92);
-  border: 1px solid rgba(215, 164, 76, 0.2);
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
+.hero-badge { display: none; }
 
 .browse-panel {
   margin-bottom: 24px;
@@ -2147,20 +2177,19 @@ h3 {
               </div>
             </section>
             <section class="hero" id="heroPanel">
+              <div class="hero-art" id="heroArt" aria-hidden="true"></div>
               <div class="hero-overlay"></div>
               <div class="hero-copy">
-                <p class="eyebrow">Priority Transmission</p>
+                <div id="heroGenrePills" class="hero-genre-pills"></div>
                 <h1 id="heroTitle">Loading your library...</h1>
                 <p id="heroMeta" class="hero-meta"></p>
                 <p id="heroDescription" class="hero-description"></p>
                 <div class="hero-actions">
-                  <a id="heroPlay" class="primary-button" href="#" target="_blank" rel="noreferrer">Play</a>
+                  <a id="heroPlay" class="primary-button" href="#" target="_blank" rel="noreferrer">▶ Play</a>
                   <button id="heroInfo" class="ghost-button info-button" type="button">More Info</button>
                 </div>
               </div>
-              <div class="hero-art" id="heroArt" aria-hidden="true">
-                <div class="hero-badge">Basement Original</div>
-              </div>
+              <div id="heroDots" class="hero-dots"></div>
             </section>
 
             <section class="browse-panel">
@@ -2670,6 +2699,8 @@ const state = {
   activeSort: "recommended",
   query: "",
   featuredIndex: 0,
+  heroPool: [],
+  heroTimer: null,
   activeView: "home",
   activeTheaterTab: "library",
   activePublicPageSlug: "home",
@@ -2712,6 +2743,8 @@ const els = {
   heroPlay: document.querySelector("#heroPlay"),
   heroInfo: document.querySelector("#heroInfo"),
   heroArt: document.querySelector("#heroArt"),
+  heroGenrePills: document.querySelector("#heroGenrePills"),
+  heroDots: document.querySelector("#heroDots"),
   publicPageTitle: document.querySelector("#publicPageTitle"),
   publicPageMeta: document.querySelector("#publicPageMeta"),
   publicTabsChips: document.querySelector("#publicTabsChips"),
@@ -2982,6 +3015,7 @@ function handleGoogleCredential(response) {
 
 function renderAll() {
   applyEditableTexts();
+  buildHeroPool();
   renderHero();
   renderProfiles();
   renderChips();
@@ -3108,6 +3142,9 @@ function bindEvents() {
     const heroItem = getHeroItem();
     if (heroItem) openModal(heroItem);
   });
+  // Pause autoplay while hovering hero so users can read
+  els.heroPanel.addEventListener("mouseenter", stopHeroAutoplay);
+  els.heroPanel.addEventListener("mouseleave", () => { if (state.activeTheaterTab === "library") startHeroAutoplay(); });
 
   els.homeTabButton.addEventListener("click", () => setView("home"));
   els.announcementsTabButton.addEventListener("click", () => setView("announcements"));
@@ -3233,6 +3270,12 @@ function syncView() {
   if (favoritesShelf) renderFavorites();
   if (trashShelf) renderTrash();
   if (admin) renderAdmin();
+  // Hero autoplay: run only while on library shelf
+  if (libraryShelf) {
+    if (!state.heroTimer) startHeroAutoplay();
+  } else {
+    stopHeroAutoplay();
+  }
 }
 
 function rerenderActiveView() {
@@ -3458,26 +3501,75 @@ function getTrashItems() {
   });
 }
 
+function buildHeroPool() {
+  const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
+  // Prefer backdrops (16:9 landscape), fall back to posters
+  const withBackdrop = allItems.filter((i) => i.backdropUrl);
+  const withPoster   = allItems.filter((i) => i.posterUrl && !i.backdropUrl);
+  // Shuffle deterministically enough — just pick spread across catalog
+  const step = Math.max(1, Math.floor(withBackdrop.length / 10));
+  const pool = [];
+  for (let i = 0; i < withBackdrop.length && pool.length < 10; i += step) pool.push(withBackdrop[i]);
+  if (pool.length < 6) {
+    const pstep = Math.max(1, Math.floor(withPoster.length / 6));
+    for (let i = 0; i < withPoster.length && pool.length < 10; i += pstep) pool.push(withPoster[i]);
+  }
+  state.heroPool = pool.length ? pool : allItems.slice(0, 1);
+  state.featuredIndex = 0;
+}
+
 function getHeroItem() {
-  const preferred = state.catalog?.featured ?? [];
-  const items = getLibraryItems();
-  const coveredItems = items.filter((item) => item.posterUrl || item.backdropUrl);
-  const pool = coveredItems.length ? coveredItems : items;
-  const title = preferred[state.featuredIndex % Math.max(preferred.length, 1)];
-  return pool.find((item) => item.title === title && (item.posterUrl || item.backdropUrl)) ?? pool[0];
+  if (!state.heroPool.length) buildHeroPool();
+  return state.heroPool[state.featuredIndex % state.heroPool.length] ?? null;
 }
 
 function renderHero() {
-  const heroItem = getHeroItem();
-  if (!heroItem) return;
-  const gradient = gradientFor(heroItem.title);
-  els.heroPanel.style.setProperty("--hero-gradient", gradient);
+  const item = getHeroItem();
+  if (!item) return;
+  const gradient = gradientFor(item.title);
+  const imgUrl = item.backdropUrl || item.posterUrl || "";
+
   els.heroArt.style.setProperty("--hero-gradient", gradient);
-  els.heroArt.style.setProperty("--hero-image", heroItem.backdropUrl ? `url("${heroItem.backdropUrl}")` : "none");
-  els.heroTitle.textContent = heroItem.title;
-  els.heroMeta.textContent = `${heroItem.category} • ${heroItem.type === "series" ? "Series" : "Movie"} • ${inferRating(heroItem)}${heroItem.year ? ` • ${heroItem.year}` : ""}`;
-  els.heroDescription.textContent = heroItem.overview || buildDescription(heroItem);
-  els.heroPlay.href = heroItem.url;
+  els.heroArt.style.setProperty("--hero-image", imgUrl ? `url("${imgUrl}")` : "none");
+  els.heroTitle.textContent = item.title;
+  els.heroMeta.textContent = `${inferRating(item)}${item.year ? " · " + item.year : ""}  ·  ${item.type === "series" ? "Series" : "Movie"}`;
+  els.heroDescription.textContent = item.overview || buildDescription(item);
+  els.heroPlay.href = item.url;
+
+  // genre pills
+  const genres = (item.category || "").split(/\s*[\/,]\s*/).filter(Boolean).slice(0, 3);
+  els.heroGenrePills.innerHTML = genres.map((g) => `<span class="hero-genre-pill">${escapeHtml(g)}</span>`).join("");
+
+  // dot indicators
+  const total = state.heroPool.length;
+  const cur = state.featuredIndex % total;
+  els.heroDots.innerHTML = Array.from({ length: total }, (_, i) =>
+    `<button class="hero-dot ${i === cur ? "active" : ""}" data-idx="${i}" aria-label="Featured item ${i + 1}"></button>`
+  ).join("");
+  els.heroDots.querySelectorAll(".hero-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      state.featuredIndex = Number(dot.dataset.idx);
+      renderHero();
+      resetHeroAutoplay();
+    });
+  });
+}
+
+function startHeroAutoplay() {
+  stopHeroAutoplay();
+  state.heroTimer = setInterval(() => {
+    state.featuredIndex = (state.featuredIndex + 1) % Math.max(state.heroPool.length, 1);
+    renderHero();
+  }, 7000);
+}
+
+function stopHeroAutoplay() {
+  if (state.heroTimer) { clearInterval(state.heroTimer); state.heroTimer = null; }
+}
+
+function resetHeroAutoplay() {
+  stopHeroAutoplay();
+  startHeroAutoplay();
 }
 
 function renderChips() {
