@@ -1887,7 +1887,7 @@ h3 {
 .proxy-group-tab:hover { background: rgba(179,58,32,0.3); border-color: var(--accent); }
 .proxy-group-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .proxy-links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-.proxy-link-btn { display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, rgba(36,21,18,0.9), rgba(26,15,12,0.95)); border: 1px solid rgba(215,164,76,0.15); border-radius: 12px; padding: 18px 14px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.15s; min-height: 64px; }
+.proxy-link-btn { display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, rgba(36,21,18,0.9), rgba(26,15,12,0.95)); border: 1px solid rgba(215,164,76,0.15); border-radius: 12px; padding: 18px 14px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 0.88rem; transition: all 0.15s; min-height: 64px; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3; }
 .proxy-link-btn:hover { background: linear-gradient(135deg, rgba(179,58,32,0.3), rgba(120,40,20,0.4)); border-color: var(--accent); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(179,58,32,0.3); }
 
 /* ── Proxy Embed ── */
@@ -3592,7 +3592,9 @@ function renderProxyCornerPage(page) {
     const text = cleanImportedLabel(entry.text);
     const links = (entry.links || []).map((link) => ({ text: cleanImportedLabel(link.text || link.url), url: link.url }));
     if (/\(\d+\)/.test(text) && !text.startsWith("http")) {
-      currentGroup = { title: text, links: [] };
+      // Strip any URL that may follow the (n) count in the title
+      const cleanTitle = text.replace(/\s+https?:\/\/\S+/g, "").trim();
+      currentGroup = { title: cleanTitle, links: [] };
       groups.push(currentGroup);
       continue;
     }
@@ -3615,18 +3617,36 @@ function renderProxyCornerPage(page) {
     grp.links.push({ text: po.name, url: po.url });
   }
 
+  // Filter out groups with no links so empty buttons don't appear
+  const visibleGroups = groups.filter((g) => g.links.length > 0);
+
   const activeIdx = state.activeProxyGroup;
   const searchQ = (state.query || "").toLowerCase();
 
-  const groupTabsHtml = groups.map((g, i) => {
-    const label = g.title.replace(/\s*\(\d+\)\s*$/, "");
+  // Helper: turn a raw URL into a readable label (hostname only)
+  function cleanLinkLabel(text, url) {
+    const isUrl = !text || /^https?:\/\//.test(text);
+    if (isUrl) {
+      try {
+        const u = new URL(url || text);
+        return u.hostname.replace(/^www\./, "");
+      } catch (e) { /* fall through */ }
+    }
+    return text || url;
+  }
+
+  const groupTabsHtml = visibleGroups.map((g, i) => {
+    const label = g.title.replace(/\s*\(\d+\)\s*$/, "").trim();
     return `<button class="proxy-group-tab ${activeIdx === i ? "active" : ""}" data-group-idx="${i}">${escapeHtml(label)}</button>`;
   }).join("");
 
   let linksHtml = "";
-  if (activeIdx !== null && groups[activeIdx]) {
-    const links = groups[activeIdx].links.filter((l) => !searchQ || l.text.toLowerCase().includes(searchQ) || l.url.toLowerCase().includes(searchQ));
-    linksHtml = links.map((l) => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noreferrer" class="proxy-link-btn">${escapeHtml(l.text || l.url)}</a>`).join("");
+  if (activeIdx !== null && visibleGroups[activeIdx]) {
+    const links = visibleGroups[activeIdx].links.filter((l) => !searchQ || (l.text || "").toLowerCase().includes(searchQ) || l.url.toLowerCase().includes(searchQ));
+    linksHtml = links.map((l) => {
+      const label = cleanLinkLabel(l.text, l.url);
+      return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noreferrer" class="proxy-link-btn" title="${escapeHtml(l.url)}">${escapeHtml(label)}</a>`;
+    }).join("");
     if (!linksHtml) linksHtml = `<div class="admin-proxy-empty">No proxies match your search.</div>`;
   } else {
     linksHtml = `<div class="admin-proxy-empty">Select a group above to see its proxies.</div>`;
@@ -3657,6 +3677,7 @@ function renderProxyCornerPage(page) {
     document.querySelectorAll(".proxy-group-tab").forEach((btn) => {
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.dataset.groupIdx, 10);
+        // Toggle: clicking the active group deselects it
         state.activeProxyGroup = state.activeProxyGroup === idx ? null : idx;
         renderPublicPage();
       });
