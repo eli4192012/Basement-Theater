@@ -29,7 +29,6 @@ module.exports = async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const password = String(body.password || "");
     const email = String(body.manualEmail || "").trim().toLowerCase();
-    const deviceId = String(body.deviceId || "").slice(0, 32);
     const ip = getClientIp(req);
     const loggedInAt = new Date().toISOString();
 
@@ -40,14 +39,14 @@ module.exports = async function handler(req, res) {
 
     if (!ALLOWED_EMAILS.includes(email)) {
       appendFailedAttempt({ password, email, ip, attemptedAt: loggedInAt }).catch(() => null);
-      appendLoginActivity({ email, password, status: "denied", reason: "Email not on access list", ip, deviceId, loggedInAt }).catch(() => null);
+      appendLoginActivity({ email, password, status: "denied", reason: "Email not on access list", ip, loggedInAt }).catch(() => null);
       sendJson(res, 403, { error: "That email isn't on the access list." });
       return;
     }
 
     if (!password || password !== APP_PASSWORD) {
       appendFailedAttempt({ password, email, ip, attemptedAt: loggedInAt }).catch(() => null);
-      appendLoginActivity({ email, password, status: "denied", reason: "Wrong password", ip, deviceId, loggedInAt }).catch(() => null);
+      appendLoginActivity({ email, password, status: "denied", reason: "Wrong password", ip, loggedInAt }).catch(() => null);
       sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }

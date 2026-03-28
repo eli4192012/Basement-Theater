@@ -2718,18 +2718,6 @@ h3 {
                   <section id="adminFailedList" class="review-grid"></section>
                 </div>
 
-                <!-- Device Labels -->
-                <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
-                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                    <div>
-                      <p class="eyebrow">Device Identification</p>
-                      <h2 style="font-size:1.2rem;margin:2px 0 0">Device Labels</h2>
-                    </div>
-                    <button class="admin-btn primary" id="adminSaveDeviceLabelsBtn" style="display:none">Save Labels</button>
-                  </div>
-                  <p style="font-size:0.8rem;color:var(--muted);margin:0 0 12px">Name each device so the activity log shows readable names instead of IDs. Labels are saved to the server.</p>
-                  <div id="adminDeviceLabelsList"><p style="color:var(--muted-dim);font-size:0.82rem">Load activity first to see devices.</p></div>
-                </div>
               </div>
             </div>
 
@@ -2911,31 +2899,8 @@ h3 {
   reloadedAnnouncementId: "basement-theater.reloaded-announcement-id",
   watchedAnnouncementId: "basement-theater.watched-announcement-id",
   proxyOverrides: "basement-theater.proxy-overrides",
-  deviceId: "basement-theater.device-id",
 };
 
-// Generate a stable device ID derived from the user's email so it's the same across all domains
-function getDeviceId(email) {
-  if (email) {
-    const bytes = new TextEncoder().encode(email.trim().toLowerCase());
-    let h1 = 0x811c9dc5, h2 = 0xdeadbeef;
-    for (const b of bytes) {
-      h1 = Math.imul(h1 ^ b, 0x01000193) >>> 0;
-      h2 = Math.imul(h2 ^ b, 0x01000193) >>> 0;
-    }
-    h1 = (h1 ^ (h1 >>> 16)) >>> 0;
-    h2 = (h2 ^ (h2 >>> 16)) >>> 0;
-    const id = "dev_" + h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(4, "0");
-    localStorage.setItem(STORAGE_KEYS.deviceId, id);
-    return id;
-  }
-  let id = localStorage.getItem(STORAGE_KEYS.deviceId);
-  if (!id) {
-    id = "dev_" + ([...crypto.getRandomValues(new Uint8Array(6))].map((b) => b.toString(16).padStart(2, "0")).join(""));
-    localStorage.setItem(STORAGE_KEYS.deviceId, id);
-  }
-  return id;
-}
 
 const DEFAULT_PROFILES = [
   { id: "kid", name: "Kid", maturity: "PG", color: "#6ee7b7" },
@@ -3018,7 +2983,6 @@ const state = {
   adminPassword: "",
   adminActivity: [],
   adminFailedAttempts: [],
-  deviceLabels: {},
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -3375,7 +3339,6 @@ async function verifyAccess(password) {
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
           manualEmail: state.auth.manualEmail || "",
-          deviceId: getDeviceId(state.auth.manualEmail),
         }),
       });
       const payload = await resp.json().catch(() => ({}));
@@ -5541,11 +5504,6 @@ function bindAdminPanelEvents() {
     els.adminViewFailedButton._bound = true;
     els.adminViewFailedButton.addEventListener("click", loadAdminFailedAttempts);
   }
-  const saveLabelsBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
-  if (saveLabelsBtn && !saveLabelsBtn._bound) {
-    saveLabelsBtn._bound = true;
-    saveLabelsBtn.addEventListener("click", saveDeviceLabels);
-  }
 }
 
 function setAdminSecurityStatus(message, isError = false) {
@@ -5707,9 +5665,6 @@ function renderAdminActivity() {
               ${entry.reason ? `<div class="review-meta" style="color:#f87171">Reason: ${escapeHtml(entry.reason)}</div>` : ""}
               <div class="review-meta" style="display:flex;gap:14px;flex-wrap:wrap">
                 ${entry.ip ? `<span>🌐 ${escapeHtml(entry.ip)}</span>` : ""}
-                ${entry.deviceId
-                  ? `<span>💻 <strong style="color:var(--gold)">${escapeHtml(state.deviceLabels[entry.deviceId] || entry.deviceId)}</strong>${state.deviceLabels[entry.deviceId] ? ` <span style="font-family:monospace;font-size:0.72rem;color:var(--muted-dim)">(${escapeHtml(entry.deviceId)})</span>` : ""}</span>`
-                  : "<span style='color:var(--muted-dim)'>💻 Device ID not recorded</span>"}
               </div>
               <div class="review-meta">${escapeHtml(time)}</div>
             </div>
@@ -5724,84 +5679,16 @@ async function loadAdminActivity() {
   els.adminActivityPanel.classList.remove("hidden");
   els.adminActivityList.innerHTML = `<div class="empty-state">Loading activity...</div>`;
   try {
-    // Load activity and device labels in parallel
-    const [actResp, labelsResp] = await Promise.all([
-      fetch(apiUrl("/api/auth/activity"), { headers: getAdminHeaders(), cache: "no-store" }),
-      fetch(apiUrl("/api/device-labels"), { headers: getAdminHeaders(), cache: "no-store" }),
-    ]);
+    const actResp = await fetch(apiUrl("/api/auth/activity"), { headers: getAdminHeaders(), cache: "no-store" });
     const payload = await actResp.json().catch(() => ({}));
     if (!actResp.ok) throw new Error(payload.error || "Could not load activity.");
-    const labelsPayload = await labelsResp.json().catch(() => ({}));
     state.adminActivity = payload.logins || [];
-    state.deviceLabels = labelsPayload.labels || {};
     renderAdminActivity();
-    renderDeviceLabels();
   } catch (error) {
     els.adminActivityList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load activity.")}</div>`;
   }
 }
 
-function renderDeviceLabels() {
-  const listEl = document.querySelector("#adminDeviceLabelsList");
-  const saveBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
-  if (!listEl) return;
-
-  // Collect all unique device IDs from activity log
-  const allIds = [...new Set((state.adminActivity || []).map((e) => e.deviceId).filter(Boolean))];
-
-  if (!allIds.length) {
-    listEl.innerHTML = `<p style="color:var(--muted-dim);font-size:0.82rem">No device IDs recorded yet.</p>`;
-    if (saveBtn) saveBtn.style.display = "none";
-    return;
-  }
-
-  if (saveBtn) saveBtn.style.display = "";
-
-  listEl.innerHTML = allIds.map((id) => `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <span style="font-family:monospace;font-size:0.78rem;color:var(--muted);min-width:120px;flex-shrink:0">${escapeHtml(id)}</span>
-      <span style="color:var(--muted-dim);font-size:0.8rem">→</span>
-      <input
-        class="device-label-input"
-        data-device-id="${escapeHtml(id)}"
-        type="text"
-        placeholder="e.g. Ethan's Chromebook"
-        value="${escapeHtml(state.deviceLabels[id] || "")}"
-        style="flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem;font-family:inherit"
-      />
-    </div>
-  `).join("");
-}
-
-async function saveDeviceLabels() {
-  const saveBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
-  const inputs = document.querySelectorAll(".device-label-input");
-  const labels = { ...state.deviceLabels };
-
-  inputs.forEach((input) => {
-    const id = input.dataset.deviceId;
-    const val = input.value.trim();
-    if (id) labels[id] = val; // empty string = remove label
-  });
-
-  if (saveBtn) { saveBtn.textContent = "Saving…"; saveBtn.disabled = true; }
-  try {
-    const resp = await fetch(apiUrl("/api/device-labels"), {
-      method: "POST",
-      headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ labels }),
-    });
-    const payload = await resp.json().catch(() => ({}));
-    if (!resp.ok) throw new Error(payload.error || "Could not save labels.");
-    state.deviceLabels = payload.labels || labels;
-    renderAdminActivity(); // refresh cards with new labels
-    if (saveBtn) saveBtn.textContent = "✓ Saved";
-    window.setTimeout(() => { if (saveBtn) { saveBtn.textContent = "Save Labels"; saveBtn.disabled = false; } }, 2000);
-  } catch (err) {
-    alert(err.message || "Could not save device labels.");
-    if (saveBtn) { saveBtn.textContent = "Save Labels"; saveBtn.disabled = false; }
-  }
-}
 
 function renderAdminFailedAttempts() {
   if (!els.adminFailedList) return;

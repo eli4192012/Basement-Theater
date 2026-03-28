@@ -115,7 +115,6 @@ async function appendLoginActivity(entry) {
         status: entry.status || "accepted",
         reason: entry.reason || "",
         ip: entry.ip || "",
-        deviceId: entry.deviceId || "",
         loggedInAt: entry.loggedInAt || new Date().toISOString(),
       },
       ...(existing.logins || []),
@@ -159,22 +158,12 @@ async function getFailedAttempts() {
   };
 }
 
-async function getDeviceLabels() {
-  return readJsonObject("device-labels.json", {});
-}
-
-async function setDeviceLabels(labels) {
-  await writeJsonObject("device-labels.json", labels || {});
-}
-
 module.exports = {
   DEFAULT_SECURITY_CONFIG,
   appendFailedAttempt,
   appendLoginActivity,
-  getDeviceLabels,
   getFailedAttempts,
   getLoginActivity,
   getSecurityConfig,
-  setDeviceLabels,
   setSecurityConfig,
 };
