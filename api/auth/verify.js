@@ -58,6 +58,7 @@ module.exports = async function handler(req, res) {
       email: user.email,
       name: user.name,
       picture: user.picture,
+      googleVerified: true,
       issuedAt: loggedInAt,
     });
 
