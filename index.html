@@ -4814,7 +4814,7 @@ async function renderSecurityPanel() {
   }
 
   try {
-    const resp = await fetch("/api/auth/security", {
+    const resp = await fetch(apiUrl("/api/auth/security"), {
       headers: { Authorization: `Bearer ${state.auth.token}` },
       cache: "no-store",
     });
@@ -4835,7 +4835,7 @@ async function saveSecuritySettings() {
   button.disabled = true;
   button.textContent = "Saving...";
   try {
-    const resp = await fetch("/api/auth/security", {
+    const resp = await fetch(apiUrl("/api/auth/security"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -4942,7 +4942,7 @@ async function loadAdminActivity() {
   els.adminActivityPanel.classList.remove("hidden");
   els.adminActivityList.innerHTML = `<div class="empty-state">Loading activity...</div>`;
   try {
-    const resp = await fetch("/api/auth/activity", {
+    const resp = await fetch(apiUrl("/api/auth/activity"), {
       headers: getAdminHeaders(),
       cache: "no-store",
     });
