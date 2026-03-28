@@ -3697,13 +3697,6 @@ function renderAnnouncementsPage(page) {
         <h2 class="ann-title">${escapeHtml(title)}</h2>
         <div class="ann-rule"></div>
         ${heading ? `<p class="ann-heading">${escapeHtml(heading)}</p>` : ""}
-        ${body ? `<div class="ann-body"><p>${escapeHtml(body)}</p></div>` : ""}
-        ${updateTitle || updateTime ? `
-          <div class="ann-update-block">
-            ${updateTitle ? `<h4 class="ann-update-title">${escapeHtml(updateTitle)}</h4>` : ""}
-            ${updateTime ? `<p class="ann-update-time">${escapeHtml(updateTime)}</p>` : ""}
-          </div>
-        ` : ""}
       </div>
     </section>
   `;
