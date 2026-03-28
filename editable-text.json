@@ -8,12 +8,12 @@
 
   "Welcome Popup": {
     "Title": "How The Basement Premium Works",
-    "Intro": "This app is your family movie shelf. Pick a profile, browse the library, and open titles straight from Google Drive.",
-    "Library Text": "Browse by category or A-Z. Titles with covers rise to the top, and the featured pick always uses a covered title.",
+    "Intro": "This place is your go to site or file for games, movies, and proxies!",
+    "Library Text": "In the 'Theater' you can browse by category or A-Z. Titles with covers rise to the top, and the featured pick always uses a covered title.",
     "Profiles Text": "Each profile keeps its own favorites, watchlist, continue watching, and age filter.",
     "Favorites Text": "Tap the star to move a title into the Favorites tab. Remove it there and it returns to the main library.",
     "Play Text": "Click a poster for more details, then use Play or Preview to open the Drive link.",
-    "Surprise Me Text": "Use Shuffle for a random pick from everything, the current category, or kid-safe titles only.",
+    "Proxy Text": "Use the 'Proxy' tab to go search stuff without restrictions! If you want links to proxies there will be a button at the top to show them.",
     "Trash Review Text": "That tab is just a holding area for broken-link review. It does not affect the main library unless you choose to clean things up."
   },
 
