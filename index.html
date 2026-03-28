@@ -3665,10 +3665,10 @@ function renderHomePage(page) {
   const activity = activityIndex >= 0 ? entries.slice(activityIndex, activityIndex + 5) : [];
   const hiddenHomeLines = new Set(["MY KING 👑 - ELI", "Mr wallace btw lmao"]);
   const catalogBody = entries.filter((entry) => ![entries[0], status, ...alertLines, ...activity].includes(entry) && !hiddenHomeLines.has(entry));
-  const body = et.homeBody ? et.homeBody.split("\n").filter(Boolean) : catalogBody;
+  const stripLine = (line) => /average activity|go to the announcements|announcement/i.test(line);
+  const rawBody = et.homeBody ? et.homeBody.split("\n").filter(Boolean) : catalogBody;
+  const body = rawBody.filter((line) => !stripLine(line));
   const cleanedStatus = (et.homeStatus || status.replace(/^Status:\s*/i, "").trim()).trim();
-  const activityLead = activity[0] || "";
-  const activityCards = activity.slice(1);
 
   return `
     <section class="public-doc-page page-home">
