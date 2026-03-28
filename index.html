@@ -412,6 +412,13 @@ body {
 .profile-pill.active {
   border-color: var(--profile-color);
   box-shadow: inset 0 0 0 1px var(--profile-color);
+  background: color-mix(in srgb, var(--profile-color) 15%, transparent);
+  font-weight: 700;
+  color: var(--text);
+}
+.profile-pill.active .profile-dot {
+  transform: scale(1.3);
+  box-shadow: 0 0 6px var(--profile-color);
 }
 
 .profile-dot {
@@ -2480,7 +2487,7 @@ h3 {
           <section class="theater-subtabs" aria-label="Theater sections">
             <button id="theaterLibrarySubtab" class="theater-subtab active" type="button">Library</button>
             <button id="theaterFavoritesSubtab" class="theater-subtab" type="button">Favorites</button>
-            <button id="theaterTrashSubtab" class="theater-subtab" type="button">Trash Review</button>
+            <button id="theaterTrashSubtab" class="theater-subtab" type="button">Report Issue</button>
           </section>
 
           <section id="theaterLibraryContent">
@@ -3611,9 +3618,11 @@ function bindEvents() {
     if (event.data?.type !== "basement-google-credential") return;
     handleGoogleCredential({ credential: event.data.credential });
   });
+  let _searchDebounce = null;
   els.searchInput.addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLowerCase();
-    rerenderActiveView();
+    clearTimeout(_searchDebounce);
+    _searchDebounce = setTimeout(rerenderActiveView, 150);
   });
 
   els.sortSelect?.addEventListener("change", (event) => {
@@ -4533,7 +4542,7 @@ function renderRows() {
     })
     .join("");
 
-  els.rows.innerHTML = specialRows.length || categoryRows ? `${specialRows.join("")}${categoryRows}` : `<div class="empty-state">No titles match that search yet. Try a different category or keyword.</div>`;
+  els.rows.innerHTML = specialRows.length || categoryRows ? `${specialRows.join("")}${categoryRows}` : `<div class="empty-state"><div style="font-size:2.4rem;margin-bottom:10px">🎬</div><div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:var(--text)">No titles found</div><div>Try a different search, category, or letter.</div></div>`;
   bindCardInteractions(els.rows);
 }
 
@@ -4626,6 +4635,37 @@ function bindCardInteractions(container) {
       const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
       const item = allItems.find((entry) => entry.url === card.dataset.url);
       if (item) openModal(item);
+    });
+
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
+        const item = allItems.find((entry) => entry.url === card.dataset.url);
+        if (item) openModal(item);
+        return;
+      }
+      const grid = card.closest(".row-grid");
+      if (!grid) return;
+      const cards = Array.from(grid.querySelectorAll(".card"));
+      const idx = cards.indexOf(card);
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (idx < cards.length - 1) cards[idx + 1].focus();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (idx > 0) cards[idx - 1].focus();
+      } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const allGrids = Array.from(document.querySelectorAll(".row-grid"));
+        const gridIdx = allGrids.indexOf(grid);
+        const nextGrid = allGrids[gridIdx + (e.key === "ArrowDown" ? 1 : -1)];
+        if (nextGrid) {
+          const nextCards = Array.from(nextGrid.querySelectorAll(".card"));
+          const target = nextCards[Math.min(idx, nextCards.length - 1)];
+          if (target) { target.focus(); target.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+        }
+      }
     });
   });
   // Start lazy-loading poster images
