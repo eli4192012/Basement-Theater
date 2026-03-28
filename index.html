@@ -2023,6 +2023,19 @@ h3 {
 }
 .admin-modal::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
 .admin-modal-title { font-family: "Bebas Neue", sans-serif; font-size: 1.8rem; color: var(--gold); margin: 0 0 20px; }
+
+/* TMDB search results dropdown */
+.tmdb-results { margin-top: 8px; border: 1px solid rgba(215,164,76,0.22); border-radius: 8px; overflow: hidden; max-height: 300px; overflow-y: auto; background: var(--panel); }
+.tmdb-results.hidden { display: none; }
+.tmdb-result-item { display: flex; gap: 10px; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 140ms; align-items: center; }
+.tmdb-result-item:last-child { border-bottom: 0; }
+.tmdb-result-item:hover { background: rgba(215,164,76,0.1); }
+.tmdb-result-thumb { width: 38px; height: 57px; object-fit: cover; border-radius: 4px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+.tmdb-result-info { flex: 1; min-width: 0; }
+.tmdb-result-title { font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tmdb-result-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.tmdb-result-applied { padding: 10px 12px; font-size: 0.82rem; color: #4ade80; text-align: center; }
+.tmdb-searching { padding: 12px; text-align: center; color: var(--muted); font-size: 0.85rem; }
 .admin-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .admin-field { display: flex; flex-direction: column; gap: 5px; }
 .admin-field.full-width { grid-column: 1 / -1; }
@@ -2491,7 +2504,11 @@ h3 {
         <div class="admin-field-grid">
           <div class="admin-field full-width">
             <label>Title</label>
-            <input id="adminFieldTitle" type="text" required />
+            <div style="display:flex;gap:8px;align-items:stretch">
+              <input id="adminFieldTitle" type="text" required style="flex:1;min-width:0" />
+              <button type="button" class="admin-btn" id="tmdbSearchBtn" style="white-space:nowrap">🔍 Search TMDB</button>
+            </div>
+            <div id="tmdbResults" class="tmdb-results hidden"></div>
           </div>
           <div class="admin-field">
             <label>Category</label>
@@ -2523,11 +2540,15 @@ h3 {
             <input id="adminFieldUrl" type="url" required placeholder="https://drive.google.com/file/d/…/view" />
           </div>
           <div class="admin-field full-width">
-            <label>Poster URL (optional – TMDB or direct image link)</label>
-            <input id="adminFieldPoster" type="url" placeholder="https://image.tmdb.org/t/p/w342/…" />
+            <label>Poster URL <span style="color:var(--muted-dim);font-weight:400">(auto-filled by TMDB search)</span></label>
+            <input id="adminFieldPoster" type="url" placeholder="https://image.tmdb.org/t/p/w500/…" />
           </div>
           <div class="admin-field full-width">
-            <label>Overview / Description (optional)</label>
+            <label>Backdrop URL <span style="color:var(--muted-dim);font-weight:400">(wide image used in hero banner)</span></label>
+            <input id="adminFieldBackdrop" type="url" placeholder="https://image.tmdb.org/t/p/w1280/…" />
+          </div>
+          <div class="admin-field full-width">
+            <label>Overview / Description <span style="color:var(--muted-dim);font-weight:400">(auto-filled by TMDB search)</span></label>
             <textarea id="adminFieldOverview" placeholder="Short description of the title…"></textarea>
           </div>
         </div>
@@ -5264,6 +5285,74 @@ async function loadAdminFailedAttempts() {
   }
 }
 
+async function runTMDBSearch() {
+  const titleInput = document.querySelector("#adminFieldTitle");
+  const typeSelect = document.querySelector("#adminFieldType");
+  const resultsEl  = document.querySelector("#tmdbResults");
+  const title = titleInput.value.trim();
+  if (!title) { titleInput.focus(); return; }
+
+  resultsEl.innerHTML = `<div class="tmdb-searching">Searching TMDB…</div>`;
+  resultsEl.classList.remove("hidden");
+
+  try {
+    const resp = await fetch(
+      apiUrl(`/api/tmdb-search?q=${encodeURIComponent(title)}&type=${encodeURIComponent(typeSelect.value)}`),
+      { headers: getAdminHeaders(), cache: "no-store" }
+    );
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || "Search failed.");
+
+    if (!data.results?.length) {
+      resultsEl.innerHTML = `<div class="tmdb-searching">No results found for "${escapeHtml(title)}".</div>`;
+      return;
+    }
+
+    resultsEl.innerHTML = data.results.map((r, i) => `
+      <div class="tmdb-result-item" data-tmdb-idx="${i}">
+        ${r.posterUrl
+          ? `<img class="tmdb-result-thumb" src="${escapeHtml(r.posterUrl)}" alt="" loading="lazy">`
+          : `<div class="tmdb-result-thumb"></div>`}
+        <div class="tmdb-result-info">
+          <div class="tmdb-result-title">${escapeHtml(r.title)}</div>
+          <div class="tmdb-result-meta">${r.year || ""}${r.genres.length ? " · " + r.genres.slice(0, 2).join(", ") : ""}${r.tmdbRating ? " · ★ " + r.tmdbRating.toFixed(1) : ""}</div>
+        </div>
+      </div>
+    `).join("");
+
+    resultsEl.querySelectorAll(".tmdb-result-item").forEach((el) => {
+      el.addEventListener("click", () => {
+        applyTMDBResult(data.results[Number(el.dataset.tmdbIdx)]);
+        resultsEl.innerHTML = `<div class="tmdb-result-applied">✓ Applied TMDB data</div>`;
+        window.setTimeout(() => resultsEl.classList.add("hidden"), 1200);
+      });
+    });
+  } catch (err) {
+    resultsEl.innerHTML = `<div class="tmdb-searching" style="color:#f87171">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function applyTMDBResult(r) {
+  const categories = Array.from(document.querySelector("#adminFieldCategory").options).map((o) => o.value);
+
+  document.querySelector("#adminFieldTitle").value    = r.title  || "";
+  document.querySelector("#adminFieldYear").value     = r.year   || "";
+  document.querySelector("#adminFieldOverview").value = r.overview || "";
+  document.querySelector("#adminFieldPoster").value   = r.posterUrl   || "";
+  document.querySelector("#adminFieldBackdrop").value = r.backdropUrl || "";
+
+  // Try to match first genre to an existing category
+  if (r.genres.length) {
+    const matched = r.genres.find((g) =>
+      categories.some((c) => c.toLowerCase().includes(g.toLowerCase()) || g.toLowerCase().includes(c.toLowerCase()))
+    );
+    if (matched) {
+      const cat = categories.find((c) => c.toLowerCase().includes(matched.toLowerCase()) || matched.toLowerCase().includes(c.toLowerCase()));
+      if (cat) document.querySelector("#adminFieldCategory").value = cat;
+    }
+  }
+}
+
 function openAdminEditModal(url) {
   const modal = document.querySelector("#adminEditModal");
   const form = document.querySelector("#adminEditForm");
@@ -5289,7 +5378,9 @@ function openAdminEditModal(url) {
   document.querySelector("#adminFieldRating").value = existingItem?.manualRating || "";
   document.querySelector("#adminFieldUrl").value = existingItem?.url || "";
   document.querySelector("#adminFieldPoster").value = existingItem?.posterUrl || "";
+  document.querySelector("#adminFieldBackdrop").value = existingItem?.backdropUrl || "";
   document.querySelector("#adminFieldOverview").value = existingItem?.overview || "";
+  document.querySelector("#tmdbResults").classList.add("hidden");
 
   if (!form._bound) {
     form._bound = true;
@@ -5299,6 +5390,11 @@ function openAdminEditModal(url) {
       modal.close();
     });
     document.querySelector("#adminModalCancel").addEventListener("click", () => modal.close());
+    document.querySelector("#tmdbSearchBtn").addEventListener("click", runTMDBSearch);
+    // Also allow Enter in the title field to trigger search
+    document.querySelector("#adminFieldTitle").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); runTMDBSearch(); }
+    });
   }
 
   modal.dataset.editingUrl = url || "";
@@ -5315,6 +5411,7 @@ function adminSaveItem(editingUrl) {
     url: document.querySelector("#adminFieldUrl").value.trim(),
     previewUrl: document.querySelector("#adminFieldUrl").value.trim().replace("/view", "/preview"),
     posterUrl: document.querySelector("#adminFieldPoster").value.trim() || undefined,
+    backdropUrl: document.querySelector("#adminFieldBackdrop").value.trim() || undefined,
     overview: document.querySelector("#adminFieldOverview").value.trim() || undefined,
     driveId: (document.querySelector("#adminFieldUrl").value.match(/\/d\/([^/]+)/) || [])[1] || "",
     driveKind: "file",
