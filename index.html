@@ -179,12 +179,12 @@ body {
 }
 
 .auth-card {
-  width: min(560px, 100%);
-  padding: 36px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(45, 21, 17, 0.96), rgba(20, 11, 9, 0.98));
-  border: 1px solid rgba(215, 164, 76, 0.16);
-  box-shadow: var(--shadow);
+  width: min(480px, 100%);
+  padding: 40px 44px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(40, 18, 14, 0.98) 0%, rgba(18, 9, 7, 0.99) 100%);
+  border: 1px solid rgba(215, 164, 76, 0.18);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,220,160,0.07);
   text-align: center;
 }
 
@@ -199,6 +199,123 @@ body {
   margin: 0 auto 22px;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 0;
+  color: rgba(255, 230, 190, 0.28);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 220, 160, 0.1);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.auth-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 230, 185, 0.45);
+  padding-left: 2px;
+}
+
+.auth-field-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-field-icon {
+  position: absolute;
+  left: 15px;
+  font-size: 0.95rem;
+  pointer-events: none;
+  opacity: 0.45;
+  line-height: 1;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 14px 14px 44px;
+  background: rgba(255, 235, 200, 0.05);
+  border: 1px solid rgba(255, 215, 150, 0.13);
+  border-radius: 11px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.98rem;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  box-sizing: border-box;
+}
+
+.auth-input:hover {
+  border-color: rgba(255, 215, 150, 0.22);
+  background: rgba(255, 235, 200, 0.07);
+}
+
+.auth-input:focus {
+  border-color: rgba(211, 123, 45, 0.7);
+  background: rgba(255, 235, 200, 0.08);
+  box-shadow: 0 0 0 3px rgba(211, 123, 45, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 225, 185, 0.22);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 10px;
+  border-radius: 11px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 28px rgba(194, 135, 53, 0.32), 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.auth-submit-btn:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 12px 36px rgba(194, 135, 53, 0.42), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.auth-error-msg {
+  margin-top: 10px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: rgba(180, 40, 30, 0.18);
+  border: 1px solid rgba(220, 60, 40, 0.3);
+  color: #f87171;
+  font-size: 0.88rem;
+  text-align: center;
+  display: none;
+}
+
+.auth-error-msg.visible {
+  display: block;
 }
 
 .google-signin-slot {
@@ -2245,10 +2362,24 @@ h3 {
         <p class="eyebrow">Clearance Required</p>
         <h1 id="authTitle" class="auth-title">Enter The Password To Open The Basement Premium</h1>
         <p id="authMessage" class="auth-message">Enter the shared password to continue.</p>
+        <div class="auth-divider">Sign In</div>
         <form id="passwordAccessForm" class="auth-form">
-          <input id="emailAccessInput" class="auth-input" type="email" placeholder="Your email" autocomplete="email" required />
-          <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" required />
-          <button class="primary-button" type="submit">Enter Theater</button>
+          <div class="auth-field">
+            <label class="auth-field-label" for="emailAccessInput">Email Address</label>
+            <div class="auth-field-inner">
+              <span class="auth-field-icon">✉️</span>
+              <input id="emailAccessInput" class="auth-input" type="email" placeholder="your@email.com" autocomplete="email" required />
+            </div>
+          </div>
+          <div class="auth-field">
+            <label class="auth-field-label" for="passwordAccessInput">Password</label>
+            <div class="auth-field-inner">
+              <span class="auth-field-icon">🔒</span>
+              <input id="passwordAccessInput" class="auth-input" type="password" placeholder="••••••••••" autocomplete="current-password" required />
+            </div>
+          </div>
+          <div id="authErrorMsg" class="auth-error-msg"></div>
+          <button class="primary-button auth-submit-btn" type="submit">▶ Enter Theater</button>
         </form>
       </div>
     </section>
@@ -2922,6 +3053,7 @@ const els = {
   passwordAccessForm: document.querySelector("#passwordAccessForm"),
   emailAccessInput: document.querySelector("#emailAccessInput"),
   passwordAccessInput: document.querySelector("#passwordAccessInput"),
+  authErrorMsg: document.querySelector("#authErrorMsg"),
   rows: document.querySelector("#rows"),
   publicSections: document.querySelector("#publicSections"),
   favoritesRows: document.querySelector("#favoritesRows"),
@@ -3301,7 +3433,22 @@ async function verifyAccess(password) {
 }
 
 function setAuthMessage(message) {
-  els.authMessage.textContent = message;
+  const isError = /denied|not on|wrong|unavailable|please enter|failed/i.test(message);
+  const isPending = /checking/i.test(message);
+  // Inline error box — shown for actual errors
+  if (els.authErrorMsg) {
+    if (isError) {
+      els.authErrorMsg.textContent = message;
+      els.authErrorMsg.classList.add("visible");
+    } else {
+      els.authErrorMsg.textContent = "";
+      els.authErrorMsg.classList.remove("visible");
+    }
+  }
+  // Top message stays for pending/neutral states
+  if (els.authMessage) {
+    els.authMessage.textContent = isPending ? message : (isError ? "" : message);
+  }
 }
 
 async function loadRuntimeConfig() {
