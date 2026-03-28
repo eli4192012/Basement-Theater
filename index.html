@@ -2914,8 +2914,21 @@ h3 {
   deviceId: "basement-theater.device-id",
 };
 
-// Generate or retrieve a persistent device ID for this browser/device
-function getDeviceId() {
+// Generate a stable device ID derived from the user's email so it's the same across all domains
+function getDeviceId(email) {
+  if (email) {
+    const bytes = new TextEncoder().encode(email.trim().toLowerCase());
+    let h1 = 0x811c9dc5, h2 = 0xdeadbeef;
+    for (const b of bytes) {
+      h1 = Math.imul(h1 ^ b, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ b, 0x01000193) >>> 0;
+    }
+    h1 = (h1 ^ (h1 >>> 16)) >>> 0;
+    h2 = (h2 ^ (h2 >>> 16)) >>> 0;
+    const id = "dev_" + h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(4, "0");
+    localStorage.setItem(STORAGE_KEYS.deviceId, id);
+    return id;
+  }
   let id = localStorage.getItem(STORAGE_KEYS.deviceId);
   if (!id) {
     id = "dev_" + ([...crypto.getRandomValues(new Uint8Array(6))].map((b) => b.toString(16).padStart(2, "0")).join(""));
@@ -3362,7 +3375,7 @@ async function verifyAccess(password) {
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
           manualEmail: state.auth.manualEmail || "",
-          deviceId: getDeviceId(),
+          deviceId: getDeviceId(state.auth.manualEmail),
         }),
       });
       const payload = await resp.json().catch(() => ({}));
