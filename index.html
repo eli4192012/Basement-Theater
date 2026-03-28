@@ -4092,7 +4092,8 @@ function renderHero() {
   els.heroArt.style.setProperty("--hero-gradient", gradient);
   els.heroArt.style.setProperty("--hero-image", imgUrl ? `url("${imgUrl}")` : "none");
   els.heroTitle.textContent = item.title;
-  els.heroMeta.textContent = `${inferRating(item)}${item.year ? " · " + item.year : ""}  ·  ${item.type === "series" ? "Series" : "Movie"}`;
+  const heroRating = getDisplayRating(item);
+  els.heroMeta.textContent = `${heroRating ? heroRating + "  ·  " : ""}${item.year ? item.year + "  ·  " : ""}${item.type === "series" ? "Series" : "Movie"}`;
   els.heroDescription.textContent = item.overview || buildDescription(item);
   els.heroPlay.href = item.url;
 
@@ -4744,7 +4745,7 @@ function renderCard(item) {
   const inWatchlist = Boolean(state.watchlist[active.id]?.[item.url]);
   const progress = state.progress[active.id]?.[item.url];
   const posterUrl = optimizePosterUrl(item.posterUrl);
-  const rating = inferRating(item);
+  const rating = getDisplayRating(item);
   const description = item.description || item.overview || "";
 
   // Genre pills — split on " / " or ", "
@@ -4802,7 +4803,8 @@ function openModal(item) {
   els.detailArt.style.setProperty("--detail-gradient", gradient);
   els.detailArt.style.setProperty("--detail-image", item.posterUrl ? `url("${optimizePosterUrl(item.posterUrl)}")` : "none");
   els.detailTitle.textContent = item.title;
-  els.detailMeta.textContent = `${item.category} • ${item.type === "series" ? "Series or folder" : "Movie"} • ${inferRating(item)}${item.year ? ` • ${item.year}` : ""}`;
+  const detailRating = getDisplayRating(item);
+  els.detailMeta.textContent = [item.category, item.type === "series" ? "Series" : "Movie", detailRating, item.year].filter(Boolean).join(" • ");
   els.detailDescription.textContent = item.overview || buildDescription(item);
   els.detailOpen.href = item.url;
   els.detailOpen.onclick = (event) => handleDriveOpen(event, item, item.url);
@@ -4942,6 +4944,13 @@ function inferRating(item) {
   if (/(harry potter|spider man|marvel|transformers|ghostbusters|gravity falls|teen titans|dragon ball|pokemon detective pikachu|ready player one|superman|oppenheimer|8 mile)/.test(text)) return "PG-13";
   if (/(disney|family|animation|bluey|spongebob|toy story|minions|despicable me|my little pony|garfield|pokemon|dog man)/.test(text)) return "G";
   return "PG";
+}
+
+// For display only — shows real data instead of guessing content ratings
+function getDisplayRating(item) {
+  if (item.manualRating) return item.manualRating;
+  if (item.tmdbRating) return Number(item.tmdbRating).toFixed(1) + " ★";
+  return "";
 }
 
 function isKinslerItem(item) {
