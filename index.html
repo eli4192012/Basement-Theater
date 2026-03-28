@@ -2633,7 +2633,18 @@ h3 {
   reloadedAnnouncementId: "basement-theater.reloaded-announcement-id",
   watchedAnnouncementId: "basement-theater.watched-announcement-id",
   proxyOverrides: "basement-theater.proxy-overrides",
+  deviceId: "basement-theater.device-id",
 };
+
+// Generate or retrieve a persistent device ID for this browser/device
+function getDeviceId() {
+  let id = localStorage.getItem(STORAGE_KEYS.deviceId);
+  if (!id) {
+    id = "dev_" + ([...crypto.getRandomValues(new Uint8Array(6))].map((b) => b.toString(16).padStart(2, "0")).join(""));
+    localStorage.setItem(STORAGE_KEYS.deviceId, id);
+  }
+  return id;
+}
 
 const DEFAULT_PROFILES = [
   { id: "kid", name: "Kid", maturity: "PG", color: "#6ee7b7" },
@@ -2919,6 +2930,7 @@ async function verifyAccess(password) {
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
           manualEmail: state.auth.manualEmail || "",
+          deviceId: getDeviceId(),
         }),
       });
       const payload = await resp.json().catch(() => ({}));
@@ -5223,7 +5235,10 @@ function renderAdminActivity() {
               </div>
               <div class="review-meta" style="font-family:monospace;font-size:0.82rem">Password: <span style="color:var(--text)">${escapeHtml(entry.password || "(none)")}</span></div>
               ${entry.reason ? `<div class="review-meta" style="color:#f87171">Reason: ${escapeHtml(entry.reason)}</div>` : ""}
-              ${entry.ip ? `<div class="review-meta">IP: ${escapeHtml(entry.ip)}</div>` : ""}
+              <div class="review-meta" style="display:flex;gap:14px;flex-wrap:wrap">
+                ${entry.ip ? `<span>🌐 ${escapeHtml(entry.ip)}</span>` : ""}
+                ${entry.deviceId ? `<span>💻 Device: <span style="font-family:monospace;color:var(--gold)">${escapeHtml(entry.deviceId)}</span></span>` : "<span style='color:var(--muted-dim)'>💻 Device ID not recorded</span>"}
+              </div>
               <div class="review-meta">${escapeHtml(time)}</div>
             </div>
           </article>
