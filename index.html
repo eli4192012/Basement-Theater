@@ -4946,11 +4946,9 @@ function inferRating(item) {
   return "PG";
 }
 
-// For display only — shows real data instead of guessing content ratings
+// For display only — only show what's explicitly set, never guess
 function getDisplayRating(item) {
-  if (item.manualRating) return item.manualRating;
-  if (item.tmdbRating) return Number(item.tmdbRating).toFixed(1) + " ★";
-  return "";
+  return item.manualRating || "";
 }
 
 function isKinslerItem(item) {
