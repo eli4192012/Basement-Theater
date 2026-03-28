@@ -1,7 +1,6 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { getSecurityConfig } = require("./supabase");
 
 const ROOT = process.cwd();
 const PRIVATE_DIR = path.join(ROOT, "api", "_lib", "private");
@@ -59,18 +58,10 @@ async function requireAllowedUser(req) {
     throw error;
   }
 
-  const security = await getSecurityConfig().catch(() => ({ requireGoogleSignIn: false }));
-  if (security.requireGoogleSignIn && !payload.googleVerified) {
-    const error = new Error("Google sign-in is required.");
-    error.statusCode = 403;
-    throw error;
-  }
-
   return {
     email: payload.email || "basement-theater@local",
     name: payload.name || "Basement Theater",
     picture: payload.picture || "",
-    googleVerified: Boolean(payload.googleVerified),
   };
 }
 
