@@ -2453,6 +2453,19 @@ h3 {
                   </section>
                   <section id="adminFailedList" class="review-grid"></section>
                 </div>
+
+                <!-- Device Labels -->
+                <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                    <div>
+                      <p class="eyebrow">Device Identification</p>
+                      <h2 style="font-size:1.2rem;margin:2px 0 0">Device Labels</h2>
+                    </div>
+                    <button class="admin-btn primary" id="adminSaveDeviceLabelsBtn" style="display:none">Save Labels</button>
+                  </div>
+                  <p style="font-size:0.8rem;color:var(--muted);margin:0 0 12px">Name each device so the activity log shows readable names instead of IDs. Labels are saved to the server.</p>
+                  <div id="adminDeviceLabelsList"><p style="color:var(--muted-dim);font-size:0.82rem">Load activity first to see devices.</p></div>
+                </div>
               </div>
             </div>
 
@@ -2728,6 +2741,7 @@ const state = {
   adminPassword: "",
   adminActivity: [],
   adminFailedAttempts: [],
+  deviceLabels: {},
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -5098,6 +5112,11 @@ function bindAdminPanelEvents() {
     els.adminViewFailedButton._bound = true;
     els.adminViewFailedButton.addEventListener("click", loadAdminFailedAttempts);
   }
+  const saveLabelsBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
+  if (saveLabelsBtn && !saveLabelsBtn._bound) {
+    saveLabelsBtn._bound = true;
+    saveLabelsBtn.addEventListener("click", saveDeviceLabels);
+  }
 }
 
 function setAdminSecurityStatus(message, isError = false) {
@@ -5259,7 +5278,9 @@ function renderAdminActivity() {
               ${entry.reason ? `<div class="review-meta" style="color:#f87171">Reason: ${escapeHtml(entry.reason)}</div>` : ""}
               <div class="review-meta" style="display:flex;gap:14px;flex-wrap:wrap">
                 ${entry.ip ? `<span>🌐 ${escapeHtml(entry.ip)}</span>` : ""}
-                ${entry.deviceId ? `<span>💻 Device: <span style="font-family:monospace;color:var(--gold)">${escapeHtml(entry.deviceId)}</span></span>` : "<span style='color:var(--muted-dim)'>💻 Device ID not recorded</span>"}
+                ${entry.deviceId
+                  ? `<span>💻 <strong style="color:var(--gold)">${escapeHtml(state.deviceLabels[entry.deviceId] || entry.deviceId)}</strong>${state.deviceLabels[entry.deviceId] ? ` <span style="font-family:monospace;font-size:0.72rem;color:var(--muted-dim)">(${escapeHtml(entry.deviceId)})</span>` : ""}</span>`
+                  : "<span style='color:var(--muted-dim)'>💻 Device ID not recorded</span>"}
               </div>
               <div class="review-meta">${escapeHtml(time)}</div>
             </div>
@@ -5274,16 +5295,82 @@ async function loadAdminActivity() {
   els.adminActivityPanel.classList.remove("hidden");
   els.adminActivityList.innerHTML = `<div class="empty-state">Loading activity...</div>`;
   try {
-    const resp = await fetch(apiUrl("/api/auth/activity"), {
-      headers: getAdminHeaders(),
-      cache: "no-store",
-    });
-    const payload = await resp.json().catch(() => ({}));
-    if (!resp.ok) throw new Error(payload.error || "Could not load activity.");
+    // Load activity and device labels in parallel
+    const [actResp, labelsResp] = await Promise.all([
+      fetch(apiUrl("/api/auth/activity"), { headers: getAdminHeaders(), cache: "no-store" }),
+      fetch(apiUrl("/api/device-labels"), { headers: getAdminHeaders(), cache: "no-store" }),
+    ]);
+    const payload = await actResp.json().catch(() => ({}));
+    if (!actResp.ok) throw new Error(payload.error || "Could not load activity.");
+    const labelsPayload = await labelsResp.json().catch(() => ({}));
     state.adminActivity = payload.logins || [];
+    state.deviceLabels = labelsPayload.labels || {};
     renderAdminActivity();
+    renderDeviceLabels();
   } catch (error) {
     els.adminActivityList.innerHTML = `<div class="empty-state">${escapeHtml(error.message || "Could not load activity.")}</div>`;
+  }
+}
+
+function renderDeviceLabels() {
+  const listEl = document.querySelector("#adminDeviceLabelsList");
+  const saveBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
+  if (!listEl) return;
+
+  // Collect all unique device IDs from activity log
+  const allIds = [...new Set((state.adminActivity || []).map((e) => e.deviceId).filter(Boolean))];
+
+  if (!allIds.length) {
+    listEl.innerHTML = `<p style="color:var(--muted-dim);font-size:0.82rem">No device IDs recorded yet.</p>`;
+    if (saveBtn) saveBtn.style.display = "none";
+    return;
+  }
+
+  if (saveBtn) saveBtn.style.display = "";
+
+  listEl.innerHTML = allIds.map((id) => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="font-family:monospace;font-size:0.78rem;color:var(--muted);min-width:120px;flex-shrink:0">${escapeHtml(id)}</span>
+      <span style="color:var(--muted-dim);font-size:0.8rem">→</span>
+      <input
+        class="device-label-input"
+        data-device-id="${escapeHtml(id)}"
+        type="text"
+        placeholder="e.g. Ethan's Chromebook"
+        value="${escapeHtml(state.deviceLabels[id] || "")}"
+        style="flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem;font-family:inherit"
+      />
+    </div>
+  `).join("");
+}
+
+async function saveDeviceLabels() {
+  const saveBtn = document.querySelector("#adminSaveDeviceLabelsBtn");
+  const inputs = document.querySelectorAll(".device-label-input");
+  const labels = { ...state.deviceLabels };
+
+  inputs.forEach((input) => {
+    const id = input.dataset.deviceId;
+    const val = input.value.trim();
+    if (id) labels[id] = val; // empty string = remove label
+  });
+
+  if (saveBtn) { saveBtn.textContent = "Saving…"; saveBtn.disabled = true; }
+  try {
+    const resp = await fetch(apiUrl("/api/device-labels"), {
+      method: "POST",
+      headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ labels }),
+    });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not save labels.");
+    state.deviceLabels = payload.labels || labels;
+    renderAdminActivity(); // refresh cards with new labels
+    if (saveBtn) saveBtn.textContent = "✓ Saved";
+    window.setTimeout(() => { if (saveBtn) { saveBtn.textContent = "Save Labels"; saveBtn.disabled = false; } }, 2000);
+  } catch (err) {
+    alert(err.message || "Could not save device labels.");
+    if (saveBtn) { saveBtn.textContent = "Save Labels"; saveBtn.disabled = false; }
   }
 }
 
