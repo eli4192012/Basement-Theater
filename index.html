@@ -1795,6 +1795,69 @@ h3 {
   flex-wrap: wrap;
 }
 
+/* ── More Like This ── */
+.detail-more-like-this {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(215, 164, 76, 0.12);
+}
+
+.more-like-grid {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+.more-like-grid::-webkit-scrollbar { display: none; }
+
+.more-like-card {
+  flex: 0 0 110px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.more-like-art {
+  width: 110px;
+  height: 150px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--panel);
+  margin-bottom: 6px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.more-like-card:hover .more-like-art {
+  transform: scale(1.04);
+  opacity: 0.85;
+}
+
+.more-like-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+/* ── Continue Watching Resume badge ── */
+.continue-grid .card-badges::before {
+  content: "▶ Resume";
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: var(--gold);
+  color: #1a0800;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 .review-header {
   display: flex;
   align-items: end;
@@ -1919,6 +1982,19 @@ h3 {
   .detail-art {
     width: 100%;
     min-height: 260px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 16px;
+    min-height: unset;
+  }
+  .hero-art {
+    min-height: 180px;
+  }
+  .hero-copy h2 {
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
   }
 }
 
@@ -4462,11 +4538,12 @@ function renderRows() {
 }
 
 function renderCustomRow(title, items) {
-  const actionButton =
-    title === "Continue Watching"
-      ? `<button type="button" class="ghost-button row-action-button" data-row-action="clear-continue">Clear</button>`
-      : "";
-  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><div class="row-header-actions">${actionButton}<p class="results-count">${items.length} titles</p></div></div><div class="row-grid">${sortItems(items).map(renderCard).join("")}</div></section>`;
+  const isContinue = title === "Continue Watching";
+  const actionButton = isContinue
+    ? `<button type="button" class="ghost-button row-action-button" data-row-action="clear-continue">Clear</button>`
+    : "";
+  const gridClass = isContinue ? "row-grid continue-grid" : "row-grid";
+  return `<section class="row"><div class="row-header"><h4>${escapeHtml(title)}</h4><div class="row-header-actions">${actionButton}<p class="results-count">${items.length} titles</p></div></div><div class="${gridClass}">${sortItems(items).map(renderCard).join("")}</div></section>`;
 }
 
 function renderFavorites() {
@@ -4668,8 +4745,8 @@ function openModal(item) {
   infoBlock.className = "detail-dynamic detail-info-grid";
   infoBlock.innerHTML = `
     <div><span class="eyebrow">Runtime</span><p>${escapeHtml(item.runtime ? `${item.runtime} min` : "Unknown")}</p></div>
-    <div><span class="eyebrow">TMDB Rating</span><p>${escapeHtml(item.tmdbRating ? Number(item.tmdbRating).toFixed(1) : "N/A")}</p></div>
-    <div><span class="eyebrow">Cast</span><p>${escapeHtml((item.cast || []).join(", ") || "Not loaded yet")}</p></div>
+    <div><span class="eyebrow">TMDB Rating</span><p>${escapeHtml(item.tmdbRating ? Number(item.tmdbRating).toFixed(1) + " / 10" : "N/A")}</p></div>
+    ${item.cast?.length ? `<div><span class="eyebrow">Cast</span><p>${escapeHtml(item.cast.slice(0, 5).join(", "))}</p></div>` : ""}
   `;
   els.detailDescription.insertAdjacentElement("afterend", infoBlock);
 
@@ -4682,6 +4759,32 @@ function openModal(item) {
   els.detailActions.insertAdjacentElement("beforebegin", controls);
   document.querySelector("#detailFavoriteButton").addEventListener("click", () => toggleFavorite(item.url));
   document.querySelector("#detailWatchlistButton").addEventListener("click", () => toggleWatchlist(item.url));
+
+  // More Like This
+  const allItems = getLibraryItems();
+  const similar = allItems.filter(i => i.url !== item.url && i.category === item.category).slice(0, 10);
+  if (similar.length > 1) {
+    const moreEl = document.createElement("div");
+    moreEl.className = "detail-dynamic detail-more-like-this";
+    moreEl.innerHTML = `
+      <p class="eyebrow" style="margin:0 0 12px">More Like This</p>
+      <div class="more-like-grid">
+        ${similar.map(s => `
+          <button class="more-like-card" data-more-url="${escapeHtml(s.url)}" type="button">
+            <div class="more-like-art" style="${s.posterUrl ? `background-image:url('${escapeHtml(optimizePosterUrl(s.posterUrl))}')` : `background:${gradientFor(s.title)}`}"></div>
+            <span class="more-like-title">${escapeHtml(s.title)}</span>
+          </button>
+        `).join("")}
+      </div>
+    `;
+    els.detailModal.querySelector(".detail-card").appendChild(moreEl);
+    moreEl.querySelectorAll(".more-like-card").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const found = allItems.find(i => i.url === btn.dataset.moreUrl);
+        if (found) openModal(found);
+      });
+    });
+  }
 
   if (!els.detailModal.open) els.detailModal.showModal();
 }
