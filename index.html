@@ -2149,6 +2149,7 @@ h3 {
           </label>
           <label class="search hidden" id="gameStashSearchWrap"><span>Search</span><input id="gameStashSearch" type="search" placeholder="Search games…" /></label>
           <button id="randomPickButton" class="ghost-button" type="button">Shuffle</button>
+          <button id="signOutButton" class="ghost-button" type="button" style="display:none;font-size:0.78rem;opacity:0.7">Sign Out</button>
         </div>
       </header>
 
@@ -2912,11 +2913,31 @@ async function loadProtectedData() {
   state.trash = EMBEDDED_TRASH;
   state.activePublicPageSlug = getVisiblePublicPages()[0]?.slug || "home";
   els.authGate.classList.add("hidden");
+  document.querySelector("#signOutButton").style.display = "";
   await loadEditableTexts();
   renderAll();
   loadAnnouncement(); // Non-blocking — loads banner in background
   startAnnouncementWatcher();
   startEditableTextWatcher();
+}
+
+function signOut() {
+  if (!confirm("Sign out of The Basement Premium?")) return;
+  // Clear session
+  sessionStorage.removeItem("basement-theater.password-token");
+  sessionStorage.removeItem("basement-theater.manual-email");
+  sessionStorage.removeItem("basement-theater.google-credential");
+  sessionStorage.removeItem(STORAGE_KEYS.adminUnlocked);
+  localStorage.removeItem("basement-theater.password-user");
+  localStorage.removeItem("basement-theater.google-user");
+  // Reset auth state
+  state.auth.token = "";
+  state.auth.user = null;
+  state.auth.manualEmail = "";
+  state.auth.googleCredential = "";
+  state.adminUnlocked = false;
+  // Reload to show auth gate cleanly
+  window.location.reload();
 }
 
 async function verifyAccess(password) {
@@ -3168,6 +3189,7 @@ function bindEvents() {
   });
 
   els.randomPickButton.addEventListener("click", () => runSurprise(state.surpriseMode));
+  document.querySelector("#signOutButton")?.addEventListener("click", signOut);
   els.heroPlay.addEventListener("click", () => {
     const heroItem = getHeroItem();
     if (heroItem) markWatched(heroItem);
