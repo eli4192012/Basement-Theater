@@ -1901,6 +1901,132 @@ h3 {
   opacity: 1;
 }
 
+/* ── File Viewer ── */
+.fv-view { padding: 32px 0; }
+
+.fv-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
+  border: 2px dashed rgba(215,164,76,0.3);
+  border-radius: 18px;
+  background: rgba(215,164,76,0.03);
+  cursor: pointer;
+  transition: border-color 200ms, background 200ms;
+  padding: 48px 24px;
+  text-align: center;
+}
+.fv-drop-zone.drag-over {
+  border-color: var(--gold);
+  background: rgba(215,164,76,0.08);
+}
+.fv-drop-icon { font-size: 3.5rem; line-height: 1; }
+.fv-drop-title { font-family: "Bebas Neue", sans-serif; font-size: 2.2rem; margin: 0; color: var(--text); }
+.fv-drop-sub { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+.fv-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(215,164,76,0.06);
+  border: 1px solid rgba(215,164,76,0.14);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.fv-file-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fv-file-icon { font-size: 2rem; flex-shrink: 0; }
+.fv-file-name { font-weight: 700; font-size: 0.95rem; word-break: break-all; }
+.fv-file-size { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+.fv-content { width: 100%; }
+
+/* PDF */
+.fv-pdf-frame {
+  width: 100%;
+  height: 82vh;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* Video */
+.fv-video {
+  width: 100%;
+  max-height: 80vh;
+  border-radius: 10px;
+  background: #000;
+}
+
+/* Audio */
+.fv-audio-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+.fv-audio { width: 100%; max-width: 600px; }
+
+/* Image */
+.fv-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+}
+.fv-image { max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; }
+
+/* Code / Text */
+.fv-code-wrap {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.fv-code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.fv-code {
+  display: block;
+  padding: 20px;
+  overflow-x: auto;
+  background: rgba(10,5,3,0.8);
+  color: #e8d5b0;
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre;
+  max-height: 78vh;
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* Unsupported */
+.fv-unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px;
+  text-align: center;
+  color: var(--muted);
+}
+
 /* ── Admin Panel ── */
 .admin-view {
   padding: 32px 0;
@@ -2138,6 +2264,7 @@ h3 {
             <button id="gameStashTabButton" class="nav-link" type="button">Game Stash</button>
             <button id="proxyCornerTabButton" class="nav-link" type="button">Proxy Corner</button>
             <button id="libraryTabButton" class="nav-link" type="button">Theater</button>
+            <button id="fileViewerTabButton" class="nav-link" type="button">📂 Files</button>
             <button id="adminTabButton" class="nav-link" type="button" style="display:none">⚙ Admin</button>
           </nav>
         </div>
@@ -2291,6 +2418,30 @@ h3 {
           <p class="review-note" style="display:none">Each page from the public Basement doc lives here as its own tab.</p>
           <section id="publicTabsChips" class="genre-chips" aria-label="Public document pages"></section>
           <section id="publicSections" class="public-sections"></section>
+        </section>
+
+        <!-- ── File Viewer ── -->
+        <section id="fileViewerView" class="hidden-view fv-view">
+          <div id="fvDropZone" class="fv-drop-zone">
+            <input id="fvFileInput" type="file" style="display:none" />
+            <div class="fv-drop-icon">📂</div>
+            <p class="fv-drop-title">Drop any file here</p>
+            <p class="fv-drop-sub">or click to browse — PDF, video, image, code, anything</p>
+            <button class="primary-button" id="fvBrowseBtn" type="button">Browse Files</button>
+          </div>
+          <div id="fvViewer" class="fv-viewer hidden">
+            <div class="fv-toolbar">
+              <div class="fv-file-info">
+                <span class="fv-file-icon" id="fvFileIcon">📄</span>
+                <div>
+                  <div class="fv-file-name" id="fvFileName"></div>
+                  <div class="fv-file-size" id="fvFileSize"></div>
+                </div>
+              </div>
+              <button class="ghost-button" id="fvNewFileBtn" type="button">Open Another File</button>
+            </div>
+            <div id="fvContent" class="fv-content"></div>
+          </div>
         </section>
 
         <section id="adminView" class="hidden-view admin-view">
@@ -2826,6 +2977,8 @@ const els = {
   theaterLibrarySubtab: document.querySelector("#theaterLibrarySubtab"),
   theaterFavoritesSubtab: document.querySelector("#theaterFavoritesSubtab"),
   theaterTrashSubtab: document.querySelector("#theaterTrashSubtab"),
+  fileViewerTabButton: document.querySelector("#fileViewerTabButton"),
+  fileViewerView: document.querySelector("#fileViewerView"),
   adminTabButton: document.querySelector("#adminTabButton"),
   adminView: document.querySelector("#adminView"),
   adminToggleTextEditorButton: document.querySelector("#adminToggleTextEditorButton"),
@@ -2930,9 +3083,139 @@ async function loadProtectedData() {
   document.querySelector("#signOutButton").style.display = "";
   await loadEditableTexts();
   renderAll();
+  initFileViewer();
   loadAnnouncement(); // Non-blocking — loads banner in background
   startAnnouncementWatcher();
   startEditableTextWatcher();
+}
+
+// ── File Viewer ──────────────────────────────────────────────────────────────
+
+function initFileViewer() {
+  const dropZone  = document.querySelector("#fvDropZone");
+  const fileInput = document.querySelector("#fvFileInput");
+  const browseBtn = document.querySelector("#fvBrowseBtn");
+  const newFileBtn = document.querySelector("#fvNewFileBtn");
+  if (!dropZone) return;
+
+  browseBtn.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("click", (e) => { if (e.target !== browseBtn) fileInput.click(); });
+  fileInput.addEventListener("change", () => { if (fileInput.files[0]) openFile(fileInput.files[0]); });
+
+  dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]);
+  });
+
+  newFileBtn?.addEventListener("click", resetFileViewer);
+}
+
+function resetFileViewer() {
+  document.querySelector("#fvDropZone").classList.remove("hidden");
+  document.querySelector("#fvViewer").classList.add("hidden");
+  document.querySelector("#fvContent").innerHTML = "";
+  // Revoke any old object URLs to free memory
+  const old = document.querySelector("#fvContent [data-blob-url]");
+  if (old) URL.revokeObjectURL(old.dataset.blobUrl);
+}
+
+function fvFormatSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function fvIconFor(type, name) {
+  if (type.startsWith("image/")) return "🖼️";
+  if (type.startsWith("video/")) return "🎬";
+  if (type.startsWith("audio/")) return "🎵";
+  if (type === "application/pdf") return "📕";
+  if (type.includes("word") || name.endsWith(".docx")) return "📝";
+  if (type.includes("zip") || type.includes("rar")) return "🗜️";
+  if (name.match(/\.(js|ts|jsx|tsx|html|css|py|java|cpp|c|json|xml|yaml|yml|sh|rb|php)$/i)) return "💻";
+  return "📄";
+}
+
+async function openFile(file) {
+  const dropZone = document.querySelector("#fvDropZone");
+  const viewer   = document.querySelector("#fvViewer");
+  const content  = document.querySelector("#fvContent");
+
+  document.querySelector("#fvFileName").textContent = file.name;
+  document.querySelector("#fvFileSize").textContent = fvFormatSize(file.size);
+  document.querySelector("#fvFileIcon").textContent = fvIconFor(file.type, file.name);
+
+  dropZone.classList.add("hidden");
+  viewer.classList.remove("hidden");
+  content.innerHTML = `<div class="fv-unsupported"><div style="font-size:2rem">⏳</div><p>Loading…</p></div>`;
+
+  const type = file.type;
+  const name = file.name.toLowerCase();
+
+  try {
+    // PDF
+    if (type === "application/pdf" || name.endsWith(".pdf")) {
+      const url = URL.createObjectURL(file);
+      content.innerHTML = `<iframe class="fv-pdf-frame" src="${url}" data-blob-url="${url}"></iframe>`;
+      return;
+    }
+
+    // Video
+    if (type.startsWith("video/") || name.match(/\.(mp4|webm|mov|avi|mkv|m4v)$/)) {
+      const url = URL.createObjectURL(file);
+      content.innerHTML = `<video class="fv-video" controls autoplay data-blob-url="${url}">
+        <source src="${url}">Your browser does not support this video format.
+      </video>`;
+      return;
+    }
+
+    // Audio
+    if (type.startsWith("audio/") || name.match(/\.(mp3|wav|ogg|flac|aac|m4a)$/)) {
+      const url = URL.createObjectURL(file);
+      content.innerHTML = `<div class="fv-audio-wrap">
+        <audio class="fv-audio" controls autoplay data-blob-url="${url}">
+          <source src="${url}">
+        </audio>
+      </div>`;
+      return;
+    }
+
+    // Image
+    if (type.startsWith("image/") || name.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp|ico)$/)) {
+      const url = URL.createObjectURL(file);
+      content.innerHTML = `<div class="fv-image-wrap">
+        <img class="fv-image" src="${url}" alt="${escapeHtml(file.name)}" data-blob-url="${url}">
+      </div>`;
+      return;
+    }
+
+    // Text / Code — read as text
+    const text = await file.text();
+    const ext = name.split(".").pop() || "txt";
+    const lineCount = text.split("\n").length;
+    content.innerHTML = `
+      <div class="fv-code-wrap">
+        <div class="fv-code-toolbar">
+          <span>${escapeHtml(ext.toUpperCase())} · ${lineCount.toLocaleString()} lines</span>
+          <button class="admin-btn" id="fvCopyBtn" type="button">Copy</button>
+        </div>
+        <pre class="fv-code" id="fvCodeBlock">${escapeHtml(text)}</pre>
+      </div>`;
+    document.querySelector("#fvCopyBtn")?.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(text).catch(() => null);
+      const btn = document.querySelector("#fvCopyBtn");
+      if (btn) { btn.textContent = "✓ Copied"; window.setTimeout(() => { btn.textContent = "Copy"; }, 1500); }
+    });
+
+  } catch (err) {
+    content.innerHTML = `<div class="fv-unsupported">
+      <div style="font-size:2.5rem">😕</div>
+      <p>Couldn't read this file type.<br><span style="font-size:0.8rem;color:var(--muted-dim)">${escapeHtml(err.message)}</span></p>
+    </div>`;
+  }
 }
 
 function signOut() {
@@ -3222,6 +3505,7 @@ function bindEvents() {
   els.gameStashTabButton.addEventListener("click", () => setView("game-stash"));
   els.proxyCornerTabButton.addEventListener("click", () => setView("proxy-corner"));
   els.libraryTabButton.addEventListener("click", () => setView("library"));
+  els.fileViewerTabButton?.addEventListener("click", () => setView("file-viewer"));
   els.theaterLibrarySubtab.addEventListener("click", () => setTheaterTab("library"));
   els.theaterFavoritesSubtab.addEventListener("click", () => setTheaterTab("favorites"));
   els.theaterTrashSubtab.addEventListener("click", () => setTheaterTab("trash"));
@@ -3305,6 +3589,7 @@ function syncView() {
   const publicTabs = PUBLIC_PAGE_WHITELIST.includes(state.activeView);
   const library = state.activeView === "library";
   const admin = state.activeView === "admin";
+  const fileViewer = state.activeView === "file-viewer";
   const libraryShelf = library && state.activeTheaterTab === "library";
   const favoritesShelf = library && state.activeTheaterTab === "favorites";
   const trashShelf = library && state.activeTheaterTab === "trash";
@@ -3312,6 +3597,7 @@ function syncView() {
   els.libraryView.classList.toggle("hidden-view", !library);
   els.publicView.classList.toggle("hidden-view", !publicTabs);
   els.adminView.classList.toggle("hidden-view", !admin);
+  if (els.fileViewerView) els.fileViewerView.classList.toggle("hidden-view", !fileViewer);
   els.theaterLibraryContent.classList.toggle("hidden-view", !libraryShelf);
   els.favoritesView.classList.toggle("hidden-view", !favoritesShelf);
   els.trashView.classList.toggle("hidden-view", !trashShelf);
@@ -3321,6 +3607,7 @@ function syncView() {
   els.gameStashTabButton.classList.toggle("active", state.activeView === "game-stash");
   els.proxyCornerTabButton.classList.toggle("active", state.activeView === "proxy-corner");
   els.libraryTabButton.classList.toggle("active", library);
+  els.fileViewerTabButton?.classList.toggle("active", fileViewer);
   els.theaterLibrarySubtab.classList.toggle("active", libraryShelf);
   els.theaterFavoritesSubtab.classList.toggle("active", favoritesShelf);
   els.theaterTrashSubtab.classList.toggle("active", trashShelf);
