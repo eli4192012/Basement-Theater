@@ -242,48 +242,36 @@ body {
   padding-left: 2px;
 }
 
-.auth-field-inner {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.auth-field-icon {
-  position: absolute;
-  left: 15px;
-  font-size: 0.95rem;
-  pointer-events: none;
-  opacity: 0.45;
-  line-height: 1;
-}
 
 .auth-input {
   width: 100%;
-  padding: 14px 14px 14px 44px;
-  background: rgba(255, 235, 200, 0.05);
-  border: 1px solid rgba(255, 215, 150, 0.13);
-  border-radius: 11px;
-  color: var(--text);
+  padding: 15px 16px;
+  background: rgba(10, 5, 3, 0.6);
+  border: 1.5px solid rgba(255, 215, 150, 0.28);
+  border-radius: 10px;
+  color: #fff7ea;
   font: inherit;
-  font-size: 0.98rem;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
   box-sizing: border-box;
+  -webkit-appearance: none;
 }
 
 .auth-input:hover {
-  border-color: rgba(255, 215, 150, 0.22);
-  background: rgba(255, 235, 200, 0.07);
+  border-color: rgba(255, 215, 150, 0.45);
+  background: rgba(10, 5, 3, 0.72);
 }
 
 .auth-input:focus {
-  border-color: rgba(211, 123, 45, 0.7);
-  background: rgba(255, 235, 200, 0.08);
-  box-shadow: 0 0 0 3px rgba(211, 123, 45, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.25);
+  border-color: #d37b2d;
+  background: rgba(10, 5, 3, 0.8);
+  box-shadow: 0 0 0 3px rgba(211, 123, 45, 0.2);
 }
 
 .auth-input::placeholder {
-  color: rgba(255, 225, 185, 0.22);
+  color: rgba(255, 225, 185, 0.35);
+  font-weight: 400;
 }
 
 .auth-submit-btn {
@@ -2366,17 +2354,11 @@ h3 {
         <form id="passwordAccessForm" class="auth-form">
           <div class="auth-field">
             <label class="auth-field-label" for="emailAccessInput">Email Address</label>
-            <div class="auth-field-inner">
-              <span class="auth-field-icon">✉️</span>
-              <input id="emailAccessInput" class="auth-input" type="email" placeholder="your@email.com" autocomplete="email" required />
-            </div>
+            <input id="emailAccessInput" class="auth-input" type="email" placeholder="your@email.com" autocomplete="email" required />
           </div>
           <div class="auth-field">
             <label class="auth-field-label" for="passwordAccessInput">Password</label>
-            <div class="auth-field-inner">
-              <span class="auth-field-icon">🔒</span>
-              <input id="passwordAccessInput" class="auth-input" type="password" placeholder="••••••••••" autocomplete="current-password" required />
-            </div>
+            <input id="passwordAccessInput" class="auth-input" type="password" placeholder="Enter password" autocomplete="current-password" required />
           </div>
           <div id="authErrorMsg" class="auth-error-msg"></div>
           <button class="primary-button auth-submit-btn" type="submit">▶ Enter Theater</button>
