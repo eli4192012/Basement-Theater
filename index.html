@@ -1525,9 +1525,7 @@ h3 {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.78);
   color: rgba(255,255,255,0.82);
   padding: 3px 8px;
   border-radius: 4px;
@@ -1538,9 +1536,7 @@ h3 {
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.06em;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.78);
   color: var(--gold);
   padding: 3px 7px;
   border-radius: 4px;
@@ -3836,24 +3832,30 @@ function syncView() {
   }
 }
 
+let _rerenderPending = false;
 function rerenderActiveView() {
-  renderStats();
-  renderProfiles();
-  if (state.activeView === "library") {
-    if (state.activeTheaterTab === "library") {
-      renderHero();
-      renderRows();
-    } else if (state.activeTheaterTab === "favorites") {
-      renderFavorites();
-    } else {
-      renderTrash();
+  if (_rerenderPending) return;
+  _rerenderPending = true;
+  requestAnimationFrame(() => {
+    _rerenderPending = false;
+    renderStats();
+    renderProfiles();
+    if (state.activeView === "library") {
+      if (state.activeTheaterTab === "library") {
+        renderHero();
+        renderRows();
+      } else if (state.activeTheaterTab === "favorites") {
+        renderFavorites();
+      } else {
+        renderTrash();
+      }
+    } else if (PUBLIC_PAGE_WHITELIST.includes(state.activeView)) {
+      renderPublicTabs();
+      renderPublicPage();
+    } else if (state.activeView === "admin") {
+      renderAdmin();
     }
-  } else if (PUBLIC_PAGE_WHITELIST.includes(state.activeView)) {
-    renderPublicTabs();
-    renderPublicPage();
-  } else if (state.activeView === "admin") {
-    renderAdmin();
-  }
+  });
 }
 
 function getActiveProfile() {
@@ -4085,7 +4087,7 @@ function renderHero() {
   const item = getHeroItem();
   if (!item) return;
   const gradient = gradientFor(item.title);
-  const imgUrl = item.backdropUrl || item.posterUrl || "";
+  const imgUrl = optimizeHeroUrl(item.backdropUrl || item.posterUrl || "");
 
   els.heroArt.style.setProperty("--hero-gradient", gradient);
   els.heroArt.style.setProperty("--hero-image", imgUrl ? `url("${imgUrl}")` : "none");
@@ -4639,20 +4641,44 @@ const cardImageObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: "200px" });
 
 function bindCardInteractions(container) {
-  container.querySelectorAll(".card").forEach((card) => {
-    card.addEventListener("click", (event) => {
-      // Don't open modal if a button inside the card was clicked
-      if (event.target.closest("button")) return;
-      const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
-      const item = allItems.find((entry) => entry.url === card.dataset.url);
-      if (item) openModal(item);
+  // Use event delegation — one listener per container instead of one per card
+  if (!container._delegationBound) {
+    container._delegationBound = true;
+
+    container.addEventListener("click", (event) => {
+      if (event.target.closest('[data-row-action="clear-continue"]')) {
+        event.stopPropagation(); clearContinueWatching(); return;
+      }
+      const favBtn = event.target.closest(".favorite-button");
+      if (favBtn) { event.stopPropagation(); toggleFavorite(favBtn.dataset.url); return; }
+
+      const wlBtn = event.target.closest(".watchlist-button");
+      if (wlBtn) { event.stopPropagation(); toggleWatchlist(wlBtn.dataset.url); return; }
+
+      const playBtn = event.target.closest(".card-play-btn");
+      if (playBtn) {
+        event.stopPropagation();
+        const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
+        const item = allItems.find(e => e.url === playBtn.dataset.url);
+        if (item) openModal(item);
+        return;
+      }
+      if (!event.target.closest("button")) {
+        const card = event.target.closest(".card");
+        if (!card) return;
+        const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
+        const item = allItems.find(e => e.url === card.dataset.url);
+        if (item) openModal(item);
+      }
     });
 
-    card.addEventListener("keydown", (e) => {
+    container.addEventListener("keydown", (e) => {
+      const card = document.activeElement?.closest(".card");
+      if (!card || !container.contains(card)) return;
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
-        const item = allItems.find((entry) => entry.url === card.dataset.url);
+        const item = allItems.find(entry => entry.url === card.dataset.url);
         if (item) openModal(item);
         return;
       }
@@ -4678,32 +4704,12 @@ function bindCardInteractions(container) {
         }
       }
     });
-  });
-  // Start lazy-loading poster images
-  container.querySelectorAll(".card-poster.img-loading").forEach((poster) => {
+  }
+
+  // Observe new posters for lazy-loading each render
+  container.querySelectorAll(".card-poster.img-loading").forEach(poster => {
     cardImageObserver.observe(poster);
   });
-  container.querySelectorAll(".favorite-button").forEach((button) => button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleFavorite(button.dataset.url);
-  }));
-  container.querySelectorAll(".watchlist-button").forEach((button) => button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleWatchlist(button.dataset.url);
-  }));
-  // Play button on hover overlay — open modal directly
-  container.querySelectorAll(".card-play-btn").forEach((button) => button.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const allItems = [...state.adminOverrides.added, ...(state.catalog?.items ?? [])];
-    const item = allItems.find((entry) => entry.url === button.dataset.url);
-    if (item) openModal(item);
-  }));
-  container.querySelectorAll('[data-row-action="clear-continue"]').forEach((button) =>
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      clearContinueWatching();
-    }),
-  );
 }
 
 function optimizePosterUrl(url) {
@@ -4716,6 +4722,19 @@ function optimizePosterUrl(url) {
     return "https://wsrv.nl/?url=" + path + "&w=342&output=jpg";
   }
   return optimized;
+}
+
+// Wider version for hero backdrops and detail modal art
+function optimizeHeroUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("https://image.tmdb.org/")) {
+    const path = url
+      .replace("/t/p/w342/", "/t/p/w1280/")
+      .replace("/t/p/w500/", "/t/p/w1280/")
+      .replace("https://", "");
+    return "https://wsrv.nl/?url=" + path + "&w=1280&output=jpg";
+  }
+  return url;
 }
 
 function renderCard(item) {
@@ -4781,7 +4800,7 @@ function openModal(item) {
   const inWatchlist = Boolean(state.watchlist[active.id]?.[item.url]);
 
   els.detailArt.style.setProperty("--detail-gradient", gradient);
-  els.detailArt.style.setProperty("--detail-image", item.posterUrl ? `url("${item.posterUrl}")` : "none");
+  els.detailArt.style.setProperty("--detail-image", item.posterUrl ? `url("${optimizePosterUrl(item.posterUrl)}")` : "none");
   els.detailTitle.textContent = item.title;
   els.detailMeta.textContent = `${item.category} • ${item.type === "series" ? "Series or folder" : "Movie"} • ${inferRating(item)}${item.year ? ` • ${item.year}` : ""}`;
   els.detailDescription.textContent = item.overview || buildDescription(item);
