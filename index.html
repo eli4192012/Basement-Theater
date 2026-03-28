@@ -3676,20 +3676,6 @@ function renderHomePage(page) {
         <h2 class="home-title">${escapeHtml(title)}</h2>
         ${cleanedStatus ? `<div class="home-status-pill"><span class="home-status-dot"></span>Status: ${escapeHtml(cleanedStatus)}</div>` : ""}
       </div>
-      ${alertLines.length ? `
-        <div class="home-alert-banner">
-          <span class="home-alert-icon">📣</span>
-          <div>${alertLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>
-        </div>
-      ` : ""}
-      ${activity.length ? `
-        <div class="home-activity-section">
-          ${activityLead ? `<p class="home-activity-label">${escapeHtml(activityLead)}</p>` : ""}
-          <div class="home-activity-cards">
-            ${activityCards.map((line) => `<div class="home-activity-card">${escapeHtml(line)}</div>`).join("")}
-          </div>
-        </div>
-      ` : ""}
       ${body.length ? `<div class="home-body">${body.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}
     </section>
   `;
