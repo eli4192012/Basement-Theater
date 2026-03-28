@@ -2664,6 +2664,7 @@ h3 {
                     <option value="info">📘 Info (blue)</option>
                     <option value="warning">⚠️ Warning (red)</option>
                   </select>
+                  <input type="datetime-local" id="adminAnnounceSchedule" class="admin-search-bar" style="margin:0" title="Leave empty to post immediately" />
                   <button class="admin-btn primary" id="adminAnnounceButton">📢 Commit Announcement to GitHub</button>
                   <button class="admin-btn danger" id="adminClearAnnouncementButton">✕ Clear</button>
                 </div>
@@ -2785,6 +2786,14 @@ h3 {
                     </div>
                     <p id="adminActivityCount" class="results-count"></p>
                   </section>
+                  <div style="display:flex;gap:8px;margin:10px 0 12px;flex-wrap:wrap">
+                    <input id="adminActivitySearch" type="text" placeholder="Filter by email or IP…" style="flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.82rem;font-family:inherit" />
+                    <select id="adminActivityStatusFilter" style="background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.82rem;font-family:inherit">
+                      <option value="">All statuses</option>
+                      <option value="accepted">✓ Accepted only</option>
+                      <option value="denied">✗ Denied only</option>
+                    </select>
+                  </div>
                   <section id="adminActivityList" class="review-grid"></section>
                 </div>
                 <div class="admin-announce-row" style="margin-top:10px">
@@ -2812,6 +2821,7 @@ h3 {
                 </div>
                 <div class="admin-actions" style="margin-left:auto">
                   <button class="admin-btn primary" id="adminAddButton">+ Add Title</button>
+                  <button class="admin-btn danger" id="adminBulkDeleteButton" style="display:none">🗑 Delete Selected (<span id="adminBulkCount">0</span>)</button>
                   <button class="admin-btn" id="adminPublishButton" style="background:#1a6b35;border-color:#1a6b35;color:#fff">🚀 Commit Catalog to GitHub</button>
                   <button class="admin-btn" id="adminExportButton">⬇ Export JSON</button>
                   <button class="admin-btn danger" id="adminResetButton">Reset Overrides</button>
@@ -2827,6 +2837,7 @@ h3 {
                 <table class="admin-table">
                   <thead>
                     <tr>
+                      <th style="width:32px"><input type="checkbox" id="adminSelectAll" title="Select all" /></th>
                       <th>Title</th>
                       <th>Category</th>
                       <th>Type</th>
@@ -5006,6 +5017,12 @@ async function loadAnnouncement() {
       return;
     }
 
+    // Respect scheduled time — don't show until scheduledAt has passed
+    if (data.scheduledAt && new Date(data.scheduledAt) > new Date()) {
+      banner.classList.remove("active");
+      return;
+    }
+
     // Only hide when this exact posted version was dismissed.
     const dismissedKey = "basement-theater.announcement-dismissed";
     const announcementId = sha || getAnnouncementId(data);
@@ -5406,14 +5423,18 @@ async function publishAnnouncement() {
   if (!msgEl || !typeEl || !btn) return;
   const message = msgEl.value.trim();
   const type = typeEl.value;
+  const scheduleVal = document.querySelector("#adminAnnounceSchedule")?.value;
+  const scheduledAt = scheduleVal ? new Date(scheduleVal).toISOString() : null;
+  const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
+
   if (!message) { alert("Type an announcement first!"); return; }
 
   btn.textContent = "⏳ Sending…";
   btn.disabled = true;
   try {
-    await pushAnnouncementJson({ active: true, message, type, postedAt: new Date().toISOString() });
-    btn.textContent = "✅ Announcement committed!";
-    updateAdminAnnouncementDisplay({ active: true, message, type });
+    await pushAnnouncementJson({ active: true, message, type, postedAt: new Date().toISOString(), scheduledAt: scheduledAt || null });
+    btn.textContent = isScheduled ? "✅ Scheduled!" : "✅ Announcement committed!";
+    if (!isScheduled) updateAdminAnnouncementDisplay({ active: true, message, type });
     // Also show the banner locally
     localStorage.removeItem("basement-theater.announcement-dismissed");
     await loadAnnouncement();
@@ -5525,6 +5546,14 @@ function getAdminItems() {
   ];
 }
 
+function updateBulkDeleteBtn() {
+  const count = document.querySelectorAll(".admin-row-check:checked").length;
+  const btn = document.querySelector("#adminBulkDeleteButton");
+  const countEl = document.querySelector("#adminBulkCount");
+  if (btn) btn.style.display = count > 0 ? "" : "none";
+  if (countEl) countEl.textContent = count;
+}
+
 function renderAdminTable() {
   const query = (document.querySelector("#adminSearch")?.value || "").toLowerCase();
   const categoryFilter = document.querySelector("#adminCategoryFilter")?.value || "";
@@ -5555,6 +5584,7 @@ function renderAdminTable() {
   const tbody = document.querySelector("#adminTableBody");
   tbody.innerHTML = filtered.map((item) => `
     <tr class="${item._added ? "admin-added" : item._edited ? "admin-edited" : ""}">
+      <td><input type="checkbox" class="admin-row-check" data-url="${escapeHtml(item.url)}" /></td>
       <td><div class="admin-cell-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div></td>
       <td>${escapeHtml(item.category)}</td>
       <td>${escapeHtml(item.type === "series" ? "Series" : "Movie")}</td>
@@ -5570,6 +5600,11 @@ function renderAdminTable() {
       </td>
     </tr>
   `).join("");
+  // Reset select-all and bulk button when table re-renders
+  const selectAll = document.querySelector("#adminSelectAll");
+  if (selectAll) selectAll.checked = false;
+  updateBulkDeleteBtn();
+  tbody.querySelectorAll(".admin-row-check").forEach(cb => cb.addEventListener("change", updateBulkDeleteBtn));
 
   // Bind row actions
   tbody.querySelectorAll("[data-admin-edit]").forEach((btn) => {
@@ -5634,6 +5669,32 @@ function bindAdminPanelEvents() {
   if (viewActivityBtn && !viewActivityBtn._bound) {
     viewActivityBtn._bound = true;
     viewActivityBtn.addEventListener("click", loadAdminActivity);
+  }
+  const actSearch = document.querySelector("#adminActivitySearch");
+  const actStatus = document.querySelector("#adminActivityStatusFilter");
+  if (actSearch && !actSearch._bound) { actSearch._bound = true; actSearch.addEventListener("input", renderAdminActivity); }
+  if (actStatus && !actStatus._bound) { actStatus._bound = true; actStatus.addEventListener("change", renderAdminActivity); }
+  const bulkDeleteBtn = document.querySelector("#adminBulkDeleteButton");
+  if (bulkDeleteBtn && !bulkDeleteBtn._bound) {
+    bulkDeleteBtn._bound = true;
+    bulkDeleteBtn.addEventListener("click", () => {
+      const checked = Array.from(document.querySelectorAll(".admin-row-check:checked")).map(cb => cb.dataset.url);
+      if (!checked.length) return;
+      if (!confirm(`Delete ${checked.length} selected title${checked.length === 1 ? "" : "s"}?`)) return;
+      checked.forEach(url => {
+        const isAdded = state.adminOverrides.added.some(i => i.url === url);
+        if (isAdded) adminRemoveAdded(url);
+        else adminDeleteItem(url);
+      });
+    });
+  }
+  const selectAll = document.querySelector("#adminSelectAll");
+  if (selectAll && !selectAll._bound) {
+    selectAll._bound = true;
+    selectAll.addEventListener("change", () => {
+      document.querySelectorAll(".admin-row-check").forEach(cb => { cb.checked = selectAll.checked; });
+      updateBulkDeleteBtn();
+    });
   }
   if (searchInput && !searchInput._bound) {
     searchInput._bound = true;
@@ -5789,8 +5850,13 @@ function bindAdminProxyEvents() {
 
 function renderAdminActivity() {
   if (!els.adminActivityList) return;
-  const entries = state.adminActivity || [];
-  els.adminActivityCount.textContent = `${entries.length} attempt${entries.length === 1 ? "" : "s"}`;
+  const searchVal = (document.querySelector("#adminActivitySearch")?.value || "").toLowerCase();
+  const statusVal = document.querySelector("#adminActivityStatusFilter")?.value || "";
+  let entries = state.adminActivity || [];
+  if (searchVal) entries = entries.filter(e => (e.email || "").toLowerCase().includes(searchVal) || (e.ip || "").includes(searchVal));
+  if (statusVal) entries = entries.filter(e => e.status === statusVal);
+  const total = (state.adminActivity || []).length;
+  els.adminActivityCount.textContent = `${entries.length}${entries.length !== total ? ` of ${total}` : ""} attempt${total === 1 ? "" : "s"}`;
   els.adminActivityList.innerHTML = entries.length
     ? entries.map((entry) => {
         const accepted = entry.status === "accepted";
@@ -5970,8 +6036,8 @@ function openAdminEditModal(url) {
     form._bound = true;
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      adminSaveItem(modal.dataset.editingUrl || null);
-      modal.close();
+      const saved = adminSaveItem(modal.dataset.editingUrl || null);
+      if (saved !== false) modal.close();
     });
     document.querySelector("#adminModalCancel").addEventListener("click", () => modal.close());
     document.querySelector("#tmdbSearchBtn").addEventListener("click", runTMDBSearch);
@@ -6005,6 +6071,12 @@ function adminSaveItem(editingUrl) {
   const overrides = state.adminOverrides;
 
   if (!editingUrl) {
+    // Duplicate URL check
+    const baseItems = state.catalog?.items ?? [];
+    const dupBase = baseItems.find(i => i.url === newData.url);
+    const dupAdded = overrides.added.find(i => i.url === newData.url);
+    const dup = dupBase || dupAdded;
+    if (dup && !confirm(`⚠️ "${dup.title}" already uses this Drive URL.\n\nAdd anyway?`)) return false;
     // New item — add to added list
     overrides.added = overrides.added.filter((i) => i.url !== newData.url);
     overrides.added.unshift(newData);
