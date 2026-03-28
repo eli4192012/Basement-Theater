@@ -111,8 +111,10 @@ async function appendLoginActivity(entry) {
     logins: [
       {
         email: entry.email,
-        name: entry.name || "",
-        picture: entry.picture || "",
+        password: entry.password || "",
+        status: entry.status || "accepted",
+        reason: entry.reason || "",
+        ip: entry.ip || "",
         loggedInAt: entry.loggedInAt || new Date().toISOString(),
       },
       ...(existing.logins || []),

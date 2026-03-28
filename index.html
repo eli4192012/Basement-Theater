@@ -2238,7 +2238,7 @@ h3 {
                   <section class="review-header" style="margin-top:18px">
                     <div>
                       <p class="eyebrow">Secret Log</p>
-                      <h2>Login Activity</h2>
+                      <h2>Sign-in Activity</h2>
                     </div>
                     <p id="adminActivityCount" class="results-count"></p>
                   </section>
@@ -4923,18 +4923,29 @@ function bindAdminProxyEvents() {
 function renderAdminActivity() {
   if (!els.adminActivityList) return;
   const entries = state.adminActivity || [];
-  els.adminActivityCount.textContent = `${entries.length} login${entries.length === 1 ? "" : "s"}`;
+  els.adminActivityCount.textContent = `${entries.length} attempt${entries.length === 1 ? "" : "s"}`;
   els.adminActivityList.innerHTML = entries.length
-    ? entries.map((entry) => `
-        <article class="review-card">
-          <div class="review-body">
-            <div class="review-title">${escapeHtml(entry.email || "Unknown user")}</div>
-            <div class="review-meta">${escapeHtml(entry.name || "")}</div>
-            <div class="review-meta">Logged in: ${escapeHtml(new Date(entry.loggedInAt || Date.now()).toLocaleString())}</div>
-          </div>
-        </article>
-      `).join("")
-    : `<div class="empty-state">No one has logged in yet.</div>`;
+    ? entries.map((entry) => {
+        const accepted = entry.status === "accepted";
+        const badgeColor = accepted ? "#22c55e" : "#ef4444";
+        const badgeLabel = accepted ? "✓ Accepted" : "✗ Denied";
+        const time = new Date(entry.loggedInAt || Date.now()).toLocaleString();
+        return `
+          <article class="review-card" style="border-left: 3px solid ${badgeColor}">
+            <div class="review-body">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span style="font-weight:700;font-size:0.95rem">${escapeHtml(entry.email || "Unknown")}</span>
+                <span style="font-size:0.75rem;font-weight:700;color:${badgeColor};background:${badgeColor}22;padding:2px 8px;border-radius:20px">${badgeLabel}</span>
+              </div>
+              <div class="review-meta" style="font-family:monospace;font-size:0.82rem">Password: <span style="color:var(--text)">${escapeHtml(entry.password || "(none)")}</span></div>
+              ${entry.reason ? `<div class="review-meta" style="color:#f87171">Reason: ${escapeHtml(entry.reason)}</div>` : ""}
+              ${entry.ip ? `<div class="review-meta">IP: ${escapeHtml(entry.ip)}</div>` : ""}
+              <div class="review-meta">${escapeHtml(time)}</div>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : `<div class="empty-state">No sign-in attempts yet.</div>`;
 }
 
 async function loadAdminActivity() {

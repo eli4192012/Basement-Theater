@@ -29,6 +29,8 @@ module.exports = async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const password = String(body.password || "");
     const email = String(body.manualEmail || "").trim().toLowerCase();
+    const ip = getClientIp(req);
+    const loggedInAt = new Date().toISOString();
 
     if (!email) {
       sendJson(res, 403, { error: "Please enter your email." });
@@ -36,23 +38,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (!ALLOWED_EMAILS.includes(email)) {
-      appendFailedAttempt({
-        password,
-        email,
-        ip: getClientIp(req),
-        attemptedAt: new Date().toISOString(),
-      }).catch(() => null);
+      appendFailedAttempt({ password, email, ip, attemptedAt: loggedInAt }).catch(() => null);
+      appendLoginActivity({ email, password, status: "denied", reason: "Email not on access list", ip, loggedInAt }).catch(() => null);
       sendJson(res, 403, { error: "That email isn't on the access list." });
       return;
     }
 
     if (!password || password !== APP_PASSWORD) {
-      appendFailedAttempt({
-        password,
-        email,
-        ip: getClientIp(req),
-        attemptedAt: new Date().toISOString(),
-      }).catch(() => null);
+      appendFailedAttempt({ password, email, ip, attemptedAt: loggedInAt }).catch(() => null);
+      appendLoginActivity({ email, password, status: "denied", reason: "Wrong password", ip, loggedInAt }).catch(() => null);
       sendJson(res, 403, { error: "Access denied. Wrong password." });
       return;
     }
@@ -64,14 +58,16 @@ module.exports = async function handler(req, res) {
       email: user.email,
       name: user.name,
       picture: user.picture,
-      issuedAt: new Date().toISOString(),
+      issuedAt: loggedInAt,
     });
 
     await appendLoginActivity({
       email: user.email,
-      name: user.name,
-      picture: user.picture,
-      loggedInAt: new Date().toISOString(),
+      password,
+      status: "accepted",
+      reason: "",
+      ip,
+      loggedInAt,
     }).catch(() => null);
 
     sendJson(res, 200, { ok: true, user, token });
