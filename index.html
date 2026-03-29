@@ -947,6 +947,36 @@ h3 {
   gap: 10px;
 }
 
+/* ── Personalized shelves ───────────────────────────────────── */
+.personalized-row {
+  border-radius: 14px;
+  padding: 18px 16px 12px;
+  margin-bottom: 4px;
+}
+.personalized-row .row-header h4 {
+  font-size: 1.5rem;
+}
+.personalized-row--sadaashiv {
+  background: linear-gradient(135deg, rgba(255, 180, 0, 0.07) 0%, rgba(179, 58, 32, 0.10) 100%);
+  border: 1px solid rgba(255, 180, 0, 0.12);
+}
+.personalized-row--sadaashiv .row-header h4 {
+  background: linear-gradient(90deg, #ffb400, #ff6a00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.personalized-row--ben {
+  background: linear-gradient(135deg, rgba(100, 60, 180, 0.10) 0%, rgba(30, 10, 60, 0.12) 100%);
+  border: 1px solid rgba(130, 80, 220, 0.15);
+}
+.personalized-row--ben .row-header h4 {
+  background: linear-gradient(90deg, #b47aff, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .public-sections {
   display: grid;
   gap: 18px;
@@ -4036,6 +4066,57 @@ function getLibraryItems() {
   return getAllowedItems(allItems, active).filter((item) => !isFavoriteItem(item, active));
 }
 
+// Returns all catalog items allowed for the active profile (overrides applied, maturity filtered, no favorites exclusion)
+function getAllowedCatalogItems() {
+  const active = getActiveProfile();
+  const overrides = state.adminOverrides;
+  const baseItems = (state.catalog?.items ?? [])
+    .filter((item) => !overrides.deleted.includes(item.url))
+    .map((item) => overrides.edited[item.url] ? { ...item, ...overrides.edited[item.url] } : item);
+  return getAllowedItems([...overrides.added, ...baseItems], active);
+}
+
+const SADAASHIV_ACTION_KEYWORDS = [
+  "john wick", "fast and furious", "rambo", "pacific rim", "real steel",
+  "kill zone", "indiana jones", "mortal kombat", "black panther", "venom",
+  "suicide squad", "joker", "ford v ferrari", "king kong", "shang chi",
+  "expendables", "transporter", "taken", "mission impossible", "die hard",
+  "avengers", "captain america", "iron man", "thor", "spider-man", "spider man",
+  "deadpool", "wolverine", "ant-man", "ant man", "doctor strange", "guardians",
+  "black widow", "punisher", "daredevil", "batman", "superman", "justice league",
+  "aquaman", "wonder woman", "flash", "green lantern", "x-men", "x men",
+];
+
+function getSadaashivItems() {
+  return getAllowedCatalogItems().filter((item) => {
+    if (item.category === "Superheroes") return true;
+    const t = (item.title + " " + item.rawTitle).toLowerCase();
+    return SADAASHIV_ACTION_KEYWORDS.some((kw) => t.includes(kw));
+  });
+}
+
+const BEN_COMEDY_KEYWORDS = [
+  "scary movie", "dodgeball", "friday", "good burger", "grown ups",
+  "norbit", "why him", "pitch perfect", "jackass", "superbad", "step brothers",
+  "hangover", "dumb and dumber", "anchorman", "elf", "napoleon dynamite",
+];
+
+const BEN_ACTION_KEYWORDS = [
+  "john wick", "fast and furious", "rambo", "pacific rim", "real steel",
+  "mortal kombat", "kill zone",
+];
+
+function getBenItems() {
+  return getAllowedCatalogItems().filter((item) => {
+    if (item.category === "Horror") return true;
+    if (item.category === "Comedy") return true;
+    const t = (item.title + " " + item.rawTitle).toLowerCase();
+    if (BEN_ACTION_KEYWORDS.some((kw) => t.includes(kw))) return true;
+    if (BEN_COMEDY_KEYWORDS.some((kw) => t.includes(kw))) return true;
+    return false;
+  });
+}
+
 function getFilteredItems() {
   const items = getLibraryItems();
   return items.filter((item) => {
@@ -4617,6 +4698,14 @@ function renderRows() {
   const watchlist = getWatchlistItems();
   if (watchlist.length) specialRows.push(renderCustomRow("My Watchlist", watchlist));
 
+  // Personalized shelves — only visible when browsing "All" with no active search
+  if (state.activeCategory === "All" && !state.query && state.activeLetter === "All") {
+    const sadaashivItems = getSadaashivItems();
+    if (sadaashivItems.length) specialRows.push(renderPersonalizedRow("⚡ For Sadaashiv", sadaashivItems, "sadaashiv"));
+    const benItems = getBenItems();
+    if (benItems.length) specialRows.push(renderPersonalizedRow("🎃 For Ben", benItems, "ben"));
+  }
+
   const heading = state.activeCategory === "All" ? "All titles" : state.activeCategory;
   const suffix = state.activeLetter === "All" ? "" : ` • ${state.activeLetter}`;
   const sortLabels = {
@@ -4639,6 +4728,10 @@ function renderRows() {
 
   els.rows.innerHTML = specialRows.length || categoryRows ? `${specialRows.join("")}${categoryRows}` : `<div class="empty-state"><div style="font-size:2.4rem;margin-bottom:10px">🎬</div><div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:var(--text)">No titles found</div><div>Try a different search, category, or letter.</div></div>`;
   bindCardInteractions(els.rows);
+}
+
+function renderPersonalizedRow(title, items, theme) {
+  return `<section class="row personalized-row personalized-row--${theme}"><div class="row-header"><h4>${title}</h4><p class="results-count">${items.length} titles</p></div><div class="row-grid">${sortItems(items).map(renderCard).join("")}</div></section>`;
 }
 
 function renderCustomRow(title, items) {
