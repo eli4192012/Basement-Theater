@@ -157,6 +157,87 @@ body {
   background: rgba(179, 58, 32, 0.18);
 }
 
+/* ── Tab help icons ─────────────────────────────────────────── */
+.tab-help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: rgba(215, 164, 76, 0.18);
+  border: 1px solid rgba(215, 164, 76, 0.35);
+  color: #d7a44c;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.18s ease, background 0.18s ease;
+  vertical-align: middle;
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+.nav-link:hover .tab-help-icon,
+.nav-link.active .tab-help-icon,
+.theater-subtab:hover .tab-help-icon,
+.theater-subtab.active .tab-help-icon {
+  opacity: 1;
+}
+.tab-help-icon:hover {
+  background: rgba(215, 164, 76, 0.35);
+}
+
+/* ── Tab help popup ─────────────────────────────────────────── */
+#tabHelpPopup {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(30, 14, 10, 0.97) 0%, rgba(18, 8, 6, 0.99) 100%);
+  border: 1px solid rgba(215, 164, 76, 0.28);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.3);
+  display: none;
+  pointer-events: auto;
+}
+#tabHelpPopup.visible {
+  display: block;
+  animation: tabHelpIn 0.15s ease;
+}
+@keyframes tabHelpIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+#tabHelpClose {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+#tabHelpClose:hover { color: #fff; }
+.tab-help-popup-title {
+  margin: 0 18px 6px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #d7a44c;
+  letter-spacing: 0.02em;
+}
+.tab-help-popup-body {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.72);
+  white-space: pre-line;
+}
+
 .hidden-view {
   display: none;
 }
@@ -2450,14 +2531,14 @@ h3 {
           <div class="brand-wordmark" id="brandWordmark" title="Double-click to open admin">THE BASEMENT PREMIUM</div>
           <a href="https://docs.google.com/document/d/1mD7P5-SN8-HroPDHawuYiSBmcXDdpTE52610UIvABII/edit?tab=t.opt47kup2gsa" target="_blank" rel="noreferrer" class="basement-public-link" title="The Basement Public Doc">🔓 Basement Public (Abandoned)</a>
           <nav class="nav-links" aria-label="Primary">
-            <button id="homeTabButton" class="nav-link active" type="button">Home</button>
-            <button id="announcementsTabButton" class="nav-link" type="button">Announcements</button>
-            <button id="updatesTabButton" class="nav-link" type="button">Updates</button>
-            <button id="gameStashTabButton" class="nav-link" type="button">Game Stash</button>
-            <button id="proxyCornerTabButton" class="nav-link" type="button">Proxy Corner</button>
-            <button id="libraryTabButton" class="nav-link" type="button">Theater</button>
-            <button id="fileViewerTabButton" class="nav-link" type="button">📂 Files</button>
-            <button id="adminTabButton" class="nav-link" type="button" style="display:none">⚙ Admin</button>
+            <button id="homeTabButton" class="nav-link active" type="button">Home<span class="tab-help-icon" data-tab="home">?</span></button>
+            <button id="announcementsTabButton" class="nav-link" type="button">Announcements<span class="tab-help-icon" data-tab="announcements">?</span></button>
+            <button id="updatesTabButton" class="nav-link" type="button">Updates<span class="tab-help-icon" data-tab="updates">?</span></button>
+            <button id="gameStashTabButton" class="nav-link" type="button">Game Stash<span class="tab-help-icon" data-tab="gamestash">?</span></button>
+            <button id="proxyCornerTabButton" class="nav-link" type="button">Proxy Corner<span class="tab-help-icon" data-tab="proxycorner">?</span></button>
+            <button id="libraryTabButton" class="nav-link" type="button">Theater<span class="tab-help-icon" data-tab="theater">?</span></button>
+            <button id="fileViewerTabButton" class="nav-link" type="button">📂 Files<span class="tab-help-icon" data-tab="files">?</span></button>
+            <button id="adminTabButton" class="nav-link" type="button" style="display:none">⚙ Admin<span class="tab-help-icon" data-tab="admin">?</span></button>
           </nav>
         </div>
 
@@ -2481,9 +2562,9 @@ h3 {
       <main>
         <section id="libraryView">
           <section class="theater-subtabs" aria-label="Theater sections">
-            <button id="theaterLibrarySubtab" class="theater-subtab active" type="button">Library</button>
-            <button id="theaterFavoritesSubtab" class="theater-subtab" type="button">Favorites</button>
-            <button id="theaterTrashSubtab" class="theater-subtab" type="button">Report Issue</button>
+            <button id="theaterLibrarySubtab" class="theater-subtab active" type="button">Library<span class="tab-help-icon" data-tab="library">?</span></button>
+            <button id="theaterFavoritesSubtab" class="theater-subtab" type="button">Favorites<span class="tab-help-icon" data-tab="favorites">?</span></button>
+            <button id="theaterTrashSubtab" class="theater-subtab" type="button">Report Issue<span class="tab-help-icon" data-tab="reportissue">?</span></button>
           </section>
 
           <section id="theaterLibraryContent">
@@ -6295,6 +6376,136 @@ function adminExportCatalog() {
   URL.revokeObjectURL(a.href);
 }
 
+
+// ── Tab Help Popups ─────────────────────────────────────────────────────────
+const TAB_HELP_CONTENT = {
+  home: {
+    title: "🏠 Home",
+    body: "Your personalized dashboard.\n• See the latest announcements\n• Pick up where you left off (Continue Watching)\n• Browse curated shelves by genre & mood",
+  },
+  announcements: {
+    title: "📢 Announcements",
+    body: "Official messages from the network admin.\n• New movie additions, maintenance notices, and updates\n• Older posts are archived below the latest",
+  },
+  updates: {
+    title: "🔄 Updates",
+    body: "Changelog for the app itself.\n• New features, bug fixes, and improvements\n• Most recent update appears at the top",
+  },
+  gamestash: {
+    title: "🎮 Game Stash",
+    body: "A collection of browser-based games.\n• Click any game tile to launch it\n• Games open in the built-in viewer so nothing leaves the app",
+  },
+  proxycorner: {
+    title: "🌐 Proxy Corner",
+    body: "Quick-access web proxies for unblocked browsing.\n• Tap a tile to open the proxy in the viewer\n• Use responsibly — all activity is logged",
+  },
+  theater: {
+    title: "🎬 Theater",
+    body: "The main movie & series library.\n• Library – browse and search all titles\n• Favorites – your saved watchlist\n• Report Issue – flag broken or mislabeled content",
+  },
+  library: {
+    title: "📚 Library",
+    body: "Browse the full catalog of movies & series.\n• Use the search bar to find titles instantly\n• Filter by genre, type, or rating\n• Click any card to open the detail view & start watching",
+  },
+  favorites: {
+    title: "❤️ Favorites",
+    body: "Your personal watchlist.\n• Click the ♥ on any movie card to add it\n• Tap again to remove it\n• Favorites are saved to this device",
+  },
+  reportissue: {
+    title: "🚩 Report Issue",
+    body: "Help keep the library clean.\n• Use this if a video is broken, buffering badly, or has wrong info\n• Your report goes straight to the admin\n• Include as much detail as you can",
+  },
+  files: {
+    title: "📂 Files",
+    body: "Browse shared files and documents.\n• Open files directly in the built-in viewer\n• Supported: PDFs, images, and Google Drive links",
+  },
+  admin: {
+    title: "⚙️ Admin Panel",
+    body: "Manage the entire network (admins only).\n• Add / edit / delete movies and series\n• Post announcements and schedule them\n• Review login activity and security settings\n• Bulk-delete catalog entries with checkboxes",
+  },
+};
+
+(function initTabHelp() {
+  const popup    = document.getElementById("tabHelpPopup");
+  const titleEl  = document.getElementById("tabHelpTitle");
+  const bodyEl   = document.getElementById("tabHelpBody");
+  const closeBtn = document.getElementById("tabHelpClose");
+  if (!popup) return;
+
+  let currentIcon = null;
+
+  function showTabHelp(iconEl) {
+    const key = iconEl.dataset.tab;
+    const info = TAB_HELP_CONTENT[key];
+    if (!info) return;
+
+    titleEl.textContent = info.title;
+    bodyEl.textContent  = info.body;
+
+    popup.classList.remove("visible");
+    popup.style.display = "block"; // measure size before animating
+
+    const iconRect  = iconEl.getBoundingClientRect();
+    const popupRect = popup.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const GAP = 8;
+
+    // Default: open below the icon, left-aligned
+    let top  = iconRect.bottom + GAP;
+    let left = iconRect.left;
+
+    // Flip above if not enough space below
+    if (top + popupRect.height > vh - 8) {
+      top = iconRect.top - popupRect.height - GAP;
+    }
+    // Keep inside right edge
+    if (left + popupRect.width > vw - 8) {
+      left = vw - popupRect.width - 8;
+    }
+    // Keep inside left edge
+    if (left < 8) left = 8;
+
+    popup.style.top  = top  + "px";
+    popup.style.left = left + "px";
+    popup.classList.add("visible");
+    currentIcon = iconEl;
+  }
+
+  function closeTabHelp() {
+    popup.classList.remove("visible");
+    popup.style.display = "";
+    currentIcon = null;
+  }
+
+  // Delegate clicks on all help icons
+  document.addEventListener("click", function(e) {
+    const icon = e.target.closest(".tab-help-icon");
+    if (icon) {
+      e.stopPropagation();
+      if (currentIcon === icon) { closeTabHelp(); return; }
+      showTabHelp(icon);
+      return;
+    }
+    // Close if clicking outside the popup
+    if (!popup.contains(e.target)) closeTabHelp();
+  }, true);
+
+  closeBtn.addEventListener("click", closeTabHelp);
+
+  // Close on Escape
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape" && currentIcon) closeTabHelp();
+  });
+})();
+// ── End Tab Help ────────────────────────────────────────────────────────────
 </script>
+
+  <!-- Tab Help Popup -->
+  <div id="tabHelpPopup" role="dialog" aria-modal="false">
+    <button id="tabHelpClose" aria-label="Close help">✕</button>
+    <p class="tab-help-popup-title" id="tabHelpTitle"></p>
+    <p class="tab-help-popup-body" id="tabHelpBody"></p>
+  </div>
   </body>
   </html>
