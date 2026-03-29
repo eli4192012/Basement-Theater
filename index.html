@@ -3108,7 +3108,9 @@ const DEFAULT_PROFILES = [
   { id: "adult", name: "Adults", maturity: "R", color: "#f59e0b" },
 ];
 
-const SPECIAL_CATEGORY_KINSLER = "For Kinsler";
+const SPECIAL_CATEGORY_KINSLER   = "For Kinsler";
+const SPECIAL_CATEGORY_SADAASHIV = "For Sadaashiv";
+const SPECIAL_CATEGORY_BEN       = "For Ben";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
 const ALLOWED_EMAILS = [
@@ -4122,7 +4124,10 @@ function getFilteredItems() {
   return items.filter((item) => {
     const matchesCategory =
       state.activeCategory === "All" ||
-      (state.activeCategory === SPECIAL_CATEGORY_KINSLER ? isKinslerItem(item) : item.category === state.activeCategory);
+      (state.activeCategory === SPECIAL_CATEGORY_KINSLER   ? isKinslerItem(item)    :
+       state.activeCategory === SPECIAL_CATEGORY_SADAASHIV ? isSadaashivItem(item)  :
+       state.activeCategory === SPECIAL_CATEGORY_BEN       ? isBenItem(item)        :
+       item.category === state.activeCategory);
     const matchesLetter = state.activeLetter === "All" || normalizedFirstCharacter(item.title) === state.activeLetter;
     const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
     const matchesQuery = !state.query || haystack.includes(state.query);
@@ -4296,7 +4301,7 @@ function resetHeroAutoplay() {
 }
 
 function renderChips() {
-  const categories = ["All", SPECIAL_CATEGORY_KINSLER, ...(state.catalog?.categories ?? [])];
+  const categories = ["All", SPECIAL_CATEGORY_KINSLER, SPECIAL_CATEGORY_SADAASHIV, SPECIAL_CATEGORY_BEN, ...(state.catalog?.categories ?? [])];
   els.genreChips.innerHTML = categories.map((category) => `<button type="button" class="chip ${category === state.activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join("");
   els.genreChips.querySelectorAll(".chip").forEach((button) => {
     button.addEventListener("click", () => {
@@ -4686,7 +4691,11 @@ function renderGameStashGameSection(section) {
 function renderRows() {
   const filtered = getFilteredItems();
   const grouped = filtered.reduce((map, item) => {
-    const groupName = state.activeCategory === SPECIAL_CATEGORY_KINSLER ? SPECIAL_CATEGORY_KINSLER : item.category;
+    const groupName =
+      state.activeCategory === SPECIAL_CATEGORY_KINSLER   ? SPECIAL_CATEGORY_KINSLER   :
+      state.activeCategory === SPECIAL_CATEGORY_SADAASHIV ? SPECIAL_CATEGORY_SADAASHIV :
+      state.activeCategory === SPECIAL_CATEGORY_BEN       ? SPECIAL_CATEGORY_BEN       :
+      item.category;
     map[groupName] ||= [];
     map[groupName].push(item);
     return map;
@@ -5123,6 +5132,18 @@ function inferRating(item) {
 // For display only — only show what's explicitly set, never guess
 function getDisplayRating(item) {
   return item.manualRating || "";
+}
+
+function isSadaashivItem(item) {
+  if (item.category === "Superheroes") return true;
+  const t = `${item.title} ${item.rawTitle || ""}`.toLowerCase();
+  return SADAASHIV_ACTION_KEYWORDS.some((kw) => t.includes(kw));
+}
+
+function isBenItem(item) {
+  if (item.category === "Horror" || item.category === "Comedy") return true;
+  const t = `${item.title} ${item.rawTitle || ""}`.toLowerCase();
+  return BEN_ACTION_KEYWORDS.some((kw) => t.includes(kw)) || BEN_COMEDY_KEYWORDS.some((kw) => t.includes(kw));
 }
 
 function isKinslerItem(item) {
