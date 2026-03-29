@@ -3111,6 +3111,7 @@ const DEFAULT_PROFILES = [
 const SPECIAL_CATEGORY_KINSLER   = "For Kinsler";
 const SPECIAL_CATEGORY_SADAASHIV = "For Sadaashiv";
 const SPECIAL_CATEGORY_BEN       = "For Ben";
+const SPECIAL_CATEGORY_CARSON    = "For Carson";
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
 const ALLOWED_EMAILS = [
@@ -4127,6 +4128,7 @@ function getFilteredItems() {
       (state.activeCategory === SPECIAL_CATEGORY_KINSLER   ? isKinslerItem(item)    :
        state.activeCategory === SPECIAL_CATEGORY_SADAASHIV ? isSadaashivItem(item)  :
        state.activeCategory === SPECIAL_CATEGORY_BEN       ? isBenItem(item)        :
+       state.activeCategory === SPECIAL_CATEGORY_CARSON    ? isCarsonItem(item)     :
        item.category === state.activeCategory);
     const matchesLetter = state.activeLetter === "All" || normalizedFirstCharacter(item.title) === state.activeLetter;
     const haystack = `${item.title} ${item.rawTitle} ${item.category}`.toLowerCase();
@@ -4301,7 +4303,7 @@ function resetHeroAutoplay() {
 }
 
 function renderChips() {
-  const categories = ["All", SPECIAL_CATEGORY_KINSLER, SPECIAL_CATEGORY_SADAASHIV, SPECIAL_CATEGORY_BEN, ...(state.catalog?.categories ?? [])];
+  const categories = ["All", SPECIAL_CATEGORY_KINSLER, SPECIAL_CATEGORY_SADAASHIV, SPECIAL_CATEGORY_BEN, SPECIAL_CATEGORY_CARSON, ...(state.catalog?.categories ?? [])];
   els.genreChips.innerHTML = categories.map((category) => `<button type="button" class="chip ${category === state.activeCategory ? "active" : ""}" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join("");
   els.genreChips.querySelectorAll(".chip").forEach((button) => {
     button.addEventListener("click", () => {
@@ -4695,6 +4697,7 @@ function renderRows() {
       state.activeCategory === SPECIAL_CATEGORY_KINSLER   ? SPECIAL_CATEGORY_KINSLER   :
       state.activeCategory === SPECIAL_CATEGORY_SADAASHIV ? SPECIAL_CATEGORY_SADAASHIV :
       state.activeCategory === SPECIAL_CATEGORY_BEN       ? SPECIAL_CATEGORY_BEN       :
+      state.activeCategory === SPECIAL_CATEGORY_CARSON    ? SPECIAL_CATEGORY_CARSON    :
       item.category;
     map[groupName] ||= [];
     map[groupName].push(item);
@@ -5125,6 +5128,22 @@ function inferRating(item) {
 // For display only — only show what's explicitly set, never guess
 function getDisplayRating(item) {
   return item.manualRating || "";
+}
+
+const CARSON_ACTION_KEYWORDS = [
+  "john wick", "fast and furious", "rambo", "pacific rim", "real steel",
+  "kill zone", "indiana jones", "mortal kombat", "king kong", "ford v ferrari",
+  "taken", "mission impossible", "die hard", "expendables", "transporter",
+  "top gun", "fury", "black hawk", "lone survivor", "dunkirk", "snitch",
+  "equalizer", "man on fire", "sicario", "heat", "collateral", "speed",
+  "point break", "con air", "the rock", "face/off", "commando", "predator",
+  "terminator", "total recall", "robocop", "mad max", "fury road",
+  "jack reacher", "jason bourne", "red one", "action",
+];
+
+function isCarsonItem(item) {
+  const t = `${item.title} ${item.rawTitle || ""}`.toLowerCase();
+  return CARSON_ACTION_KEYWORDS.some((kw) => t.includes(kw));
 }
 
 function isSadaashivItem(item) {
