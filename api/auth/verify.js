@@ -10,7 +10,9 @@ const ALLOWED_EMAILS = [
   "knolley062@rsdmo.org",
   "spillay084@rsdmo.org",
   "blansing045@rsdmo.org",
-  "dlombardo162@rsdmo.org"
+  "dlombardo162@rsdmo.org",
+  "cweiss074@rsdmo.org",
+  "bsornat025@rsdmo.org"
 ];
 
 function getClientIp(req) {
