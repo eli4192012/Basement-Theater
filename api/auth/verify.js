@@ -70,7 +70,6 @@ module.exports = async function handler(req, res) {
       status: "accepted",
       reason: "",
       ip,
-      deviceId,
       loggedInAt,
     }).catch(() => null);
 
