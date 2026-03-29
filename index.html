@@ -4707,13 +4707,6 @@ function renderRows() {
   const watchlist = getWatchlistItems();
   if (watchlist.length) specialRows.push(renderCustomRow("My Watchlist", watchlist));
 
-  // Personalized shelves — only visible when browsing "All" with no active search
-  if (state.activeCategory === "All" && !state.query && state.activeLetter === "All") {
-    const sadaashivItems = getSadaashivItems();
-    if (sadaashivItems.length) specialRows.push(renderPersonalizedRow("⚡ For Sadaashiv", sadaashivItems, "sadaashiv"));
-    const benItems = getBenItems();
-    if (benItems.length) specialRows.push(renderPersonalizedRow("🎃 For Ben", benItems, "ben"));
-  }
 
   const heading = state.activeCategory === "All" ? "All titles" : state.activeCategory;
   const suffix = state.activeLetter === "All" ? "" : ` • ${state.activeLetter}`;
