@@ -3436,6 +3436,8 @@ async function init() {
 }
 
 async function bootstrapAuth() {
+  // Migrate any old random dev_ IDs to the stable fingerprint fp_ ID immediately on load
+  getDeviceId();
   setAuthMessage((state.editableTexts && state.editableTexts.authMessage) || DEFAULT_EDITABLE_TEXTS.authMessage);
   await loadRuntimeConfig();
   renderAuthOptions();
