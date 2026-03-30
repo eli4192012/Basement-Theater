@@ -3112,6 +3112,34 @@ const SPECIAL_CATEGORY_KINSLER   = "For Kinsler";
 const SPECIAL_CATEGORY_SADAASHIV = "For Sadaashiv";
 const SPECIAL_CATEGORY_BEN       = "For Ben";
 const SPECIAL_CATEGORY_CARSON    = "For Carson";
+// ── Embedded proxy list (group → name → url) ────────────────────────────────
+const EMBEDDED_PROXIES = [
+  { group: "Vapor V4",       name: "Vapor V4",          url: "https://educationexchangeltd.org/" },
+  { group: "Vapor V4",       name: "Vapor V4 (Mirror)", url: "https://hellothereworld.storage.googleapis.com/index.html" },
+  { group: "DayDreamX",      name: "DayDreamX",         url: "https://cdn.jsdelivr.net/gh/NightProxy/DD-Static/dist/index.svg" },
+  { group: "DogeUb",         name: "DogeUb",            url: "https://instructure.storage.googleapis.com/index.html" },
+  { group: "Gn-Math",        name: "Gn-Math",           url: "https://script.google.com/a/macros/rsdmo.org/s/AKfycbwy1LU88P4uCEy5z_TmaYK3NP_BUudqTarWAhOJG1iChWJrMuoH5T-t8Bm5eJQZMb0q5g/exec" },
+  { group: "Other",          name: "yo-yo-yo",          url: "http://yo-yo-yo-yo-yo-bludysonmadets-havefun.s3-website.us-east-2.amazonaws.com/" },
+  { group: "Other",          name: "Tynker",            url: "https://tynker.me/code/view/690cc43f47c8d078ee05a755/" },
+  { group: "Other",          name: "PragerU Math",      url: "https://s3.amazonaws.com/prageru-server/mathematics.html" },
+  { group: "Infamous",       name: "Infamous",          url: "https://blindingcolors.peperepara.com/" },
+  { group: "Nautilus",       name: "Nautilus",          url: "https://unpkg.com/raim-math-work@1.0.18/index.html" },
+  { group: "OverCloaked",    name: "OverCloaked",       url: "https://seminar.assignment.geography.chemistry.teacher.soft-hard.ru/" },
+  { group: "Petezah",        name: "Petezah",           url: "https://cdn.jsdelivr.net/gh/PeteZah-G/copy-2@main/main.svg" },
+  { group: "Petezah",        name: "Petezah (Mirror 2)", url: "https://cdn.jsdelivr.net/gh/pineapple-petezah/homework/main.svg" },
+  { group: "Petezah",        name: "Petezah (Mirror 3)", url: "https://cdn.jsdelivr.net/gh/PeteZah-G/PeteZahStaticDone/main.svg" },
+  { group: "Petezah",        name: "Petezah (Mirror 4)", url: "https://cdn.jsdelivr.net/gh/PeteZah-G/copy-2/main.svg" },
+  { group: "Quasar",         name: "Quasar",            url: "https://cves359.com/" },
+  { group: "Quasar",         name: "Quasar (Mirror)",   url: "https://cavtalk.org/" },
+  { group: "Shadow V3",      name: "Shadow V3",         url: "https://ultracalc.beachlifeusa.com/" },
+  { group: "Shadow V3",      name: "Shadow V3 (Mirror 2)", url: "https://chillpoems.beachlifeusa.com/" },
+  { group: "Shadow V3",      name: "Shadow V3 (Mirror 3)", url: "https://fastliterature.beachlifeusa.com/" },
+  { group: "UBX",            name: "UBX",               url: "https://ec2-3-12-220-215.us-east-2.compute.amazonaws.com/web/" },
+  { group: "TGLSC Density 4", name: "TGLSC Density 4",  url: "https://tglsceducation.nanobit.org/" },
+  { group: "Lucide",         name: "Lucide",            url: "https://s3.amazonaws.com/lucidestatic/index.html" },
+];
+// ────────────────────────────────────────────────────────────────────────────
+
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
 const STANDALONE_PASSWORD = "Firepump1234";
 const ALLOWED_EMAILS = [
@@ -4558,6 +4586,18 @@ function renderProxyCornerPage(page) {
     }
     if (text.startsWith("http") && currentGroup) {
       currentGroup.links.push({ text, url: text });
+    }
+  }
+
+  // Merge embedded proxies
+  for (const po of EMBEDDED_PROXIES) {
+    let grp = groups.find((g) => g.title.replace(/\s*\(\d+\)\s*$/, "").toLowerCase() === po.group.toLowerCase());
+    if (!grp) {
+      grp = { title: po.group, links: [] };
+      groups.push(grp);
+    }
+    if (!grp.links.some((l) => l.url === po.url)) {
+      grp.links.push({ text: po.name, url: po.url });
     }
   }
 
