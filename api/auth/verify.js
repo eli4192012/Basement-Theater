@@ -1,5 +1,5 @@
 const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
-const { appendFailedAttempt, appendLoginActivity } = require("../_lib/supabase");
+const { appendFailedAttempt, appendLoginActivity, getBannedDevices } = require("../_lib/supabase");
 
 const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
 
@@ -31,12 +31,23 @@ module.exports = async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const password = String(body.password || "");
     const email = String(body.manualEmail || "").trim().toLowerCase();
+    const deviceId = String(body.deviceId || "").trim();
     const ip = getClientIp(req);
     const loggedInAt = new Date().toISOString();
 
     if (!email) {
       sendJson(res, 403, { error: "Please enter your email." });
       return;
+    }
+
+    if (deviceId) {
+      const bannedData = await getBannedDevices().catch(() => ({ banned: [] }));
+      const isBanned = (bannedData.banned || []).some((b) => b.deviceId === deviceId);
+      if (isBanned) {
+        appendLoginActivity({ email, password, status: "denied", reason: "Device banned", ip, deviceId, loggedInAt }).catch(() => null);
+        sendJson(res, 403, { error: "Access denied from this device." });
+        return;
+      }
     }
 
     if (!ALLOWED_EMAILS.includes(email)) {
@@ -70,6 +81,7 @@ module.exports = async function handler(req, res) {
       status: "accepted",
       reason: "",
       ip,
+      deviceId,
       loggedInAt,
     }).catch(() => null);
 

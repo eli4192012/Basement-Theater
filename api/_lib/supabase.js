@@ -115,6 +115,7 @@ async function appendLoginActivity(entry) {
         status: entry.status || "accepted",
         reason: entry.reason || "",
         ip: entry.ip || "",
+        deviceId: entry.deviceId || "",
         loggedInAt: entry.loggedInAt || new Date().toISOString(),
       },
       ...(existing.logins || []),
@@ -158,6 +159,31 @@ async function getFailedAttempts() {
   };
 }
 
+async function getBannedDevices() {
+  return readJsonObject("banned-devices.json", { banned: [] });
+}
+
+async function addBannedDevice(deviceId, note = "") {
+  const existing = await getBannedDevices();
+  if ((existing.banned || []).find((b) => b.deviceId === deviceId)) return existing;
+  const next = {
+    banned: [{ deviceId, note, bannedAt: new Date().toISOString() }, ...(existing.banned || [])],
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonObject("banned-devices.json", next);
+  return next;
+}
+
+async function removeBannedDevice(deviceId) {
+  const existing = await getBannedDevices();
+  const next = {
+    banned: (existing.banned || []).filter((b) => b.deviceId !== deviceId),
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonObject("banned-devices.json", next);
+  return next;
+}
+
 module.exports = {
   DEFAULT_SECURITY_CONFIG,
   appendFailedAttempt,
@@ -166,4 +192,7 @@ module.exports = {
   getLoginActivity,
   getSecurityConfig,
   setSecurityConfig,
+  getBannedDevices,
+  addBannedDevice,
+  removeBannedDevice,
 };

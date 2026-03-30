@@ -2917,6 +2917,20 @@ h3 {
                   <section id="adminFailedList" class="review-grid"></section>
                 </div>
 
+                <div class="admin-announce-row" style="margin-top:10px">
+                  <button class="admin-btn danger" id="adminViewBannedDevicesButton">🚫 Manage Banned Devices</button>
+                </div>
+                <div id="adminBannedDevicesPanel" class="hidden">
+                  <section class="review-header" style="margin-top:18px">
+                    <div>
+                      <p class="eyebrow">Device Bans</p>
+                      <h2>Banned Devices</h2>
+                    </div>
+                    <p id="adminBannedDevicesCount" class="results-count"></p>
+                  </section>
+                  <section id="adminBannedDevicesList" class="review-grid"></section>
+                </div>
+
               </div>
             </div>
 
@@ -3100,8 +3114,18 @@ h3 {
   reloadedAnnouncementId: "basement-theater.reloaded-announcement-id",
   watchedAnnouncementId: "basement-theater.watched-announcement-id",
   proxyOverrides: "basement-theater.proxy-overrides",
+  deviceId: "basement-theater.device-id",
 };
 
+
+function getDeviceId() {
+  let id = localStorage.getItem(STORAGE_KEYS.deviceId);
+  if (!id) {
+    id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(STORAGE_KEYS.deviceId, id);
+  }
+  return id;
+}
 
 const DEFAULT_PROFILES = [
   { id: "kid", name: "Kid", maturity: "PG", color: "#6ee7b7" },
@@ -3215,6 +3239,7 @@ const state = {
   adminPassword: "",
   adminActivity: [],
   adminFailedAttempts: [],
+  adminBannedDevices: [],
   activeCategory: "All",
   activeLetter: "All",
   activeSort: "recommended",
@@ -3571,6 +3596,7 @@ async function verifyAccess(password) {
           password: cleaned,
           googleCredential: state.auth.googleCredential || "",
           manualEmail: state.auth.manualEmail || "",
+          deviceId: getDeviceId(),
         }),
       });
       const payload = await resp.json().catch(() => ({}));
@@ -5981,6 +6007,11 @@ function bindAdminPanelEvents() {
     els.adminViewFailedButton._bound = true;
     els.adminViewFailedButton.addEventListener("click", loadAdminFailedAttempts);
   }
+  const bannedBtn = document.getElementById("adminViewBannedDevicesButton");
+  if (bannedBtn && !bannedBtn._bound) {
+    bannedBtn._bound = true;
+    bannedBtn.addEventListener("click", loadAdminBannedDevices);
+  }
 }
 
 function setAdminSecurityStatus(message, isError = false) {
@@ -6008,6 +6039,8 @@ async function renderSecurityPanel() {
   els.adminSaveSecurityButton.disabled = !hosted;
   els.adminViewActivityButton.disabled = !hosted;
   if (els.adminViewFailedButton) els.adminViewFailedButton.disabled = !hosted;
+  const bannedBtn = document.getElementById("adminViewBannedDevicesButton");
+  if (bannedBtn) bannedBtn.disabled = !hosted;
   if (!hosted) {
     els.adminRequireGoogleCheckbox.checked = false;
     setAdminSecurityStatus("Hosted security tools only work on the deployed app.", false);
@@ -6130,6 +6163,34 @@ function renderAdminActivity() {
   if (statusVal) entries = entries.filter(e => e.status === statusVal);
   const total = (state.adminActivity || []).length;
   els.adminActivityCount.textContent = `${entries.length}${entries.length !== total ? ` of ${total}` : ""} attempt${total === 1 ? "" : "s"}`;
+  // Ban device button delegation
+  if (!els.adminActivityList._banBound) {
+    els.adminActivityList._banBound = true;
+    els.adminActivityList.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-ban-device]");
+      if (!btn) return;
+      const deviceId = btn.dataset.banDevice;
+      if (!deviceId) return;
+      const note = prompt(`Add a note for banning device:\n${deviceId}`, "") ;
+      if (note === null) return;
+      btn.disabled = true;
+      btn.textContent = "Banning…";
+      try {
+        const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+          method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId, note }),
+        });
+        if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+        showToast("Device banned.");
+        loadAdminBannedDevices();
+      } catch (err) {
+        showToast("Error: " + err.message, true);
+        btn.disabled = false;
+        btn.textContent = "🚫 Ban Device";
+      }
+    });
+  }
+
   els.adminActivityList.innerHTML = entries.length
     ? entries.map((entry) => {
         const accepted = entry.status === "accepted";
@@ -6147,8 +6208,12 @@ function renderAdminActivity() {
               ${entry.reason ? `<div class="review-meta" style="color:#f87171">Reason: ${escapeHtml(entry.reason)}</div>` : ""}
               <div class="review-meta" style="display:flex;gap:14px;flex-wrap:wrap">
                 ${entry.ip ? `<span>🌐 ${escapeHtml(entry.ip)}</span>` : ""}
+                ${entry.deviceId ? `<span style="font-family:monospace;font-size:0.78rem;color:var(--muted)">📱 ${escapeHtml(entry.deviceId)}</span>` : ""}
               </div>
-              <div class="review-meta">${escapeHtml(time)}</div>
+              <div class="review-meta" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span>${escapeHtml(time)}</span>
+                ${entry.deviceId && state.auth.hostedMode ? `<button class="admin-btn danger" style="padding:2px 8px;font-size:0.75rem" data-ban-device="${escapeHtml(entry.deviceId)}">🚫 Ban Device</button>` : ""}
+              </div>
             </div>
           </article>
         `;
@@ -6171,6 +6236,70 @@ async function loadAdminActivity() {
   }
 }
 
+
+async function loadAdminBannedDevices() {
+  if (!state.auth.hostedMode) return;
+  const panel = document.getElementById("adminBannedDevicesPanel");
+  const list  = document.getElementById("adminBannedDevicesList");
+  const count = document.getElementById("adminBannedDevicesCount");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  list.innerHTML = `<div class="empty-state">Loading…</div>`;
+  try {
+    const resp = await fetch(apiUrl("/api/auth/banned-devices"), { headers: getAdminHeaders(), cache: "no-store" });
+    const payload = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(payload.error || "Could not load.");
+    state.adminBannedDevices = payload.banned || [];
+    renderAdminBannedDevices();
+  } catch (err) {
+    list.innerHTML = `<div class="empty-state">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderAdminBannedDevices() {
+  const list  = document.getElementById("adminBannedDevicesList");
+  const count = document.getElementById("adminBannedDevicesCount");
+  if (!list) return;
+  const entries = state.adminBannedDevices || [];
+  count.textContent = `${entries.length} banned device${entries.length === 1 ? "" : "s"}`;
+
+  if (!list._unbanBound) {
+    list._unbanBound = true;
+    list.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-unban-device]");
+      if (!btn) return;
+      const deviceId = btn.dataset.unbanDevice;
+      if (!confirm(`Unban device?\n${deviceId}`)) return;
+      btn.disabled = true; btn.textContent = "Unbanning…";
+      try {
+        const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+          method: "DELETE", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId }),
+        });
+        if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+        showToast("Device unbanned.");
+        loadAdminBannedDevices();
+      } catch (err) {
+        showToast("Error: " + err.message, true);
+        btn.disabled = false; btn.textContent = "Unban";
+      }
+    });
+  }
+
+  list.innerHTML = entries.length
+    ? entries.map((b) => `
+        <article class="review-card" style="border-left:3px solid #ef4444">
+          <div class="review-body">
+            <div style="font-family:monospace;font-size:0.88rem;font-weight:700;color:var(--text);word-break:break-all">${escapeHtml(b.deviceId)}</div>
+            ${b.note ? `<div class="review-meta" style="color:#f87171">${escapeHtml(b.note)}</div>` : ""}
+            <div class="review-meta" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span>${b.bannedAt ? new Date(b.bannedAt).toLocaleString() : ""}</span>
+              <button class="admin-btn" style="padding:2px 8px;font-size:0.75rem" data-unban-device="${escapeHtml(b.deviceId)}">Unban</button>
+            </div>
+          </div>
+        </article>`).join("")
+    : `<div class="empty-state">No devices banned yet.</div>`;
+}
 
 function renderAdminFailedAttempts() {
   if (!els.adminFailedList) return;
