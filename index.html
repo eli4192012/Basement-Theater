@@ -2934,6 +2934,26 @@ h3 {
               </div>
             </div>
 
+            <!-- Device Log Card -->
+            <div class="admin-card">
+              <div class="admin-card-header">
+                <div>
+                  <span class="admin-card-title">📱 Device Log</span>
+                  <p class="admin-subtitle" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted-dim)">All unique devices seen across login activity</p>
+                </div>
+                <div class="admin-actions" style="margin-left:auto">
+                  <button class="admin-btn" id="adminLoadDeviceLogButton">Load Device Log</button>
+                </div>
+              </div>
+              <div id="adminDeviceLogPanel" class="hidden" style="margin-top:12px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                  <input id="adminDeviceLogSearch" type="text" placeholder="Search email or device ID…" style="flex:1;min-width:160px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:0.85rem" />
+                  <p id="adminDeviceLogCount" class="results-count" style="white-space:nowrap"></p>
+                </div>
+                <section id="adminDeviceLogList" class="review-grid"></section>
+              </div>
+            </div>
+
             <div class="admin-card">
               <div class="admin-card-header">
                 <div>
@@ -6012,6 +6032,23 @@ function bindAdminPanelEvents() {
     bannedBtn._bound = true;
     bannedBtn.addEventListener("click", loadAdminBannedDevices);
   }
+  const deviceLogBtn = document.getElementById("adminLoadDeviceLogButton");
+  if (deviceLogBtn && !deviceLogBtn._bound) {
+    deviceLogBtn._bound = true;
+    deviceLogBtn.addEventListener("click", () => {
+      // Load activity first if not loaded yet, then render log
+      if (!state.adminActivity?.length) {
+        loadAdminActivity().then(renderAdminDeviceLog);
+      } else {
+        renderAdminDeviceLog();
+      }
+    });
+  }
+  const deviceLogSearch = document.getElementById("adminDeviceLogSearch");
+  if (deviceLogSearch && !deviceLogSearch._bound) {
+    deviceLogSearch._bound = true;
+    deviceLogSearch.addEventListener("input", renderAdminDeviceLog);
+  }
 }
 
 function setAdminSecurityStatus(message, isError = false) {
@@ -6236,6 +6273,110 @@ async function loadAdminActivity() {
   }
 }
 
+
+function renderAdminDeviceLog() {
+  const panel  = document.getElementById("adminDeviceLogPanel");
+  const list   = document.getElementById("adminDeviceLogList");
+  const count  = document.getElementById("adminDeviceLogCount");
+  const search = (document.getElementById("adminDeviceLogSearch")?.value || "").toLowerCase();
+  if (!panel || !list) return;
+  panel.classList.remove("hidden");
+
+  // Build device map from activity log
+  const activity = state.adminActivity || [];
+  const deviceMap = {};
+  for (const entry of activity) {
+    if (!entry.deviceId) continue;
+    if (!deviceMap[entry.deviceId]) {
+      deviceMap[entry.deviceId] = { deviceId: entry.deviceId, emails: new Set(), ips: new Set(), lastSeen: entry.loggedInAt, logins: 0 };
+    }
+    const d = deviceMap[entry.deviceId];
+    if (entry.email) d.emails.add(entry.email);
+    if (entry.ip)    d.ips.add(entry.ip);
+    if (entry.loggedInAt > d.lastSeen) d.lastSeen = entry.loggedInAt;
+    d.logins++;
+  }
+
+  const bannedIds = new Set((state.adminBannedDevices || []).map(b => b.deviceId));
+  let devices = Object.values(deviceMap).sort((a, b) => (b.lastSeen || "").localeCompare(a.lastSeen || ""));
+
+  if (search) {
+    devices = devices.filter(d =>
+      d.deviceId.toLowerCase().includes(search) ||
+      [...d.emails].some(e => e.toLowerCase().includes(search)) ||
+      [...d.ips].some(ip => ip.includes(search))
+    );
+  }
+
+  count.textContent = `${devices.length} device${devices.length === 1 ? "" : "s"}`;
+
+  if (!list._deviceBanBound) {
+    list._deviceBanBound = true;
+    list.addEventListener("click", async (e) => {
+      const banBtn = e.target.closest("[data-log-ban]");
+      if (banBtn) {
+        const id = banBtn.dataset.logBan;
+        const note = prompt(`Note for banning device:\n${id}`, "");
+        if (note === null) return;
+        banBtn.disabled = true; banBtn.textContent = "Banning…";
+        try {
+          const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+            method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ deviceId: id, note }),
+          });
+          if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+          state.adminBannedDevices = ((await resp.json().catch(() => ({banned:[]}))).banned) || state.adminBannedDevices;
+          showToast("Device banned.");
+          renderAdminDeviceLog();
+        } catch (err) { showToast("Error: " + err.message, true); banBtn.disabled = false; banBtn.textContent = "🚫 Ban"; }
+        return;
+      }
+      const unbanBtn = e.target.closest("[data-log-unban]");
+      if (unbanBtn) {
+        const id = unbanBtn.dataset.logUnban;
+        if (!confirm(`Unban device?\n${id}`)) return;
+        unbanBtn.disabled = true; unbanBtn.textContent = "Unbanning…";
+        try {
+          const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+            method: "DELETE", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ deviceId: id }),
+          });
+          if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+          const updated = await resp.json().catch(() => ({ banned: [] }));
+          state.adminBannedDevices = updated.banned || [];
+          showToast("Device unbanned.");
+          renderAdminDeviceLog();
+        } catch (err) { showToast("Error: " + err.message, true); unbanBtn.disabled = false; unbanBtn.textContent = "Unban"; }
+      }
+    });
+  }
+
+  list.innerHTML = devices.length ? devices.map(d => {
+    const isBanned = bannedIds.has(d.deviceId);
+    const emails = [...d.emails].join(", ") || "Unknown";
+    const ips    = [...d.ips].join(", ") || "—";
+    const lastSeen = d.lastSeen ? new Date(d.lastSeen).toLocaleString() : "—";
+    const banBtn = isBanned
+      ? `<button class="admin-btn" style="padding:2px 8px;font-size:0.75rem;background:#1a6b35;border-color:#1a6b35;color:#fff" data-log-unban="${escapeHtml(d.deviceId)}">✓ Unban</button>`
+      : `<button class="admin-btn danger" style="padding:2px 8px;font-size:0.75rem" data-log-ban="${escapeHtml(d.deviceId)}">🚫 Ban</button>`;
+    return `
+      <article class="review-card" style="border-left:3px solid ${isBanned ? "#ef4444" : "#d7a44c"}">
+        <div class="review-body">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-family:monospace;font-size:0.82rem;font-weight:700;color:var(--text);word-break:break-all">${escapeHtml(d.deviceId)}</span>
+            ${isBanned ? `<span style="font-size:0.72rem;font-weight:700;color:#ef4444;background:#ef444422;padding:2px 7px;border-radius:20px">BANNED</span>` : ""}
+          </div>
+          <div class="review-meta">👤 ${escapeHtml(emails)}</div>
+          <div class="review-meta">🌐 ${escapeHtml(ips)}</div>
+          <div class="review-meta" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span>🕒 ${escapeHtml(lastSeen)}</span>
+            <span style="color:var(--muted)">${d.logins} login${d.logins === 1 ? "" : "s"}</span>
+            ${banBtn}
+          </div>
+        </div>
+      </article>`;
+  }).join("") : `<div class="empty-state">No device IDs found in activity log.</div>`;
+}
 
 async function loadAdminBannedDevices() {
   if (!state.auth.hostedMode) return;
