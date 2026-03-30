@@ -2579,6 +2579,7 @@ h3 {
           </label>
           <label class="search hidden" id="gameStashSearchWrap"><span>Search</span><input id="gameStashSearch" type="search" placeholder="Search games…" /></label>
           <button id="randomPickButton" class="ghost-button" type="button">Shuffle</button>
+          <span id="autoSignoutCountdown" style="display:none;font-size:0.72rem;color:#f5c518;opacity:0.85;font-family:monospace;letter-spacing:0.03em;white-space:nowrap;padding:0 4px;" title="Auto sign-out countdown (Central Time)"></span>
           <button id="signOutButton" class="ghost-button" type="button" style="display:none;font-size:0.78rem;opacity:0.7">Sign Out</button>
         </div>
       </header>
@@ -3487,6 +3488,7 @@ async function loadProtectedData() {
   await loadEditableTexts();
   renderAll();
   initFileViewer();
+  initAutoSignout();
   loadAnnouncement(); // Non-blocking — loads banner in background
   startAnnouncementWatcher();
   startEditableTextWatcher();
@@ -3621,23 +3623,84 @@ async function openFile(file) {
   }
 }
 
-function signOut() {
-  if (!confirm("Sign out of The Basement Premium?")) return;
-  // Clear session
+function signOut(force) {
+  if (!force && !confirm("Sign out of The Basement Premium?")) return;
   sessionStorage.removeItem("basement-theater.password-token");
   sessionStorage.removeItem("basement-theater.manual-email");
   sessionStorage.removeItem("basement-theater.google-credential");
   sessionStorage.removeItem(STORAGE_KEYS.adminUnlocked);
   localStorage.removeItem("basement-theater.password-user");
   localStorage.removeItem("basement-theater.google-user");
-  // Reset auth state
   state.auth.token = "";
   state.auth.user = null;
   state.auth.manualEmail = "";
   state.auth.googleCredential = "";
   state.adminUnlocked = false;
-  // Reload to show auth gate cleanly
   window.location.reload();
+}
+
+// ── Auto Sign-Out Schedule (Central Time) ─────────────────────────────────────
+const AUTO_SIGNOUT_TIMES = [
+  [7, 40], [9, 5], [10, 35], [12, 35], [13, 20], [14, 5], [14, 39]
+];
+
+function getCentralTimeParts() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric", minute: "numeric", second: "numeric", hour12: false,
+  }).formatToParts(new Date());
+  const get = (t) => parseInt(parts.find((p) => p.type === t)?.value || "0");
+  // hour12:false returns 24 for midnight in some engines — normalize
+  const h = get("hour") % 24;
+  return { h, m: get("minute"), s: get("second") };
+}
+
+function getMsUntilNextSignout() {
+  const { h, m, s } = getCentralTimeParts();
+  const nowSec = h * 3600 + m * 60 + s;
+  const signoutSecs = AUTO_SIGNOUT_TIMES.map(([sh, sm]) => sh * 3600 + sm * 60);
+  const future = signoutSecs.filter((sec) => sec > nowSec).sort((a, b) => a - b);
+  if (future.length > 0) return (future[0] - nowSec) * 1000;
+  // All passed today — wrap to first time tomorrow
+  return (86400 - nowSec + signoutSecs[0]) * 1000;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return "00:00:00";
+  const t = Math.floor(ms / 1000);
+  const hh = Math.floor(t / 3600);
+  const mm = Math.floor((t % 3600) / 60);
+  const ss = t % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+let _autoSignoutTimer = null;
+let _lastFiredMinute = null;
+
+function initAutoSignout() {
+  const el = document.getElementById("autoSignoutCountdown");
+  if (!el) return;
+  el.style.display = "";
+
+  if (_autoSignoutTimer) clearInterval(_autoSignoutTimer);
+
+  _autoSignoutTimer = setInterval(() => {
+    if (!state.auth || !state.auth.token) return;
+
+    const { h, m, s } = getCentralTimeParts();
+    const key = `${h}:${m}`;
+
+    // Fire sign-out if we're in the first 5 seconds of a scheduled minute
+    const hit = AUTO_SIGNOUT_TIMES.some(([sh, sm]) => sh === h && sm === m);
+    if (hit && s < 5 && _lastFiredMinute !== key) {
+      _lastFiredMinute = key;
+      signOut(true); // forced — no confirm dialog
+      return;
+    }
+
+    const ms = getMsUntilNextSignout();
+    el.textContent = "⏱ " + formatCountdown(ms);
+  }, 1000);
 }
 
 async function verifyAccess(password) {
