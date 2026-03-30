@@ -3138,12 +3138,45 @@ h3 {
 };
 
 
-function getDeviceId() {
-  let id = localStorage.getItem(STORAGE_KEYS.deviceId);
-  if (!id) {
-    id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(STORAGE_KEYS.deviceId, id);
+function generateDeviceFingerprint() {
+  // Collect stable browser/device properties that are the same on any domain
+  const components = [
+    navigator.userAgent || "",
+    navigator.language || navigator.userLanguage || "",
+    [screen.width, screen.height, screen.colorDepth].join("x"),
+    String(navigator.hardwareConcurrency || ""),
+    navigator.platform || "",
+    (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "") || "",
+    String(navigator.maxTouchPoints || 0),
+  ];
+  // Canvas fingerprint — GPU/font rendering varies per device, very stable cross-domain
+  try {
+    const c = document.createElement("canvas");
+    const ctx = c.getContext("2d");
+    ctx.textBaseline = "top";
+    ctx.font = "14px 'Arial'";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = "#069";
+    ctx.fillText("BasementTheater\u{1F3AC}", 2, 15);
+    ctx.fillStyle = "rgba(102,204,0,0.7)";
+    ctx.fillText("BasementTheater\u{1F3AC}", 4, 17);
+    components.push(c.toDataURL());
+  } catch (e) { /* canvas blocked, skip */ }
+  const raw = components.join("|");
+  let h = 0;
+  for (let i = 0; i < raw.length; i++) {
+    h = Math.imul(31, h) + raw.charCodeAt(i) | 0;
   }
+  return "fp_" + (h >>> 0).toString(36);
+}
+
+function getDeviceId() {
+  const stored = localStorage.getItem(STORAGE_KEYS.deviceId);
+  // Re-generate if missing or still using the old random format (dev_...)
+  if (stored && stored.startsWith("fp_")) return stored;
+  const id = generateDeviceFingerprint();
+  localStorage.setItem(STORAGE_KEYS.deviceId, id);
   return id;
 }
 
