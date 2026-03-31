@@ -1,7 +1,6 @@
 {
-  "active": true,
-  "message": "Quasar Proxies are down temporarily... We will notify you if it opens.",
+  "active": false,
+  "message": "",
   "type": "info",
-  "postedAt": "2026-03-31T12:45:45.952Z",
-  "scheduledAt": "2026-03-31T12:43:00.000Z"
+  "postedAt": null
 }
