@@ -6158,21 +6158,36 @@ function bindAdminPanelEvents() {
       const deviceId = (idEl?.value || "").trim();
       const label = (labelEl?.value || "").trim();
       if (!deviceId) { showToast("Enter a device ID first.", true); return; }
-      deviceLogAddBtn.disabled = true; deviceLogAddBtn.textContent = "Adding…";
-      try {
-        const resp = await fetch(apiUrl("/api/auth/device-registry"), {
-          method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ deviceId, label }),
-        });
-        if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
-        const data = await resp.json();
-        state.adminDeviceRegistry = data.entries || [];
-        if (idEl) idEl.value = "";
-        if (labelEl) labelEl.value = "";
-        showToast("Device added.");
+
+      // Optimistic update — add to state and re-render immediately
+      const alreadyExists = (state.adminDeviceRegistry || []).some(e => e.deviceId === deviceId);
+      if (!alreadyExists) {
+        state.adminDeviceRegistry = [
+          { deviceId, label, addedAt: new Date().toISOString() },
+          ...(state.adminDeviceRegistry || []),
+        ];
         renderAdminDeviceLog();
-      } catch (err) { showToast("Error: " + err.message, true); }
-      deviceLogAddBtn.disabled = false; deviceLogAddBtn.textContent = "+ Add Device";
+      }
+      if (idEl) idEl.value = "";
+      if (labelEl) labelEl.value = "";
+
+      // Save to Supabase in the background
+      fetch(apiUrl("/api/auth/device-registry"), {
+        method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceId, label }),
+      }).then(async resp => {
+        if (!resp.ok) {
+          const err = (await resp.json().catch(() => ({}))).error || "Save failed";
+          showToast("Error saving device: " + err, true);
+          // Roll back optimistic entry
+          state.adminDeviceRegistry = (state.adminDeviceRegistry || []).filter(e => e.deviceId !== deviceId);
+          renderAdminDeviceLog();
+        }
+      }).catch(err => {
+        showToast("Error saving device: " + err.message, true);
+        state.adminDeviceRegistry = (state.adminDeviceRegistry || []).filter(e => e.deviceId !== deviceId);
+        renderAdminDeviceLog();
+      });
     });
   }
 }
@@ -6442,18 +6457,18 @@ function renderAdminDeviceLog() {
       if (removeBtn) {
         const id = removeBtn.dataset.regRemove;
         if (!confirm(`Remove device from log?\n${id}`)) return;
-        removeBtn.disabled = true; removeBtn.textContent = "Removing…";
-        try {
-          const resp = await fetch(apiUrl("/api/auth/device-registry"), {
-            method: "DELETE", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
-            body: JSON.stringify({ deviceId: id }),
-          });
-          if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
-          const data = await resp.json();
-          state.adminDeviceRegistry = data.entries || [];
-          showToast("Device removed from log.");
+        // Optimistic remove
+        const prev = state.adminDeviceRegistry || [];
+        state.adminDeviceRegistry = prev.filter(e => e.deviceId !== id);
+        renderAdminDeviceLog();
+        fetch(apiUrl("/api/auth/device-registry"), {
+          method: "DELETE", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId: id }),
+        }).catch(err => {
+          showToast("Error removing device: " + err.message, true);
+          state.adminDeviceRegistry = prev; // roll back
           renderAdminDeviceLog();
-        } catch (err) { showToast("Error: " + err.message, true); removeBtn.disabled = false; removeBtn.textContent = "Remove"; }
+        });
         return;
       }
       // Ban device
