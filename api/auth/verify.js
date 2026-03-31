@@ -42,7 +42,11 @@ module.exports = async function handler(req, res) {
 
     if (deviceId) {
       const bannedData = await getBannedDevices().catch(() => ({ banned: [] }));
-      const isBanned = (bannedData.banned || []).some((b) => b.deviceId === deviceId);
+      const isBanned = (bannedData.banned || []).some((b) => {
+        if (b.deviceId !== deviceId) return false;
+        if (b.expiresAt && new Date(b.expiresAt) < new Date()) return false; // expired
+        return true;
+      });
       if (isBanned) {
         appendLoginActivity({ email, password, status: "denied", reason: "Device banned", ip, deviceId, loggedInAt }).catch(() => null);
         sendJson(res, 403, { error: "Access denied from this device." });

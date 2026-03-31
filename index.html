@@ -2136,6 +2136,29 @@ h3 {
 .announcement-banner-text { flex: 1; }
 .announcement-banner-dismiss { background: none; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 1.1rem; padding: 0 4px; flex-shrink: 0; }
 .announcement-banner-dismiss:hover { opacity: 1; }
+#announcementBannerContainer { display: flex; flex-direction: column; gap: 8px; }
+#announcementBannerContainer:empty { display: none; }
+#announcementBannerContainer .announcement-banner { margin-bottom: 0; }
+
+/* ── Ban Modal ── */
+.ban-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeInOverlay 0.15s ease;
+}
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+.ban-modal-card {
+  background: #1e1e1e; border: 1px solid #444; border-radius: 12px;
+  padding: 24px; width: min(420px, 92vw); display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.ban-modal-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.ban-modal-device { font-family: monospace; font-size: 0.8rem; color: var(--muted); word-break: break-all; }
+.ban-modal-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+.ban-modal-note { width: 100%; box-sizing: border-box; background: #111; border: 1px solid #444; color: var(--text); border-radius: 7px; padding: 8px 10px; font-size: 0.9rem; resize: vertical; min-height: 64px; }
+.ban-modal-select { width: 100%; box-sizing: border-box; background: #111; border: 1px solid #444; color: var(--text); border-radius: 7px; padding: 8px 10px; font-size: 0.9rem; }
+.ban-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
 /* ── Admin Announcements ── */
 .admin-announce-section {
@@ -2584,11 +2607,7 @@ h3 {
         </div>
       </header>
 
-      <div id="announcementBanner" class="announcement-banner">
-        <span class="announcement-banner-icon" id="announcementIcon">📢</span>
-        <span class="announcement-banner-text" id="announcementText"></span>
-        <button class="announcement-banner-dismiss" id="announcementDismiss" aria-label="Dismiss">✕</button>
-      </div>
+      <div id="announcementBannerContainer"></div>
 
       <main>
         <section id="libraryView">
@@ -2764,6 +2783,7 @@ h3 {
             <div class="admin-card">
               <div class="admin-card-header"><span class="admin-card-icon">📢</span><span class="admin-card-title">Announcements</span></div>
               <div id="adminCurrentAnnouncement" class="admin-current-announcement" style="display:none"></div>
+              <div id="adminAnnouncementList" style="margin-bottom:10px"></div>
               <div class="admin-announce-form">
                 <textarea id="adminAnnounceText" placeholder="Type your announcement here… e.g. 'New movies added! Check the Horror section 🎃'"></textarea>
                 <div class="admin-announce-row">
@@ -5430,39 +5450,43 @@ async function fetchAnnouncementState() {
 
 async function loadAnnouncement() {
   try {
-    const { data, sha } = await fetchAnnouncementState();
-    const banner = document.querySelector("#announcementBanner");
-    const text = document.querySelector("#announcementText");
-    const icon = document.querySelector("#announcementIcon");
-    if (!banner || !text) return;
+    const { data } = await fetchAnnouncementState();
+    const container = document.querySelector("#announcementBannerContainer");
+    if (!container) return;
 
-    if (!data.active || !data.message) {
-      banner.classList.remove("active");
-      return;
+    // Normalize: support both old { active, message } and new { items: [...] } formats
+    let items;
+    if (Array.isArray(data.items)) {
+      items = data.items;
+    } else if (data.active && data.message) {
+      // Old format — treat as single item using message as id
+      items = [{ id: getAnnouncementId(data), message: data.message, type: data.type || "info", postedAt: data.postedAt, scheduledAt: data.scheduledAt }];
+    } else {
+      items = [];
     }
 
-    // Respect scheduled time — don't show until scheduledAt has passed
-    if (data.scheduledAt && new Date(data.scheduledAt) > new Date()) {
-      banner.classList.remove("active");
-      return;
+    const now = new Date();
+    const banners = [];
+    for (const item of items) {
+      if (!item.message) continue;
+      // Respect scheduled time
+      if (item.scheduledAt && new Date(item.scheduledAt) > now) continue;
+      // Check if dismissed
+      const dismissedKey = `basement-theater.dismissed-announce-${item.id}`;
+      if (localStorage.getItem(dismissedKey)) continue;
+      banners.push(item);
     }
 
-    // Only hide when this exact posted version was dismissed.
-    const dismissedKey = "basement-theater.announcement-dismissed";
-    const announcementId = sha || getAnnouncementId(data);
-    if (localStorage.getItem(dismissedKey) === announcementId) {
-      banner.classList.remove("active");
-      return;
-    }
-
-    text.textContent = data.message;
-    icon.textContent = ANNOUNCE_ICONS[data.type] || "📢";
-    banner.className = `announcement-banner active type-${data.type || "info"}`;
-
-    document.querySelector("#announcementDismiss").onclick = () => {
-      localStorage.setItem(dismissedKey, announcementId);
-      banner.classList.remove("active");
-    };
+    container.innerHTML = banners.map(item => `
+      <div class="announcement-banner active type-${escapeHtml(item.type || "info")}" data-announce-id="${escapeHtml(item.id)}">
+        <span class="announcement-banner-icon">${ANNOUNCE_ICONS[item.type] || "📢"}</span>
+        <span class="announcement-banner-text">${escapeHtml(item.message)}</span>
+        <button class="announcement-banner-dismiss" aria-label="Dismiss" onclick="
+          localStorage.setItem('basement-theater.dismissed-announce-${escapeHtml(item.id)}', '1');
+          this.closest('.announcement-banner').remove();
+        ">✕</button>
+      </div>
+    `).join("");
   } catch {
     // Silently fail — announcements are non-critical
   }
@@ -5475,25 +5499,29 @@ function startAnnouncementWatcher() {
 
   window.setInterval(async () => {
     try {
-      const { data, sha } = await fetchAnnouncementState();
-      const nextId = data.active ? (sha || getAnnouncementId(data)) : "";
+      const { data } = await fetchAnnouncementState();
+      // Compute a fingerprint for the current state to detect any change
+      let nextId;
+      if (Array.isArray(data.items)) {
+        nextId = data.items.length > 0
+          ? `${data.items.length}:${data.items[data.items.length - 1].id || ""}`
+          : "";
+      } else {
+        nextId = data.active ? getAnnouncementId(data) : "";
+      }
+
       if (!watchedAnnouncementId) {
         watchedAnnouncementId = nextId;
         sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, watchedAnnouncementId);
         return;
       }
 
-      if (nextId && nextId !== watchedAnnouncementId) {
+      if (nextId !== watchedAnnouncementId) {
         sessionStorage.setItem(STORAGE_KEYS.reloadedAnnouncementId, nextId);
         sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, nextId);
         watchedAnnouncementId = nextId;
         loadAnnouncement();
         return;
-      }
-
-      if (!nextId && watchedAnnouncementId) {
-        watchedAnnouncementId = "";
-        sessionStorage.setItem(STORAGE_KEYS.watchedAnnouncementId, "");
       }
     } catch {
       // Keep watching quietly.
@@ -5830,7 +5858,8 @@ async function pushAnnouncementJson(data) {
     binary += String.fromCharCode(...encoded.subarray(i, i + chunk));
   }
   const content = btoa(binary);
-  const body = { message: data.active ? "Post announcement" : "Clear announcement", content };
+  const hasItems = Array.isArray(data.items) ? data.items.length > 0 : data.active;
+  const body = { message: hasItems ? "Update announcements" : "Clear announcements", content };
   if (sha) body.sha = sha;
 
   const putResp = await fetch(apiUrl, { method: "PUT", headers, body: JSON.stringify(body) });
@@ -5856,12 +5885,29 @@ async function publishAnnouncement() {
   btn.textContent = "⏳ Sending…";
   btn.disabled = true;
   try {
-    await pushAnnouncementJson({ active: true, message, type, postedAt: new Date().toISOString(), scheduledAt: scheduledAt || null });
+    // Fetch current state and add new item to items array
+    let currentItems = [];
+    try {
+      const { data } = await fetchAnnouncementState();
+      if (Array.isArray(data.items)) {
+        currentItems = data.items;
+      } else if (data.active && data.message) {
+        // Migrate old format
+        currentItems = [{ id: getAnnouncementId(data), message: data.message, type: data.type || "info", postedAt: data.postedAt, scheduledAt: data.scheduledAt }];
+      }
+    } catch { /* if file doesn't exist yet, start fresh */ }
+
+    const newItem = { id: Date.now().toString(36), message, type, postedAt: new Date().toISOString(), scheduledAt: scheduledAt || null };
+    const nextData = { items: [...currentItems, newItem], updatedAt: new Date().toISOString() };
+    await pushAnnouncementJson(nextData);
+
     btn.textContent = isScheduled ? "✅ Scheduled!" : "✅ Announcement committed!";
-    if (!isScheduled) updateAdminAnnouncementDisplay({ active: true, message, type });
-    // Also show the banner locally
-    localStorage.removeItem("basement-theater.announcement-dismissed");
+    // Clear the form
+    msgEl.value = "";
+    const schedEl = document.querySelector("#adminAnnounceSchedule");
+    if (schedEl) schedEl.value = "";
     await loadAnnouncement();
+    fetchAnnouncementState().then(({ data }) => updateAdminAnnouncementDisplay(data)).catch(() => {});
     setTimeout(() => { btn.textContent = "📢 Commit Announcement to GitHub"; btn.disabled = false; }, 4000);
   } catch (err) {
     btn.textContent = `❌ ${err.message}`;
@@ -5874,11 +5920,12 @@ async function clearAnnouncement() {
   btn.textContent = "⏳ Clearing…";
   btn.disabled = true;
   try {
-    await pushAnnouncementJson({ active: false, message: "", type: "info", postedAt: null });
+    await pushAnnouncementJson({ items: [], updatedAt: new Date().toISOString() });
     btn.textContent = "✅ Clear committed!";
-    updateAdminAnnouncementDisplay(null);
-    document.querySelector("#announcementBanner").classList.remove("active");
-    setTimeout(() => { btn.textContent = "✕ Clear"; btn.disabled = false; }, 3000);
+    updateAdminAnnouncementDisplay({ items: [] });
+    const container = document.querySelector("#announcementBannerContainer");
+    if (container) container.innerHTML = "";
+    setTimeout(() => { btn.textContent = "✕ Clear All"; btn.disabled = false; }, 3000);
   } catch (err) {
     btn.textContent = `❌ ${err.message}`;
     btn.disabled = false;
@@ -5886,13 +5933,61 @@ async function clearAnnouncement() {
 }
 
 function updateAdminAnnouncementDisplay(data) {
-  const el = document.querySelector("#adminCurrentAnnouncement");
-  if (!el) return;
-  if (data?.active && data?.message) {
-    el.style.display = "";
-    el.innerHTML = `<strong>Active:</strong> ${escapeHtml(data.message)} <span style="opacity:0.6;font-size:0.8em">[${data.type}]</span>`;
+  const listEl = document.querySelector("#adminAnnouncementList");
+  if (!listEl) return;
+
+  // Normalize to items array
+  let items;
+  if (data && Array.isArray(data.items)) {
+    items = data.items;
+  } else if (data?.active && data?.message) {
+    items = [{ id: getAnnouncementId(data), message: data.message, type: data.type || "info", postedAt: data.postedAt, scheduledAt: data.scheduledAt }];
   } else {
-    el.style.display = "none";
+    items = [];
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = "";
+    return;
+  }
+
+  listEl.innerHTML = `<div style="font-size:0.8rem;color:var(--muted);margin-bottom:6px;font-weight:600">Active announcements:</div>` +
+    items.map(item => {
+      const isScheduled = item.scheduledAt && new Date(item.scheduledAt) > new Date();
+      const label = isScheduled
+        ? `<span style="font-size:0.72rem;color:#f5c518;margin-left:6px">⏰ scheduled</span>`
+        : `<span style="font-size:0.72rem;color:#22c55e;margin-left:6px">[${item.type}]</span>`;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:4px">
+        <span style="flex:1;font-size:0.84rem;color:var(--text)">${escapeHtml(item.message)}${label}</span>
+        <button class="admin-btn danger" style="padding:2px 8px;font-size:0.72rem;flex-shrink:0" data-remove-announce="${escapeHtml(item.id)}">×</button>
+      </div>`;
+    }).join("");
+
+  // Bind remove buttons
+  if (!listEl._removeBound) {
+    listEl._removeBound = true;
+    listEl.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-remove-announce]");
+      if (!btn) return;
+      const removeId = btn.dataset.removeAnnounce;
+      btn.disabled = true; btn.textContent = "…";
+      try {
+        let currentItems = [];
+        try {
+          const { data: d } = await fetchAnnouncementState();
+          if (Array.isArray(d.items)) currentItems = d.items;
+          else if (d.active && d.message) currentItems = [{ id: getAnnouncementId(d), message: d.message, type: d.type || "info", postedAt: d.postedAt, scheduledAt: d.scheduledAt }];
+        } catch { /**/ }
+        const nextItems = currentItems.filter(it => it.id !== removeId);
+        await pushAnnouncementJson({ items: nextItems, updatedAt: new Date().toISOString() });
+        await loadAnnouncement();
+        fetchAnnouncementState().then(({ data: d }) => updateAdminAnnouncementDisplay(d)).catch(() => {});
+        showToast("Announcement removed.");
+      } catch (err) {
+        showToast("Error: " + err.message, true);
+        btn.disabled = false; btn.textContent = "×";
+      }
+    });
   }
 }
 
@@ -5937,7 +6032,7 @@ function renderAdmin() {
   bindAdminProxyEvents();
   // Load and display current announcement state in admin
   fetchAnnouncementState().then(({ data }) => {
-    if (data?.active) updateAdminAnnouncementDisplay(data);
+    updateAdminAnnouncementDisplay(data);
   }).catch(() => {});
   // Pre-load device registry in background so it's ready when the user scrolls to it
   if (state.auth.hostedMode) loadAdminDeviceRegistry().catch(() => {});
@@ -6332,6 +6427,58 @@ function bindAdminProxyEvents() {
   }
 }
 
+function showBanModal(deviceId, onConfirm) {
+  const overlay = document.createElement("div");
+  overlay.className = "ban-modal-overlay";
+  overlay.innerHTML = `
+    <div class="ban-modal-card" role="dialog" aria-modal="true" aria-label="Ban Device">
+      <div class="ban-modal-title">🚫 Ban Device</div>
+      <div class="ban-modal-device">${escapeHtml(deviceId)}</div>
+      <div>
+        <div class="ban-modal-label">Note (optional)</div>
+        <textarea class="ban-modal-note" placeholder="Reason for ban…" rows="3"></textarea>
+      </div>
+      <div>
+        <div class="ban-modal-label">Duration</div>
+        <select class="ban-modal-select">
+          <option value="permanent">Permanent</option>
+          <option value="3600">1 hour</option>
+          <option value="21600">6 hours</option>
+          <option value="86400">24 hours</option>
+          <option value="259200">3 days</option>
+          <option value="604800">1 week</option>
+        </select>
+      </div>
+      <div class="ban-modal-actions">
+        <button class="admin-btn" id="banModalCancelBtn">Cancel</button>
+        <button class="admin-btn danger" id="banModalConfirmBtn">🚫 Ban</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const noteEl = overlay.querySelector(".ban-modal-note");
+  const selectEl = overlay.querySelector(".ban-modal-select");
+  const cancelBtn = overlay.querySelector("#banModalCancelBtn");
+  const confirmBtn = overlay.querySelector("#banModalConfirmBtn");
+
+  const close = () => overlay.remove();
+
+  cancelBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  confirmBtn.addEventListener("click", () => {
+    const note = noteEl.value.trim();
+    const durVal = selectEl.value;
+    const expiresAt = durVal === "permanent" ? null : new Date(Date.now() + Number(durVal) * 1000).toISOString();
+    close();
+    onConfirm({ note, expiresAt });
+  });
+
+  noteEl.focus();
+}
+
 function renderAdminActivity() {
   if (!els.adminActivityList) return;
   const searchVal = (document.querySelector("#adminActivitySearch")?.value || "").toLowerCase();
@@ -6349,23 +6496,23 @@ function renderAdminActivity() {
       if (!btn) return;
       const deviceId = btn.dataset.banDevice;
       if (!deviceId) return;
-      const note = prompt(`Add a note for banning device:\n${deviceId}`, "") ;
-      if (note === null) return;
-      btn.disabled = true;
-      btn.textContent = "Banning…";
-      try {
-        const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
-          method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({ deviceId, note }),
-        });
-        if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
-        showToast("Device banned.");
-        loadAdminBannedDevices();
-      } catch (err) {
-        showToast("Error: " + err.message, true);
-        btn.disabled = false;
-        btn.textContent = "🚫 Ban Device";
-      }
+      showBanModal(deviceId, async ({ note, expiresAt }) => {
+        btn.disabled = true;
+        btn.textContent = "Banning…";
+        try {
+          const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+            method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ deviceId, note, expiresAt }),
+          });
+          if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+          showToast("Device banned.");
+          loadAdminBannedDevices();
+        } catch (err) {
+          showToast("Error: " + err.message, true);
+          btn.disabled = false;
+          btn.textContent = "🚫 Ban Device";
+        }
+      });
     });
   }
 
@@ -6475,20 +6622,20 @@ function renderAdminDeviceLog() {
       const banBtn = e.target.closest("[data-reg-ban]");
       if (banBtn) {
         const id = banBtn.dataset.regBan;
-        const note = prompt(`Note for banning device:\n${id}`, "");
-        if (note === null) return;
-        banBtn.disabled = true; banBtn.textContent = "Banning…";
-        try {
-          const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
-            method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
-            body: JSON.stringify({ deviceId: id, note }),
-          });
-          if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
-          const data = await resp.json().catch(() => ({ banned: [] }));
-          state.adminBannedDevices = data.banned || state.adminBannedDevices;
-          showToast("Device banned.");
-          renderAdminDeviceLog();
-        } catch (err) { showToast("Error: " + err.message, true); banBtn.disabled = false; banBtn.textContent = "🚫 Ban"; }
+        showBanModal(id, async ({ note, expiresAt }) => {
+          banBtn.disabled = true; banBtn.textContent = "Banning…";
+          try {
+            const resp = await fetch(apiUrl("/api/auth/banned-devices"), {
+              method: "POST", headers: { ...getAdminHeaders(), "Content-Type": "application/json" },
+              body: JSON.stringify({ deviceId: id, note, expiresAt }),
+            });
+            if (!resp.ok) throw new Error((await resp.json()).error || "Failed");
+            const data = await resp.json().catch(() => ({ banned: [] }));
+            state.adminBannedDevices = data.banned || state.adminBannedDevices;
+            showToast("Device banned.");
+            renderAdminDeviceLog();
+          } catch (err) { showToast("Error: " + err.message, true); banBtn.disabled = false; banBtn.textContent = "🚫 Ban"; }
+        });
         return;
       }
       // Unban device
@@ -6585,18 +6732,37 @@ function renderAdminBannedDevices() {
     });
   }
 
+  const now = new Date();
   list.innerHTML = entries.length
-    ? entries.map((b) => `
-        <article class="review-card" style="border-left:3px solid #ef4444">
+    ? entries.map((b) => {
+        const isExpired = b.expiresAt && new Date(b.expiresAt) < now;
+        let expiryHtml = "";
+        if (b.expiresAt) {
+          if (isExpired) {
+            expiryHtml = `<span style="font-size:0.75rem;font-weight:700;color:#ef4444;background:#ef444422;padding:2px 7px;border-radius:20px;margin-left:6px">EXPIRED</span>`;
+          } else {
+            const diffMs = new Date(b.expiresAt) - now;
+            const diffH = Math.floor(diffMs / 3600000);
+            const diffM = Math.floor((diffMs % 3600000) / 60000);
+            const countdown = diffH > 0 ? `${diffH}h ${diffM}m` : `${diffM}m`;
+            expiryHtml = `<span style="font-size:0.75rem;color:#f5c518;margin-left:6px">Expires in ${countdown}</span>`;
+          }
+        }
+        return `
+        <article class="review-card" style="border-left:3px solid ${isExpired ? "#888" : "#ef4444"}">
           <div class="review-body">
-            <div style="font-family:monospace;font-size:0.88rem;font-weight:700;color:var(--text);word-break:break-all">${escapeHtml(b.deviceId)}</div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+              <span style="font-family:monospace;font-size:0.88rem;font-weight:700;color:${isExpired ? "var(--muted)" : "var(--text)"};word-break:break-all">${escapeHtml(b.deviceId)}</span>
+              ${expiryHtml}
+            </div>
             ${b.note ? `<div class="review-meta" style="color:#f87171">${escapeHtml(b.note)}</div>` : ""}
             <div class="review-meta" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <span>${b.bannedAt ? new Date(b.bannedAt).toLocaleString() : ""}</span>
               <button class="admin-btn" style="padding:2px 8px;font-size:0.75rem" data-unban-device="${escapeHtml(b.deviceId)}">Unban</button>
             </div>
           </div>
-        </article>`).join("")
+        </article>`;
+      }).join("")
     : `<div class="empty-state">No devices banned yet.</div>`;
 }
 

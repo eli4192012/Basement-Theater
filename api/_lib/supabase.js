@@ -163,11 +163,11 @@ async function getBannedDevices() {
   return readJsonObject("banned-devices.json", { banned: [] });
 }
 
-async function addBannedDevice(deviceId, note = "") {
+async function addBannedDevice(deviceId, note = "", expiresAt = null) {
   const existing = await getBannedDevices();
   if ((existing.banned || []).find((b) => b.deviceId === deviceId)) return existing;
   const next = {
-    banned: [{ deviceId, note, bannedAt: new Date().toISOString() }, ...(existing.banned || [])],
+    banned: [{ deviceId, note, bannedAt: new Date().toISOString(), expiresAt: expiresAt || null }, ...(existing.banned || [])],
     updatedAt: new Date().toISOString(),
   };
   await writeJsonObject("banned-devices.json", next);

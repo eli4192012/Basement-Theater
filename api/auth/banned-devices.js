@@ -16,9 +16,9 @@ module.exports = async function handler(req, res) {
 
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-      const { deviceId, note } = body;
+      const { deviceId, note, expiresAt } = body;
       if (!deviceId) { sendJson(res, 400, { error: "deviceId required." }); return; }
-      const data = await addBannedDevice(String(deviceId).trim(), String(note || "").trim());
+      const data = await addBannedDevice(String(deviceId).trim(), String(note || "").trim(), expiresAt || null);
       sendJson(res, 200, data);
       return;
     }
