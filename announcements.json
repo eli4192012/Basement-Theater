@@ -1,7 +1,7 @@
 {
   "active": true,
-  "message": "Quasar Proxies are down temporarily... We will notify you if it opens.",
-  "type": "info",
-  "postedAt": "2026-03-31T12:45:56.332Z",
-  "scheduledAt": "2026-03-31T12:43:00.000Z"
+  "message": "The internet is running slow right now causing proxies to load slow or not at all",
+  "type": "hype",
+  "postedAt": "2026-03-31T13:25:08.516Z",
+  "scheduledAt": null
 }
