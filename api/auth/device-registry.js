@@ -1,34 +1,43 @@
+const { handleCors, requireAdminPassword, requireAllowedUser, sendJson } = require("../_lib/access");
 const {
   getDeviceRegistry,
   addDeviceRegistryEntry,
   removeDeviceRegistryEntry,
 } = require("../_lib/supabase");
-const { requireAdminPassword, requireAllowedUser, sendJson } = require("../_lib/auth");
 
 module.exports = async function handler(req, res) {
-  requireAdminPassword(req, res);
-  if (res.writableEnded) return;
-  requireAllowedUser(req, res);
-  if (res.writableEnded) return;
+  if (handleCors(req, res)) return;
 
-  if (req.method === "GET") {
-    const data = await getDeviceRegistry().catch(() => ({ entries: [] }));
-    return sendJson(res, 200, data);
+  try {
+    requireAdminPassword(req);
+    await requireAllowedUser(req);
+
+    if (req.method === "GET") {
+      const data = await getDeviceRegistry();
+      sendJson(res, 200, data);
+      return;
+    }
+
+    if (req.method === "POST") {
+      const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+      const { deviceId, label } = body;
+      if (!deviceId) { sendJson(res, 400, { error: "deviceId is required." }); return; }
+      const data = await addDeviceRegistryEntry(String(deviceId).trim(), String(label || "").trim());
+      sendJson(res, 200, data);
+      return;
+    }
+
+    if (req.method === "DELETE") {
+      const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+      const { deviceId } = body;
+      if (!deviceId) { sendJson(res, 400, { error: "deviceId is required." }); return; }
+      const data = await removeDeviceRegistryEntry(String(deviceId).trim());
+      sendJson(res, 200, data);
+      return;
+    }
+
+    sendJson(res, 405, { error: "Method not allowed." });
+  } catch (error) {
+    sendJson(res, error.statusCode || 500, { error: error.message || "Could not manage device registry." });
   }
-
-  if (req.method === "POST") {
-    const { deviceId, label } = req.body || {};
-    if (!deviceId) return sendJson(res, 400, { error: "deviceId is required." });
-    const data = await addDeviceRegistryEntry(deviceId, label || "");
-    return sendJson(res, 200, data);
-  }
-
-  if (req.method === "DELETE") {
-    const { deviceId } = req.body || {};
-    if (!deviceId) return sendJson(res, 400, { error: "deviceId is required." });
-    const data = await removeDeviceRegistryEntry(deviceId);
-    return sendJson(res, 200, data);
-  }
-
-  sendJson(res, 405, { error: "Method not allowed." });
 };
