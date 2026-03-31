@@ -2943,10 +2943,10 @@ h3 {
                   <p class="admin-subtitle" style="margin:4px 0 0;font-size:0.82rem;color:var(--muted-dim)">Manually track device IDs with a label</p>
                 </div>
                 <div class="admin-actions" style="margin-left:auto">
-                  <button class="admin-btn" id="adminLoadDeviceLogButton">Load</button>
+                  <button class="admin-btn" id="adminLoadDeviceLogButton">↻ Refresh</button>
                 </div>
               </div>
-              <div id="adminDeviceLogPanel" class="hidden" style="margin-top:12px">
+              <div id="adminDeviceLogPanel" style="margin-top:12px">
                 <!-- Add entry form -->
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:var(--panel);border-radius:8px;border:1px solid var(--line)">
                   <input id="adminDeviceLogIdInput" type="text" placeholder="Device ID (fp_…)" style="flex:2;min-width:160px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:0.83rem;font-family:monospace" />
@@ -5939,6 +5939,8 @@ function renderAdmin() {
   fetchAnnouncementState().then(({ data }) => {
     if (data?.active) updateAdminAnnouncementDisplay(data);
   }).catch(() => {});
+  // Pre-load device registry in background so it's ready when the user scrolls to it
+  if (state.auth.hostedMode) loadAdminDeviceRegistry().catch(() => {});
 }
 
 function bindAdminPasswordForm() {
@@ -6409,7 +6411,7 @@ async function loadAdminDeviceRegistry() {
     state.adminDeviceRegistry = data.entries || [];
     renderAdminDeviceLog();
   } catch (err) { showToast("Error loading device log: " + err.message, true); }
-  if (btn) { btn.disabled = false; btn.textContent = "Load"; }
+  if (btn) { btn.disabled = false; btn.textContent = "↻ Refresh"; }
 }
 
 function renderAdminDeviceLog() {
