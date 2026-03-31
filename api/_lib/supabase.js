@@ -184,6 +184,31 @@ async function removeBannedDevice(deviceId) {
   return next;
 }
 
+async function getDeviceRegistry() {
+  return readJsonObject("device-registry.json", { entries: [] });
+}
+
+async function addDeviceRegistryEntry(deviceId, label = "") {
+  const existing = await getDeviceRegistry();
+  if ((existing.entries || []).find((e) => e.deviceId === deviceId)) return existing;
+  const next = {
+    entries: [{ deviceId, label, addedAt: new Date().toISOString() }, ...(existing.entries || [])],
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonObject("device-registry.json", next);
+  return next;
+}
+
+async function removeDeviceRegistryEntry(deviceId) {
+  const existing = await getDeviceRegistry();
+  const next = {
+    entries: (existing.entries || []).filter((e) => e.deviceId !== deviceId),
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonObject("device-registry.json", next);
+  return next;
+}
+
 module.exports = {
   DEFAULT_SECURITY_CONFIG,
   appendFailedAttempt,
@@ -195,4 +220,7 @@ module.exports = {
   getBannedDevices,
   addBannedDevice,
   removeBannedDevice,
+  getDeviceRegistry,
+  addDeviceRegistryEntry,
+  removeDeviceRegistryEntry,
 };
