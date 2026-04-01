@@ -1,13 +1,6 @@
 {
   "items": [
     {
-      "id": "2026-03-31T15:18:08.987Z",
-      "message": "THE QUASAR PROXIES ARE WORKING AGAIN",
-      "type": "info",
-      "postedAt": "2026-03-31T15:18:08.987Z",
-      "scheduledAt": null
-    },
-    {
       "id": "mngaztyr",
       "message": "New Update Dropping Tonight!!",
       "type": "warning",
@@ -15,5 +8,5 @@
       "scheduledAt": null
     }
   ],
-  "updatedAt": "2026-04-01T17:12:10.612Z"
+  "updatedAt": "2026-04-01T17:12:27.780Z"
 }
