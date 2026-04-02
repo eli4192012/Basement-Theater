@@ -2997,6 +2997,10 @@ h3 {
                 </div>
               </div>
               <div class="admin-search-bar">
+                <div class="theater-subtabs" style="margin:0">
+                  <button id="adminAllTitlesTab" class="theater-subtab active" type="button">All Titles</button>
+                  <button id="adminMissingCoversTab" class="theater-subtab" type="button">Missing Covers</button>
+                </div>
                 <input id="adminSearch" type="text" placeholder="Search titles…" />
                 <select id="adminCategoryFilter"><option value="">All Categories</option></select>
                 <span class="admin-count" id="adminResultCount"></span>
@@ -3318,6 +3322,7 @@ const state = {
   adminUnlocked: Boolean(sessionStorage.getItem(STORAGE_KEYS.adminUnlocked)),
   adminPassword: "",
   adminActivity: [],
+  adminCatalogView: "all",
   adminFailedAttempts: [],
   adminBannedDevices: [],
   adminDeviceRegistry: [],
@@ -3410,6 +3415,8 @@ const els = {
   fileViewerView: document.querySelector("#fileViewerView"),
   adminTabButton: document.querySelector("#adminTabButton"),
   adminView: document.querySelector("#adminView"),
+  adminAllTitlesTab: document.querySelector("#adminAllTitlesTab"),
+  adminMissingCoversTab: document.querySelector("#adminMissingCoversTab"),
   adminToggleTextEditorButton: document.querySelector("#adminToggleTextEditorButton"),
   adminSaveTextButton: document.querySelector("#adminSaveTextButton"),
   adminTextEditor: document.querySelector("#adminTextEditor"),
@@ -6067,6 +6074,10 @@ function getAdminItems() {
   ];
 }
 
+function adminItemHasCover(item) {
+  return Boolean(String(item?.posterUrl || "").trim());
+}
+
 function updateBulkDeleteBtn() {
   const count = document.querySelectorAll(".admin-row-check:checked").length;
   const btn = document.querySelector("#adminBulkDeleteButton");
@@ -6095,12 +6106,19 @@ function renderAdminTable() {
   const filtered = allItems.filter((item) => {
     const matchesQuery = !query || `${item.title} ${item.category}`.toLowerCase().includes(query);
     const matchesCat = !categoryFilter || item.category === categoryFilter;
-    return matchesQuery && matchesCat;
+    const matchesCoverView = state.adminCatalogView !== "missing-covers" || !adminItemHasCover(item);
+    return matchesQuery && matchesCat && matchesCoverView;
   });
 
   document.querySelector("#adminCatalogCount").textContent =
     `${allItems.length} titles (${state.adminOverrides.added.length} added, ${Object.keys(state.adminOverrides.edited).length} edited, ${state.adminOverrides.deleted.length} deleted)`;
-  document.querySelector("#adminResultCount").textContent = `${filtered.length} shown`;
+  const missingCoverCount = allItems.filter((item) => !adminItemHasCover(item)).length;
+  document.querySelector("#adminResultCount").textContent =
+    state.adminCatalogView === "missing-covers"
+      ? `${filtered.length} without covers shown (${missingCoverCount} total missing)`
+      : `${filtered.length} shown`;
+  els.adminAllTitlesTab?.classList.toggle("active", state.adminCatalogView === "all");
+  els.adminMissingCoversTab?.classList.toggle("active", state.adminCatalogView === "missing-covers");
 
   const tbody = document.querySelector("#adminTableBody");
   tbody.innerHTML = filtered.map((item) => `
@@ -6149,6 +6167,8 @@ function bindAdminPanelEvents() {
   const viewActivityBtn = els.adminViewActivityButton;
   const searchInput = document.querySelector("#adminSearch");
   const catFilter = document.querySelector("#adminCategoryFilter");
+  const allTitlesTab = els.adminAllTitlesTab;
+  const missingCoversTab = els.adminMissingCoversTab;
 
   if (addBtn && !addBtn._bound) {
     addBtn._bound = true;
@@ -6224,6 +6244,20 @@ function bindAdminPanelEvents() {
   if (catFilter && !catFilter._bound) {
     catFilter._bound = true;
     catFilter.addEventListener("change", renderAdminTable);
+  }
+  if (allTitlesTab && !allTitlesTab._bound) {
+    allTitlesTab._bound = true;
+    allTitlesTab.addEventListener("click", () => {
+      state.adminCatalogView = "all";
+      renderAdminTable();
+    });
+  }
+  if (missingCoversTab && !missingCoversTab._bound) {
+    missingCoversTab._bound = true;
+    missingCoversTab.addEventListener("click", () => {
+      state.adminCatalogView = "missing-covers";
+      renderAdminTable();
+    });
   }
   if (els.adminViewFailedButton && !els.adminViewFailedButton._bound) {
     els.adminViewFailedButton._bound = true;
