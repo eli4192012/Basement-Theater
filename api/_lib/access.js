@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 
 const ROOT = process.cwd();
 const PRIVATE_DIR = path.join(ROOT, "api", "_lib", "private");
-const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
+const APP_PASSWORD = process.env.APP_PASSWORD || "colors1234";
 const SESSION_SECRET = process.env.SESSION_SECRET || APP_PASSWORD;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "html1234";
 

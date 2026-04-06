@@ -1,6 +1,6 @@
 # Basement Theater
 
-Netflix-style streaming app generated from the links inside `The Basement Theater Sorter.docx`, with the front-end bundled into a single `index.html`.
+Netflix-style streaming app generated from the links inside `docs/The Basement Theater Sorter.docx`, with the front-end bundled into a single `index.html`.
 
 ## Run it
 

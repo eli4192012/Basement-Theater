@@ -1,0 +1,36 @@
+{
+  "App Title": "THE BASEMENT PREMIUM",
+
+  "Password Screen": {
+    "Title": "Enter The Password To Open The Basement Premium",
+    "Message": "Enter the shared password to continue."
+  },
+
+  "Welcome Popup": {
+    "Title": "How The Basement Premium Works",
+    "Intro": "This place is your go to site or file for games, movies, and proxies!",
+    "Library Text": "In the 'Theater' you can browse by category or A-Z. Titles with covers rise to the top, and the featured pick always uses a covered title.",
+    "Profiles Text": "Each profile keeps its own favorites, watchlist, continue watching, and age filter.",
+    "Favorites Text": "Tap the star to move a title into the Favorites tab. Remove it there and it returns to the main library.",
+    "Play Text": "Click a poster for more details, then use Play or Preview to open the Drive link.",
+    "Proxy Text": "Use the 'Proxy' tab to go search stuff without restrictions! If you want links to proxies there will be a button at the top to show them.",
+    "Trash Review Text": "That tab is just a holding area for broken-link review. It does not affect the main library unless you choose to clean things up."
+  },
+
+  "Home Tab": {
+    "Title": "Home",
+    "Status": "Good",
+    "Body": "This is the all in one app for proxies, movies, and games. We currently have about 1000 movies and rising, 45 proxies and adding, and hundreds of games. We only will have a few updates at a time, because everytime we update the user have to redownload the file. We will continousisly update the app and only release the updates every month or two. So you won't have to continue to redownload it."
+  },
+
+  "Announcements Tab": {
+    "Title": "",
+    "Heading": "",
+    "Body": ""
+  },
+
+  "Proxy Corner Tab": {
+    "Title": "",
+    "Intro": ""
+  }
+}

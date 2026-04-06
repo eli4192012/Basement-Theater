@@ -1,7 +1,7 @@
 const { createSessionToken, handleCors, sendJson } = require("../_lib/access");
 const { appendFailedAttempt, appendLoginActivity, getBannedDevices } = require("../_lib/supabase");
 
-const APP_PASSWORD = process.env.APP_PASSWORD || "Firepump1234";
+const APP_PASSWORD = process.env.APP_PASSWORD || "colors1234";
 
 const ALLOWED_EMAILS = [
   "elithomas0419@gmail.com",

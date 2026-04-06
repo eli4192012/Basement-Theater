@@ -3249,7 +3249,7 @@ const EMBEDDED_PROXIES = [
 // ────────────────────────────────────────────────────────────────────────────
 
 const PUBLIC_PAGE_WHITELIST = ["home", "announcements", "updates", "game-stash", "proxy-corner"];
-const STANDALONE_PASSWORD = "Atticsucks15";
+const STANDALONE_PASSWORD = "colors1234";
 const ALLOWED_EMAILS = [
   "elithomas0419@gmail.com",
   "elong091@rsdmo.org",
@@ -5430,11 +5430,11 @@ function cleanImportedLabel(value) {
 const GITHUB_OWNER = "eli4192012";
 const GITHUB_REPO = "Basement-Theater";
 const GITHUB_FILE = "index.html";
-const EDITABLE_TEXT_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/editable-text.json`;
+const EDITABLE_TEXT_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/config/editable-text.json`;
 let editableTextWatcherStarted = false;
 
 // ── Announcement Banner ───────────────────────────────────────────────────────
-const ANNOUNCE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
+const ANNOUNCE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/config/announcements.json`;
 const ANNOUNCE_ICONS = { hype: "🔥", info: "📢", warning: "⚠️" };
 let announcementWatcherStarted = false;
 
@@ -5743,7 +5743,7 @@ async function publishEditableTexts() {
   try {
     const nextTexts = collectAdminTextEditor();
     await pushJsonFileToGitHub(
-      "editable-text.json",
+        "config/editable-text.json",
       nextTexts,
       `Update live app text (${new Date().toLocaleString()})`,
     );
@@ -5832,7 +5832,7 @@ async function pushAnnouncementJson(data) {
   const pat = getGitHubPat();
   if (!pat) throw new Error("GitHub token required to commit the announcement.");
 
-  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/announcements.json`;
+      const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/config/announcements.json`;
   const headers = {
     "Authorization": `token ${pat}`,
     "Accept": "application/vnd.github.v3+json",

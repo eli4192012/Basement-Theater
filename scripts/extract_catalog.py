@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCX_PATH = ROOT / "The Basement Theater Sorter.docx"
+DOCX_PATH = ROOT / "docs" / "The Basement Theater Sorter.docx"
 OUTPUT_PATH = ROOT / "api" / "_lib" / "private" / "catalog.json"
 
 NS = {
